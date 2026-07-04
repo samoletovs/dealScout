@@ -26,7 +26,10 @@ def natural_fibre_ratio(materials: dict[str, float]) -> float:
     total = sum(materials.values())
     if total <= 0:
         return 0.0
-    natural = sum(v for k, v in materials.items() if k.lower() in NATURAL_FIBRES)
+    natural = sum(
+        v for k, v in materials.items()
+        if any(fibre in k.lower() for fibre in NATURAL_FIBRES)
+    )
     return natural / total
 
 

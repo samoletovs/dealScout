@@ -7,7 +7,11 @@ Services later. The markdown report is the primary artefact for the VS Code cock
 from __future__ import annotations
 
 import logging
+import os
+from email.message import EmailMessage
 from pathlib import Path
+
+import aiosmtplib
 
 from .models import Product, Verdict
 
@@ -35,9 +39,32 @@ def write_report(signals: list[tuple[Product, Verdict]], path: Path) -> Path:
     return path
 
 
-async def send_email(subject: str, body: str) -> None:
-    """Send the buy-signal email.
+async def send_email(subject: str, body: str) -> bool:
+    """Send the buy-signal email over SMTP (env-configured).
 
-    TODO: wire SMTP via env (DEALSCOUT_SMTP_*) or Azure Communication Services.
+    Reads DEALSCOUT_SMTP_HOST/PORT/USER/PASS and DEALSCOUT_EMAIL_TO. If the host
+    or recipient is not configured, logs and skips (so local/CI runs don't fail).
+    Returns True if an email was sent.
     """
-    logger.warning("notify.send_email is a stub — would send: %s", subject)
+    host = os.getenv("DEALSCOUT_SMTP_HOST")
+    to_addr = os.getenv("DEALSCOUT_EMAIL_TO")
+    if not host or not to_addr:
+        logger.warning("email not configured (DEALSCOUT_SMTP_HOST/EMAIL_TO) — skipping send")
+        return False
+
+    message = EmailMessage()
+    message["From"] = os.getenv("DEALSCOUT_SMTP_USER") or to_addr
+    message["To"] = to_addr
+    message["Subject"] = subject
+    message.set_content(body)
+
+    await aiosmtplib.send(
+        message,
+        hostname=host,
+        port=int(os.getenv("DEALSCOUT_SMTP_PORT", "587")),
+        username=os.getenv("DEALSCOUT_SMTP_USER"),
+        password=os.getenv("DEALSCOUT_SMTP_PASS"),
+        start_tls=True,
+    )
+    logger.info("sent buy-signal email to %s", to_addr)
+    return True
