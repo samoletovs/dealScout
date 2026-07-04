@@ -1,0 +1,78 @@
+# dealScout config (example). Copy to config.local.yaml (git-ignored) and edit.
+# Personal data (real watch-list URLs, exact measurements) lives in the owner's private vault.
+# Nothing sensitive here: sizes/preferences only — no card details, no real email.
+
+user: sam                        # opaque id, not a real name in a shared store
+notify:
+  email: you@example.com         # real value comes from env (DEALSCOUT_EMAIL_TO); never commit
+currency: EUR
+deliver_to: LV
+
+# Target sizes — what dealScout shops for (from the profile)
+sizes:
+  tee: M
+  shirt_casual: M
+  shirt_formal: "41"             # collar cm (16")
+  knitwear: M-L
+  jacket: EU50
+  trousers: EU48                 # relaxed; EU46 = slimmer alternative
+  shoes: EU42
+
+# Fit differs by context
+fit:
+  formal: tailored               # work / customer visits
+  casual: relaxed                # everyday
+
+# Quality & logo filters (deal-breakers + scoring)
+filters:
+  logos: small_ok                # none | tonal_only | small_ok | any
+  reject_big_wordmarks: true     # big lettering / monograms / all-over prints = hard no
+  natural_fibre_min: 0.70        # >= 70% natural (wool/cotton/linen/cashmere/silk)
+  reject_materials: [polyester, acrylic]
+  sportswear_synthetic_ok: true  # synthetics tolerated in true sportswear
+  care_no_dry_clean_only: true   # prefer machine-wash
+  quality_signals:               # score these UP
+    - natural_fibre
+    - substantial_weight
+    - durable_make
+    - easy_care
+    - goodyear_welt
+    - made_in_provenance
+
+# Deal rule — exceptional bargains only (a sniper, not a firehose)
+deal:
+  min_discount_pct: 50           # deep-discount hunter
+  cant_say_no:                   # per-category "instant yes" ceiling (EUR)
+    tee: 15
+    shirt_casual: 25
+    shirt_formal: 30
+    knitwear: 30
+    trousers: 30
+    jacket: 70
+    outerwear: 90
+    shoes: 70
+    accessory: 20
+  never_above:                   # hard ceiling — never even mention above this
+    tee: 45
+    shirt_casual: 70
+    shirt_formal: 90
+    knitwear: 110
+    trousers: 90
+    jacket: 200
+    outerwear: 300
+    shoes: 200
+    accessory: 70
+
+# Brand shortlist (see the brand-discovery report in the owner's vault)
+brands:
+  baltic: [Pappus, Tines, Woolish, Sangar, GaujaGauja, Baltman, Elegants, "Eric Lasko", "Amber Linen"]
+  european: [Suitsupply, Asket, Arket, "Colorful Standard", "Merz b. Schwanen", NN07, "A Day's March", Meermin]
+
+# Where to hunt bargains (ship to Latvia)
+channels: [zalando-lounge.lv, booztlet, theoutnet, vinted.lv, aboutyou]
+
+# Watch-list — specific items to track. Replace with real product URLs.
+watch:
+  - url: https://www.example.com/product/123
+    category: knitwear
+    note: "example — replace with a real product URL"
