@@ -12,6 +12,7 @@ import email
 import imaplib
 import logging
 import os
+import re
 from datetime import date, timedelta
 from email.header import decode_header, make_header
 from email.message import Message
@@ -107,19 +108,47 @@ def fetch_recent(limit: int = 100) -> list[tuple[str, str, str]]:
 
 
 def fetch_since(days: int = 7, limit: int = 300) -> list[tuple[str, str, str]]:
-    """Fetch ALL newsletters from the last `days` days across INBOX and Spam
-    (read or unread) for the subscription-health summary. Scanning Spam catches
-    brands that Gmail quarantined — so they show as active, not silent.
+    """Fetch ALL newsletters from the last `days` days across All Mail and Spam
+    (read, unread, or archived) for the subscription-health summary. Scanning
+    All Mail catches archived mail; Spam catches brands Gmail quarantined. The
+    account's own sent digests are filtered out.
     """
     since = (date.today() - timedelta(days=days)).strftime("%d-%b-%Y")
     criteria = f"(SINCE {since})"
+    own = (os.getenv("DEALSCOUT_IMAP_USER") or "").lower()
     combined: list[tuple[str, str, str]] = []
     seen: set[tuple[str, str]] = set()
-    for mailbox in ("INBOX", "[Gmail]/Spam"):
+    for mailbox in ("[Gmail]/All Mail", "[Gmail]/Spam"):
         for parts in _fetch(criteria, mark_seen=False, limit=limit, mailbox=mailbox):
+            if own and own in parts[0].lower():
+                continue  # skip our own sent digests
             key = (parts[0], parts[1])
             if key not in seen:
                 seen.add(key)
                 combined.append(parts)
-    logger.info("scanned %d newsletter(s) in the last %d days (inbox+spam)", len(combined), days)
+    logger.info("scanned %d newsletter(s) in the last %d days (all mail + spam)", len(combined), days)
     return combined
+
+
+def mailbox_counts() -> dict[str, int]:
+    """Log total message counts per mailbox — a deliverability diagnostic that
+    distinguishes 'nothing arrived' from 'mail is elsewhere'.
+    """
+    creds = _credentials()
+    if creds is None:
+        return {}
+    user, password, host = creds
+    counts: dict[str, int] = {}
+    try:
+        with imaplib.IMAP4_SSL(host) as imap:
+            imap.login(user, password)
+            for mailbox in ("INBOX", "[Gmail]/Spam", "[Gmail]/All Mail"):
+                typ, data = imap.status(f'"{mailbox}"', "(MESSAGES)")
+                if typ == "OK" and data and data[0]:
+                    match = re.search(rb"MESSAGES\s+(\d+)", data[0])
+                    counts[mailbox] = int(match.group(1)) if match else 0
+    except (imaplib.IMAP4.error, OSError) as exc:
+        logger.warning("mailbox status failed (%s)", exc)
+        return {}
+    logger.info("mailbox totals: %s", counts)
+    return counts

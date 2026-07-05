@@ -8,7 +8,7 @@ from pathlib import Path
 
 from .config import load_config
 from .digest import compose_digest, render_senders
-from .inbox import fetch_recent, fetch_since
+from .inbox import fetch_recent, fetch_since, mailbox_counts
 from .models import SaleEvent
 from .newsletters import event_band, parse_newsletter
 from .notify import send_email
@@ -24,6 +24,7 @@ logger = logging.getLogger("dealscout.digest")
 async def run(config_path: Path) -> str:
     """Read the newsletter inbox, judge sales, write + email the digest."""
     config = load_config(config_path)
+    mailbox_counts()  # deliverability diagnostic (logged)
     deal_messages = fetch_recent()  # new/unseen → deal alerts (marked read after)
     events: list[tuple[SaleEvent, str]] = []
     for sender, subject, html in deal_messages:
