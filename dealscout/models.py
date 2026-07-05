@@ -48,3 +48,4 @@ class Verdict:
     is_deal: bool
     score: float
     reasons: tuple[str, ...]
+    band: str = "reject"  # must-buy | good | regular | reject

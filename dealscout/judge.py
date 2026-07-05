@@ -97,20 +97,21 @@ def judge(product: Product, config: dict) -> Verdict:
     if never_above is not None and product.price > float(never_above):
         return Verdict(False, 0.0, (f"rejected: €{product.price:.0f} over never-above €{never_above}",))
 
-    # --- deal test: exceptional only (deep discount AND under the ceiling) ---
+    # --- price band: must-buy / good / regular (vs your tier's realistic sale prices) ---
+    must_buy = deal.get("must_buy", {}).get(product.category)
+    good_offer = deal.get("good_offer", {}).get(product.category)
+    if must_buy is not None and product.price <= float(must_buy):
+        band = "must-buy"
+    elif good_offer is not None and product.price <= float(good_offer):
+        band = "good"
+    else:
+        band = "regular"
+    is_deal = band in {"must-buy", "good"}
+
     dpct = discount_pct(product.price, product.reference_price)
-    min_discount = float(deal.get("min_discount_pct", 0))
-    ceiling = deal.get("cant_say_no", {}).get(product.category)
-
-    deep_discount = dpct >= min_discount
-    under_ceiling = ceiling is not None and product.price <= float(ceiling)
-
-    if deep_discount:
+    if dpct > 0:
         reasons.append(f"{dpct:.0f}% off")
-    if under_ceiling:
-        reasons.append(f"€{product.price:.0f} <= can't-say-no €{ceiling}")
-
-    is_deal = (deep_discount and under_ceiling) if ceiling is not None else deep_discount
+    reasons.append(f"€{product.price:.0f} → {band}")
 
     # --- quality + brand bonus: adds score, never gates ---
     wanted = set(filters.get("quality_signals", []))
@@ -121,6 +122,7 @@ def judge(product: Product, config: dict) -> Verdict:
         reasons.append("quality: " + ", ".join(sorted(matched)))
 
     score = dpct + 5.0 * len(matched)
+    score += {"must-buy": 20.0, "good": 10.0}.get(band, 0.0)
     if tier == "better":
         reasons.append(f"trade-up brand: {product.brand}")
         score += 10.0
@@ -128,6 +130,6 @@ def judge(product: Product, config: dict) -> Verdict:
         reasons.append(f"your tier: {product.brand}")
 
     if not is_deal:
-        reasons.append("not exceptional enough")
+        reasons.append("regular price — skip")
 
-    return Verdict(is_deal, round(score, 1), tuple(reasons))
+    return Verdict(is_deal, round(score, 1), tuple(reasons), band)

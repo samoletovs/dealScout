@@ -15,7 +15,8 @@ CONFIG = {
     },
     "deal": {
         "min_discount_pct": 50,
-        "cant_say_no": {"knitwear": 30},
+        "must_buy": {"knitwear": 30},
+        "good_offer": {"knitwear": 60},
         "never_above": {"knitwear": 110},
     },
 }
@@ -38,11 +39,11 @@ def _product(**overrides) -> Product:
     return Product(**base)
 
 
-def test_should_flag_deep_discount_under_ceiling_as_deal():
-    # Arrange: 75% off, €25 <= €30 ceiling, 100% wool, no logo
+def test_should_flag_must_buy_price_as_deal():
+    # €25 <= must-buy €30, 100% wool, no logo -> must-buy
     verdict = judge(_product(price=25.0, reference_price=100.0), CONFIG)
-    # Assert
     assert verdict.is_deal is True
+    assert verdict.band == "must-buy"
 
 
 def test_should_reject_item_with_big_logo():
@@ -61,8 +62,8 @@ def test_should_reject_synthetic_when_not_sportswear():
     assert verdict.is_deal is False
 
 
-def test_should_not_flag_shallow_discount():
-    # 20% off is below the 50% deep-discount bar
+def test_should_not_flag_regular_price():
+    # €80 knitwear is above the good-offer band -> regular price, skip
     verdict = judge(_product(price=80.0, reference_price=100.0), CONFIG)
     assert verdict.is_deal is False
 
@@ -109,3 +110,23 @@ def test_brand_tier_resolves_levels():
     assert brand_tier("BOSS", brands) == "basket"
     assert brand_tier("Jack & Jones", brands) == "worse"
     assert brand_tier("Obscure Local Co", brands) == "unknown"
+
+
+def test_should_classify_must_buy_band():
+    verdict = judge(_product(price=25.0), CONFIG)
+    assert verdict.band == "must-buy"
+    assert verdict.is_deal is True
+
+
+def test_should_classify_good_offer_band():
+    # €45 is above must-buy €30 but within good-offer €60
+    verdict = judge(_product(price=45.0), CONFIG)
+    assert verdict.band == "good"
+    assert verdict.is_deal is True
+
+
+def test_should_classify_regular_price_as_skip():
+    # €80 is above good-offer €60 -> regular, not surfaced
+    verdict = judge(_product(price=80.0), CONFIG)
+    assert verdict.band == "regular"
+    assert verdict.is_deal is False

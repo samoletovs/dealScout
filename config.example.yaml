@@ -42,26 +42,36 @@ filters:
 
 # Deal rule — exceptional bargains only (a sniper, not a firehose)
 deal:
-  min_discount_pct: 50           # deep-discount hunter
-  cant_say_no:                   # per-category "instant yes" ceiling (EUR)
+  min_discount_pct: 50           # optional: informs score/ranking, not the band
+  must_buy:                      # 🟢 grab instantly (EUR)
     tee: 20
-    shirt_casual: 25
-    shirt_formal: 30
-    knitwear: 30
-    trousers: 30
-    jacket: 70
-    outerwear: 90
-    shoes: 70
-    accessory: 20
-  never_above:                   # hard ceiling — never even mention above this
+    shirt_casual: 35
+    shirt_formal: 40
+    knitwear: 50
+    trousers: 45
+    jacket: 100
+    outerwear: 130
+    shoes: 100
+    accessory: 25
+  good_offer:                    # 🟡 worth it — upper bound (EUR)
+    tee: 30
+    shirt_casual: 55
+    shirt_formal: 65
+    knitwear: 85
+    trousers: 70
+    jacket: 170
+    outerwear: 230
+    shoes: 170
+    accessory: 50
+  never_above:                   # ⛔ hard reject
     tee: 45
-    shirt_casual: 70
-    shirt_formal: 90
-    knitwear: 110
-    trousers: 90
-    jacket: 200
-    outerwear: 300
-    shoes: 200
+    shirt_casual: 80
+    shirt_formal: 95
+    knitwear: 130
+    trousers: 100
+    jacket: 250
+    outerwear: 320
+    shoes: 230
     accessory: 70
 
 # Brand tiers (status) — accept basket-or-better, reject worse. Resolve diffusion
