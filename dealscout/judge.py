@@ -40,6 +40,31 @@ def discount_pct(price: float, reference_price: float | None) -> float:
     return max(0.0, (reference_price - price) / reference_price * 100.0)
 
 
+def brand_tier(brand: str, brands: dict) -> str:
+    """Resolve a brand to a tier: 'better' / 'basket' / 'worse' / 'unknown'.
+
+    Case-insensitive; 'local' (Baltic quality finds) counts as basket. Resolve
+    diffusion lines to the sub-label before calling (e.g. 'Tommy Jeans' vs 'Tommy Hilfiger').
+    """
+    needle = brand.strip().lower()
+    if not needle:
+        return "unknown"
+
+    def has(tier: str) -> bool:
+        return any(
+            str(name).lower() in needle or needle in str(name).lower()
+            for name in brands.get(tier, [])
+        )
+
+    if has("better"):
+        return "better"
+    if has("basket") or has("local"):
+        return "basket"
+    if has("worse"):
+        return "worse"
+    return "unknown"
+
+
 def judge(product: Product, config: dict) -> Verdict:
     """Decide whether a product is an unmissable, on-profile bargain."""
     filters = config.get("filters", {})
@@ -49,6 +74,14 @@ def judge(product: Product, config: dict) -> Verdict:
     # --- hard filters: any failure means "not a deal" ---
     if filters.get("reject_big_wordmarks", True) and product.has_big_logo:
         return Verdict(False, 0.0, ("rejected: big logo/wordmark",))
+
+    # brand tier: never buy below your level
+    min_tier = filters.get("min_brand_tier", "any")
+    tier = brand_tier(product.brand, config.get("brands", {}))
+    if min_tier == "basket" and tier == "worse":
+        return Verdict(False, 0.0, (f"rejected: {product.brand or 'brand'} is below your tier",))
+    if min_tier == "better" and tier != "better":
+        return Verdict(False, 0.0, (f"rejected: {product.brand or 'brand'} not above your tier",))
 
     min_natural = float(filters.get("natural_fibre_min", 0.0))
     ratio = natural_fibre_ratio(product.materials)
@@ -79,7 +112,7 @@ def judge(product: Product, config: dict) -> Verdict:
 
     is_deal = (deep_discount and under_ceiling) if ceiling is not None else deep_discount
 
-    # --- quality bonus: adds score, never gates ---
+    # --- quality + brand bonus: adds score, never gates ---
     wanted = set(filters.get("quality_signals", []))
     matched = wanted & set(product.quality_signals)
     if "natural_fibre" in wanted and ratio > 0 and ratio >= min_natural:
@@ -88,6 +121,12 @@ def judge(product: Product, config: dict) -> Verdict:
         reasons.append("quality: " + ", ".join(sorted(matched)))
 
     score = dpct + 5.0 * len(matched)
+    if tier == "better":
+        reasons.append(f"trade-up brand: {product.brand}")
+        score += 10.0
+    elif tier == "basket" and product.brand:
+        reasons.append(f"your tier: {product.brand}")
+
     if not is_deal:
         reasons.append("not exceptional enough")
 

@@ -38,6 +38,7 @@ class Product:
     has_big_logo: bool = False
     quality_signals: frozenset[str] = frozenset()
     care: str = ""  # e.g. "machine wash" / "dry clean only"
+    brand: str = ""  # used for brand-tier filtering
 
 
 @dataclass(frozen=True)

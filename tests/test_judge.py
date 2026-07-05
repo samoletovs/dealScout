@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dealscout.judge import discount_pct, judge, natural_fibre_ratio
+from dealscout.judge import brand_tier, discount_pct, judge, natural_fibre_ratio
 from dealscout.models import Product
 
 CONFIG = {
@@ -73,3 +73,39 @@ def test_natural_fibre_ratio_counts_only_natural():
 
 def test_discount_pct_handles_missing_reference():
     assert discount_pct(50.0, None) == 0.0
+
+
+BRAND_CONFIG = {
+    "filters": {**CONFIG["filters"], "min_brand_tier": "basket"},
+    "deal": CONFIG["deal"],
+    "brands": {
+        "worse": ["Jack & Jones", "H&M"],
+        "basket": ["BOSS", "Lacoste"],
+        "better": ["Sunspel"],
+    },
+}
+
+
+def test_should_reject_brand_below_tier():
+    verdict = judge(_product(brand="Jack & Jones"), BRAND_CONFIG)
+    assert verdict.is_deal is False
+    assert "below your tier" in verdict.reasons[0]
+
+
+def test_should_accept_basket_tier_brand():
+    verdict = judge(_product(brand="BOSS"), BRAND_CONFIG)
+    assert verdict.is_deal is True
+
+
+def test_should_score_better_brand_above_basket():
+    basket = judge(_product(brand="Lacoste"), BRAND_CONFIG)
+    better = judge(_product(brand="Sunspel"), BRAND_CONFIG)
+    assert better.score > basket.score
+
+
+def test_brand_tier_resolves_levels():
+    brands = BRAND_CONFIG["brands"]
+    assert brand_tier("Sunspel", brands) == "better"
+    assert brand_tier("BOSS", brands) == "basket"
+    assert brand_tier("Jack & Jones", brands) == "worse"
+    assert brand_tier("Obscure Local Co", brands) == "unknown"

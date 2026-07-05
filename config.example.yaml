@@ -27,6 +27,7 @@ fit:
 filters:
   logos: small_ok                # none | tonal_only | small_ok | any
   reject_big_wordmarks: true     # big lettering / monograms / all-over prints = hard no
+  min_brand_tier: basket         # any | basket | better  — reject brands below your level
   natural_fibre_min: 0.70        # >= 70% natural (wool/cotton/linen/cashmere/silk)
   reject_materials: [polyester, acrylic]
   sportswear_synthetic_ok: true  # synthetics tolerated in true sportswear
@@ -63,10 +64,13 @@ deal:
     shoes: 200
     accessory: 70
 
-# Brand shortlist (see the brand-discovery report in the owner's vault)
+# Brand tiers (status) — accept basket-or-better, reject worse. Resolve diffusion
+# lines to the sub-label (e.g. "Tommy Jeans" is worse-adjacent, not "Tommy Hilfiger").
 brands:
-  baltic: [Pappus, Tines, Woolish, Sangar, GaujaGauja, Baltman, Elegants, "Eric Lasko", "Amber Linen"]
-  european: [Suitsupply, Asket, Arket, "Colorful Standard", "Merz b. Schwanen", NN07, "A Day's March", Meermin]
+  worse:  [H&M, Zara, "Jack & Jones", "Only & Sons", Lee, "Levi's", "Tom Tailor", "s.Oliver", Reserved, Primark, "Pull & Bear", Uniqlo]
+  basket: [BOSS, "Massimo Dutti", "Ted Baker", Lacoste, "Banana Republic", Benetton, Sisley, GANT, "Tommy Hilfiger", "Polo Ralph Lauren", "Marc O'Polo", "Scotch & Soda", "Fred Perry", "Calvin Klein", COS, Arket]
+  better: [Sunspel, "Luca Faloni", "A.P.C.", Asket, NN07, "Norse Projects", Sandro, "Paul Smith", "Emporio Armani", Zegna, "Loro Piana", "Brunello Cucinelli"]
+  local:  [Pappus, Tines, Woolish, Sangar, GaujaGauja, Baltman, Elegants, "Amber Linen"]  # Baltic quality finds (report)
 
 # Where to hunt bargains (ship to Latvia)
 channels: [zalando-lounge.lv, booztlet, theoutnet, vinted.lv, aboutyou]
