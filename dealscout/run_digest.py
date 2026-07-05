@@ -8,7 +8,7 @@ from pathlib import Path
 
 from .config import load_config
 from .digest import compose_digest, render_senders
-from .inbox import fetch_recent, fetch_since, mailbox_counts
+from .inbox import fetch_recent, fetch_since, health, mailbox_counts
 from .models import SaleEvent
 from .newsletters import event_band, parse_newsletter
 from .notify import send_email
@@ -24,6 +24,16 @@ logger = logging.getLogger("dealscout.digest")
 async def run(config_path: Path) -> str:
     """Read the newsletter inbox, judge sales, write + email the digest."""
     config = load_config(config_path)
+    status = health()
+    if status == "not_configured":
+        logger.warning("mailbox not configured (DEALSCOUT_IMAP_USER/PASS) — skipping run")
+        return ""
+    if status == "auth_failed":
+        raise SystemExit(
+            "dealScout cannot log into the mailbox — deals are NOT being monitored. "
+            "Regenerate the Gmail app password and update the DEALSCOUT_IMAP_PASS "
+            "and DEALSCOUT_SMTP_PASS secrets."
+        )
     mailbox_counts()  # deliverability diagnostic (logged)
     deal_messages = fetch_recent()  # new/unseen → deal alerts (marked read after)
     events: list[tuple[SaleEvent, str]] = []

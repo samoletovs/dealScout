@@ -152,3 +152,22 @@ def mailbox_counts() -> dict[str, int]:
         return {}
     logger.info("mailbox totals: %s", counts)
     return counts
+
+
+def health() -> str:
+    """Return mailbox login health: 'ok', 'auth_failed', or 'not_configured'.
+
+    A monitor must never silently pass while unable to connect, so this cleanly
+    separates a broken login from a genuinely empty inbox.
+    """
+    creds = _credentials()
+    if creds is None:
+        return "not_configured"
+    user, password, host = creds
+    try:
+        with imaplib.IMAP4_SSL(host) as imap:
+            imap.login(user, password)
+        return "ok"
+    except (imaplib.IMAP4.error, OSError) as exc:
+        logger.error("IMAP login failed — update the Gmail app password secret (%s)", exc)
+        return "auth_failed"
