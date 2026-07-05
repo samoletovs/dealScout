@@ -70,15 +70,19 @@ def fetch_recent(limit: int = 100) -> list[tuple[str, str, str]]:
 
     host = os.getenv("DEALSCOUT_IMAP_HOST") or "imap.gmail.com"
     out: list[tuple[str, str, str]] = []
-    with imaplib.IMAP4_SSL(host) as imap:
-        imap.login(user, password)
-        imap.select("INBOX", readonly=True)
-        typ, data = imap.search(None, "UNSEEN")
-        if typ != "OK":
-            return []
-        for msg_id in data[0].split()[-limit:]:
-            typ, msg_data = imap.fetch(msg_id, "(BODY.PEEK[])")
-            if typ == "OK" and msg_data and msg_data[0]:
-                out.append(extract_parts(msg_data[0][1]))
+    try:
+        with imaplib.IMAP4_SSL(host) as imap:
+            imap.login(user, password)
+            imap.select("INBOX", readonly=True)
+            typ, data = imap.search(None, "UNSEEN")
+            if typ != "OK":
+                return []
+            for msg_id in data[0].split()[-limit:]:
+                typ, msg_data = imap.fetch(msg_id, "(BODY.PEEK[])")
+                if typ == "OK" and msg_data and msg_data[0]:
+                    out.append(extract_parts(msg_data[0][1]))
+    except (imaplib.IMAP4.error, OSError) as exc:
+        logger.warning("inbox read failed (%s) — skipping newsletters this run", exc)
+        return []
     logger.info("fetched %d unseen newsletter(s)", len(out))
     return out
