@@ -17,6 +17,7 @@ Personal bargain-hunting wardrobe assistant. A **co-pilot, not an autopilot**: d
 - `dealscout/collector.py` — turn a watch item into a `Product` snapshot (stub → implement via ld+json / feeds).
 - `dealscout/judge.py` — the deal judge (pure, well-tested): price vs target + quality/logo/fabric rules. **This is the heart.**
 - `dealscout/notify.py` — email + markdown buy-signals report.
+- `dealscout/newsletters.py` — parse brand newsletters → SaleEvents, judge by tier + discount (P3 signal source).
 - `dealscout/run.py` — entrypoint: load → collect → judge → notify.
 
 ## Where the owner's real profile lives

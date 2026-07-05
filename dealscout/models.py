@@ -49,3 +49,15 @@ class Verdict:
     score: float
     reasons: tuple[str, ...]
     band: str = "reject"  # must-buy | good | regular | reject
+
+
+@dataclass(frozen=True)
+class SaleEvent:
+    """A sale announced in a brand newsletter (brand-level, not per-item)."""
+
+    brand: str
+    headline: str
+    max_discount_pct: float
+    categories: tuple[str, ...]
+    url: str
+    source: str = ""  # sender address / domain
