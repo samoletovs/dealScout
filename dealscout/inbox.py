@@ -108,6 +108,6 @@ def fetch_since(days: int = 7, limit: int = 300) -> list[tuple[str, str, str]]:
     subscription-health summary. Does not change flags.
     """
     since = (date.today() - timedelta(days=days)).strftime("%d-%b-%Y")
-    out = _fetch(f'(SINCE "{since}")', mark_seen=False, limit=limit)
+    out = _fetch(f"(SINCE {since})", mark_seen=False, limit=limit)
     logger.info("scanned %d newsletter(s) in the last %d days for senders", len(out), days)
     return out
