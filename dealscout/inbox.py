@@ -67,8 +67,8 @@ def _credentials() -> tuple[str, str, str] | None:
     return user, password, os.getenv("DEALSCOUT_IMAP_HOST") or "imap.gmail.com"
 
 
-def _fetch(criteria: str, *, mark_seen: bool, limit: int) -> list[tuple[str, str, str]]:
-    """Fetch messages matching an IMAP search. Optionally mark them \\Seen."""
+def _fetch(criteria: str, *, mark_seen: bool, limit: int, mailbox: str = "INBOX") -> list[tuple[str, str, str]]:
+    """Fetch messages matching an IMAP search in `mailbox`. Optionally mark \\Seen."""
     creds = _credentials()
     if creds is None:
         return []
@@ -77,7 +77,10 @@ def _fetch(criteria: str, *, mark_seen: bool, limit: int) -> list[tuple[str, str
     try:
         with imaplib.IMAP4_SSL(host) as imap:
             imap.login(user, password)
-            imap.select("INBOX", readonly=not mark_seen)
+            typ, _ = imap.select(f'"{mailbox}"', readonly=not mark_seen)
+            if typ != "OK":
+                logger.info("mailbox %s unavailable", mailbox)
+                return []
             typ, data = imap.search(None, criteria)
             if typ != "OK":
                 return []
@@ -104,10 +107,19 @@ def fetch_recent(limit: int = 100) -> list[tuple[str, str, str]]:
 
 
 def fetch_since(days: int = 7, limit: int = 300) -> list[tuple[str, str, str]]:
-    """Fetch ALL newsletters from the last `days` days (read or unread) for the
-    subscription-health summary. Does not change flags.
+    """Fetch ALL newsletters from the last `days` days across INBOX and Spam
+    (read or unread) for the subscription-health summary. Scanning Spam catches
+    brands that Gmail quarantined — so they show as active, not silent.
     """
     since = (date.today() - timedelta(days=days)).strftime("%d-%b-%Y")
-    out = _fetch(f"(SINCE {since})", mark_seen=False, limit=limit)
-    logger.info("scanned %d newsletter(s) in the last %d days for senders", len(out), days)
-    return out
+    criteria = f"(SINCE {since})"
+    combined: list[tuple[str, str, str]] = []
+    seen: set[tuple[str, str]] = set()
+    for mailbox in ("INBOX", "[Gmail]/Spam"):
+        for parts in _fetch(criteria, mark_seen=False, limit=limit, mailbox=mailbox):
+            key = (parts[0], parts[1])
+            if key not in seen:
+                seen.add(key)
+                combined.append(parts)
+    logger.info("scanned %d newsletter(s) in the last %d days (inbox+spam)", len(combined), days)
+    return combined
