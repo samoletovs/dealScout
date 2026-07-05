@@ -61,7 +61,7 @@ async def send_email(subject: str, body: str) -> bool:
     await aiosmtplib.send(
         message,
         hostname=host,
-        port=int(os.getenv("DEALSCOUT_SMTP_PORT", "587")),
+        port=int(os.getenv("DEALSCOUT_SMTP_PORT") or "587"),
         username=os.getenv("DEALSCOUT_SMTP_USER"),
         password=os.getenv("DEALSCOUT_SMTP_PASS"),
         start_tls=True,

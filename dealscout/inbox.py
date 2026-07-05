@@ -68,7 +68,7 @@ def fetch_recent(limit: int = 100) -> list[tuple[str, str, str]]:
         logger.warning("IMAP not configured (DEALSCOUT_IMAP_USER/PASS) — no newsletters this run")
         return []
 
-    host = os.getenv("DEALSCOUT_IMAP_HOST", "imap.gmail.com")
+    host = os.getenv("DEALSCOUT_IMAP_HOST") or "imap.gmail.com"
     out: list[tuple[str, str, str]] = []
     with imaplib.IMAP4_SSL(host) as imap:
         imap.login(user, password)
