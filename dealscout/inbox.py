@@ -12,6 +12,7 @@ import email
 import imaplib
 import logging
 import os
+from datetime import date, timedelta
 from email.header import decode_header, make_header
 from email.message import Message
 
@@ -57,32 +58,56 @@ def extract_parts(raw_email: bytes) -> tuple[str, str, str]:
     return _decode(msg.get("From")), _decode(msg.get("Subject")), _html_body(msg)
 
 
-def fetch_recent(limit: int = 100) -> list[tuple[str, str, str]]:
-    """Fetch recent UNSEEN messages as (sender, subject, html_body).
-
-    Read-only (PEEK, does not mark seen). Returns [] if IMAP is not configured.
-    """
+def _credentials() -> tuple[str, str, str] | None:
     user = os.getenv("DEALSCOUT_IMAP_USER")
     password = os.getenv("DEALSCOUT_IMAP_PASS")
     if not user or not password:
-        logger.warning("IMAP not configured (DEALSCOUT_IMAP_USER/PASS) — no newsletters this run")
-        return []
+        logger.warning("IMAP not configured (DEALSCOUT_IMAP_USER/PASS) — inbox unavailable")
+        return None
+    return user, password, os.getenv("DEALSCOUT_IMAP_HOST") or "imap.gmail.com"
 
-    host = os.getenv("DEALSCOUT_IMAP_HOST") or "imap.gmail.com"
+
+def _fetch(criteria: str, *, mark_seen: bool, limit: int) -> list[tuple[str, str, str]]:
+    """Fetch messages matching an IMAP search. Optionally mark them \\Seen."""
+    creds = _credentials()
+    if creds is None:
+        return []
+    user, password, host = creds
     out: list[tuple[str, str, str]] = []
     try:
         with imaplib.IMAP4_SSL(host) as imap:
             imap.login(user, password)
-            imap.select("INBOX", readonly=True)
-            typ, data = imap.search(None, "UNSEEN")
+            imap.select("INBOX", readonly=not mark_seen)
+            typ, data = imap.search(None, criteria)
             if typ != "OK":
                 return []
-            for msg_id in data[0].split()[-limit:]:
+            ids = data[0].split()[-limit:]
+            for msg_id in ids:
                 typ, msg_data = imap.fetch(msg_id, "(BODY.PEEK[])")
                 if typ == "OK" and msg_data and msg_data[0]:
                     out.append(extract_parts(msg_data[0][1]))
+            if mark_seen and ids:
+                imap.store(",".join(i.decode() for i in ids), "+FLAGS", "\\Seen")
     except (imaplib.IMAP4.error, OSError) as exc:
-        logger.warning("inbox read failed (%s) — skipping newsletters this run", exc)
+        logger.warning("inbox read failed (%s) — skipping", exc)
         return []
-    logger.info("fetched %d unseen newsletter(s)", len(out))
+    return out
+
+
+def fetch_recent(limit: int = 100) -> list[tuple[str, str, str]]:
+    """Fetch UNSEEN newsletters for deal alerts, then mark them read so the same
+    sale isn't re-alerted next run. Returns [] if IMAP is not configured.
+    """
+    out = _fetch("UNSEEN", mark_seen=True, limit=limit)
+    logger.info("fetched %d new newsletter(s) for deals", len(out))
+    return out
+
+
+def fetch_since(days: int = 7, limit: int = 300) -> list[tuple[str, str, str]]:
+    """Fetch ALL newsletters from the last `days` days (read or unread) for the
+    subscription-health summary. Does not change flags.
+    """
+    since = (date.today() - timedelta(days=days)).strftime("%d-%b-%Y")
+    out = _fetch(f'(SINCE "{since}")', mark_seen=False, limit=limit)
+    logger.info("scanned %d newsletter(s) in the last %d days for senders", len(out), days)
     return out
