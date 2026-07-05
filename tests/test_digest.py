@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dealscout.digest import compose_digest
+from dealscout.digest import compose_digest, render_senders
 from dealscout.models import SaleEvent
 
 
@@ -24,3 +24,13 @@ def test_digest_groups_by_band_and_drops_skips():
 
 def test_digest_is_friendly_when_empty():
     assert "nothing worth" in compose_digest([]).lower()
+
+
+def test_render_senders_lists_domains_with_counts():
+    out = render_senders([("hugoboss.com", 3), ("cos.com", 1)])
+    assert "hugoboss.com (3)" in out
+    assert "cos.com (1)" in out
+
+
+def test_render_senders_warns_when_no_newsletters():
+    assert "check your subscriptions" in render_senders([]).lower()

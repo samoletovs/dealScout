@@ -36,3 +36,16 @@ def compose_digest(events: list[tuple[SaleEvent, str]]) -> str:
             lines.append(f"  - _{event.headline}_")
         lines.append("")
     return "\n".join(lines)
+
+
+def render_senders(senders: list[tuple[str, int]]) -> str:
+    """Render a subscription-health section: which domains sent this period."""
+    if not senders:
+        return (
+            "## 📬 Subscription health\n\n"
+            "_No newsletters arrived this period — check your subscriptions._\n"
+        )
+    lines = ["## 📬 Active senders this period\n"]
+    for domain, count in senders:
+        lines.append(f"- {domain} ({count})")
+    return "\n".join(lines) + "\n"
