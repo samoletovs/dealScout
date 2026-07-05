@@ -20,3 +20,13 @@ def test_summarize_counts_by_domain_desc():
         ("C <z@gant.com>", "s", ""),
     ]
     assert summarize_senders(messages) == [("cos.com", 2), ("gant.com", 1)]
+
+
+def test_summarize_senders_ignores_google_system_mail():
+    messages = [
+        ("BOSS <news@hugoboss.com>", "s", ""),
+        ("Google <no-reply@accounts.google.com>", "s", ""),
+        ("Radar <deal.scout.radar@gmail.com>", "s", ""),
+    ]
+    domains = dict(summarize_senders(messages))
+    assert domains == {"hugoboss.com": 1}
