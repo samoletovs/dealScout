@@ -44,7 +44,7 @@ filters:
 deal:
   min_discount_pct: 50           # deep-discount hunter
   cant_say_no:                   # per-category "instant yes" ceiling (EUR)
-    tee: 15
+    tee: 20
     shirt_casual: 25
     shirt_formal: 30
     knitwear: 30
