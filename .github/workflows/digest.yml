@@ -1,0 +1,26 @@
+name: dealScout digest
+
+on:
+  schedule:
+    - cron: "0 7 */3 * *" # every 3 days at 07:00 UTC
+  workflow_dispatch:
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - run: python -m dealscout.run_digest
+        env:
+          DEALSCOUT_IMAP_HOST: ${{ secrets.DEALSCOUT_IMAP_HOST }}
+          DEALSCOUT_IMAP_USER: ${{ secrets.DEALSCOUT_IMAP_USER }}
+          DEALSCOUT_IMAP_PASS: ${{ secrets.DEALSCOUT_IMAP_PASS }}
+          DEALSCOUT_SMTP_HOST: ${{ secrets.DEALSCOUT_SMTP_HOST }}
+          DEALSCOUT_SMTP_PORT: ${{ secrets.DEALSCOUT_SMTP_PORT }}
+          DEALSCOUT_SMTP_USER: ${{ secrets.DEALSCOUT_SMTP_USER }}
+          DEALSCOUT_SMTP_PASS: ${{ secrets.DEALSCOUT_SMTP_PASS }}
+          DEALSCOUT_EMAIL_TO: ${{ secrets.DEALSCOUT_EMAIL_TO }}

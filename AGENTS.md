@@ -18,7 +18,10 @@ Personal bargain-hunting wardrobe assistant. A **co-pilot, not an autopilot**: d
 - `dealscout/judge.py` — the deal judge (pure, well-tested): price vs target + quality/logo/fabric rules. **This is the heart.**
 - `dealscout/notify.py` — email + markdown buy-signals report.
 - `dealscout/newsletters.py` — parse brand newsletters → SaleEvents, judge by tier + discount (P3 signal source).
-- `dealscout/run.py` — entrypoint: load → collect → judge → notify.
+- `dealscout/inbox.py` — read recent newsletters from the dedicated Gmail via IMAP (App Password).
+- `dealscout/digest.py` — compose the periodic 🟢/🟡 digest.
+- `dealscout/run.py` — watch-list entrypoint: load → collect → judge → notify.
+- `dealscout/run_digest.py` — digest entrypoint: read inbox → parse → judge → email digest.
 
 ## Where the owner's real profile lives
 
