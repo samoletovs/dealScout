@@ -24,6 +24,8 @@ Personal bargain-hunting wardrobe assistant. A **co-pilot, not an autopilot**: d
 - `dealscout/feedback.py` — 👍/👎 act-on loop: emit rating links in emails, read replies back from the inbox (the mailbox is the ledger), tally them. A 👎 on a surfaced deal is a golden-set candidate.
 - `dealscout/run.py` — watch-list entrypoint: load → collect → judge → notify.
 - `dealscout/run_digest.py` — digest entrypoint: read inbox → parse → judge → email digest.
+- `dealscout/serpsearch.py` — opt-in Google Shopping scan via SerpApi → candidate Products (dormant unless `SERPAPI_KEY` + `serpapi.enabled`).
+- `dealscout/run_serpapi.py` — scan entrypoint: SerpApi scan → judge (fibre off, fabric verified on click) → notify.
 - `dealscout/eval.py` — golden-set scorer for the judge (drift scorecard: band accuracy + deal precision/recall). Cases live in `evals/golden.yaml`; run `python -m dealscout.eval`.
 
 ## Where the owner's real profile lives

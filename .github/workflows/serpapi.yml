@@ -1,0 +1,27 @@
+name: dealScout scan (SerpApi)
+
+# Dormant until BOTH the SERPAPI_KEY secret is set AND config `serpapi.enabled: true`.
+# Scans Google Shopping for on-sale items from favourite brands, judges them (fabric
+# verified on click), and emails buy-signals via courier. Free SerpApi tier is ~250
+# searches/month, so keep the query list small (each run = one search per query).
+
+on:
+  schedule:
+    - cron: "0 8 * * *" # daily 08:00 UTC
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - run: python -m dealscout.run_serpapi
+        env:
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          COURIER_URL: ${{ secrets.COURIER_URL }}
+          COURIER_KEY: ${{ secrets.COURIER_KEY }}
+          DEALSCOUT_EMAIL_TO: ${{ secrets.DEALSCOUT_EMAIL_TO }}
