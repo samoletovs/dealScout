@@ -1,0 +1,230 @@
+# dealScout judge — golden evaluation set.
+#
+# Each case is a realistic product plus the band the judge SHOULD assign. Scored by
+# `python -m dealscout.eval` against config.example.yaml (the profile's bands/filters).
+#
+# This is a DRIFT scorecard, not unit tests. tests/test_judge.py proves individual
+# rules; this measures the judge's precision over a representative spread, so tuning
+# regressions and improvements are visible over time. Grow it from REAL sale emails —
+# especially cases the judge currently gets WRONG: label them with the CORRECT band so
+# the miss shows up and drives a fix.
+#
+# Bands: must-buy | good | regular | reject.
+# product.* maps to dealscout.models.Product (omit fields you don't need).
+
+cases:
+  # --- must-buy: deep discount AND under the can't-say-no price, on profile ---
+  - id: boss-wool-crew-mustbuy
+    note: "BOSS 100% wool crewneck at a deep summer-sale price"
+    product:
+      title: "BOSS wool crewneck"
+      category: knitwear
+      brand: BOSS
+      price: 45
+      reference_price: 150
+      currency: EUR
+      url: "https://example.com/boss-wool-crew"
+      materials: { wool: 1.0 }
+      care: "machine wash"
+    expected: { band: must-buy }
+
+  - id: sunspel-tee-mustbuy
+    note: "Sunspel (trade-up brand) cotton tee under the tee must-buy price"
+    product:
+      title: "Sunspel classic tee"
+      category: tee
+      brand: Sunspel
+      price: 18
+      reference_price: 60
+      currency: EUR
+      url: "https://example.com/sunspel-tee"
+      materials: { cotton: 1.0 }
+      care: "machine wash"
+    expected: { band: must-buy }
+
+  - id: woolish-merino-mustbuy
+    note: "Woolish (Baltic local -> basket tier) merino knit, steep discount"
+    product:
+      title: "Woolish merino sweater"
+      category: knitwear
+      brand: Woolish
+      price: 40
+      reference_price: 120
+      currency: EUR
+      url: "https://example.com/woolish-merino"
+      materials: { merino: 1.0 }
+      care: "hand wash"
+    expected: { band: must-buy }
+
+  # --- good: worth it, upper-bound price, on profile ---
+  - id: lacoste-polo-good
+    note: "Lacoste cotton polo — small tonal croc logo is fine (small_ok), good-band price"
+    product:
+      title: "Lacoste pique polo"
+      category: shirt_casual
+      brand: Lacoste
+      price: 48
+      reference_price: 110
+      currency: EUR
+      url: "https://example.com/lacoste-polo"
+      materials: { cotton: 1.0 }
+      has_big_logo: false
+      care: "machine wash"
+    expected: { band: good }
+
+  - id: gant-lambswool-good
+    note: "GANT lambswool knit above must-buy but within the good band"
+    product:
+      title: "GANT lambswool half-zip"
+      category: knitwear
+      brand: GANT
+      price: 75
+      reference_price: 160
+      currency: EUR
+      url: "https://example.com/gant-lambswool"
+      materials: { wool: 1.0 }
+      care: "machine wash"
+    expected: { band: good }
+
+  - id: massimo-trousers-good
+    note: "Massimo Dutti cotton chinos with 2% elastane (still >= 70% natural)"
+    product:
+      title: "Massimo Dutti cotton chinos"
+      category: trousers
+      brand: "Massimo Dutti"
+      price: 65
+      reference_price: 120
+      currency: EUR
+      url: "https://example.com/md-chinos"
+      materials: { cotton: 0.98, elastane: 0.02 }
+      care: "machine wash"
+    expected: { band: good }
+
+  # --- regular: passes the quality bar but the price isn't special -> not surfaced ---
+  - id: boss-knit-regular
+    note: "On-profile BOSS knit, but priced above the good band -> skip"
+    product:
+      title: "BOSS cotton jumper"
+      category: knitwear
+      brand: BOSS
+      price: 100
+      reference_price: 130
+      currency: EUR
+      url: "https://example.com/boss-knit-regular"
+      materials: { cotton: 1.0 }
+      care: "machine wash"
+    expected: { band: regular }
+
+  - id: cos-shirt-regular
+    note: "COS cotton overshirt under never-above but above the good band"
+    product:
+      title: "COS cotton overshirt"
+      category: shirt_casual
+      brand: COS
+      price: 70
+      reference_price: 90
+      currency: EUR
+      url: "https://example.com/cos-overshirt"
+      materials: { cotton: 1.0 }
+      care: "machine wash"
+    expected: { band: regular }
+
+  - id: fredperry-track-regular
+    note: "True sportswear: synthetics tolerated (not rejected) but no sportswear price band -> regular"
+    product:
+      title: "Fred Perry track top"
+      category: sportswear
+      brand: "Fred Perry"
+      price: 40
+      reference_price: 80
+      currency: EUR
+      url: "https://example.com/fp-track"
+      materials: { polyester: 1.0 }
+      care: "machine wash"
+    expected: { band: regular }
+
+  # --- reject: fails a hard filter, whatever the price ---
+  - id: hm-knit-belowtier-reject
+    note: "H&M is below basket tier — reject even at a low price"
+    product:
+      title: "H&M cotton jumper"
+      category: knitwear
+      brand: "H&M"
+      price: 20
+      reference_price: 40
+      currency: EUR
+      url: "https://example.com/hm-knit"
+      materials: { cotton: 1.0 }
+      care: "machine wash"
+    expected: { band: reject }
+
+  - id: tommy-biglogo-reject
+    note: "Big chest wordmark — hard reject regardless of brand tier or price"
+    product:
+      title: "Tommy Hilfiger big-logo tee"
+      category: tee
+      brand: "Tommy Hilfiger"
+      price: 15
+      reference_price: 40
+      currency: EUR
+      url: "https://example.com/tommy-biglogo"
+      materials: { cotton: 1.0 }
+      has_big_logo: true
+      care: "machine wash"
+    expected: { band: reject }
+
+  - id: benetton-acrylic-reject
+    note: "Basket-tier brand but 100% acrylic (< 70% natural) and not sportswear -> reject"
+    product:
+      title: "Benetton acrylic jumper"
+      category: knitwear
+      brand: Benetton
+      price: 30
+      reference_price: 70
+      currency: EUR
+      url: "https://example.com/benetton-acrylic"
+      materials: { acrylic: 1.0 }
+      care: "machine wash"
+    expected: { band: reject }
+
+  - id: boss-blazer-dryclean-reject
+    note: "On-profile wool blazer at a good price, but dry-clean-only -> reject"
+    product:
+      title: "BOSS wool blazer"
+      category: jacket
+      brand: BOSS
+      price: 90
+      reference_price: 300
+      currency: EUR
+      url: "https://example.com/boss-blazer"
+      materials: { wool: 1.0 }
+      care: "dry clean only"
+    expected: { band: reject }
+
+  - id: boss-coat-overnever-reject
+    note: "Wool coat above the never-above ceiling for outerwear -> reject"
+    product:
+      title: "BOSS wool overcoat"
+      category: outerwear
+      brand: BOSS
+      price: 350
+      reference_price: 700
+      currency: EUR
+      url: "https://example.com/boss-overcoat"
+      materials: { wool: 1.0 }
+      care: "dry clean"
+    expected: { band: reject }
+
+  - id: zara-tee-belowtier-reject
+    note: "Zara is below basket tier — reject"
+    product:
+      title: "Zara cotton tee"
+      category: tee
+      brand: Zara
+      price: 10
+      reference_price: 30
+      currency: EUR
+      url: "https://example.com/zara-tee"
+      materials: { cotton: 1.0 }
+      care: "machine wash"
+    expected: { band: reject }

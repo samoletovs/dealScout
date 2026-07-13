@@ -1,0 +1,39 @@
+name: dealScout eval
+
+# Weekly drift scorecard for the deal judge, plus a regression gate on any change to
+# the judge or the golden set. The scorecard is written to the run's job summary; a
+# drop below the thresholds fails the run (a visible red signal), so tuning regressions
+# surface without anyone remembering to look.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "dealscout/judge.py"
+      - "dealscout/eval.py"
+      - "evals/golden.yaml"
+      - "config.example.yaml"
+  pull_request:
+    paths:
+      - "dealscout/judge.py"
+      - "dealscout/eval.py"
+      - "evals/golden.yaml"
+      - "config.example.yaml"
+
+permissions:
+  contents: read
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - name: Score the judge against the golden set
+        run: python -m dealscout.eval --min-accuracy 0.90 --min-deal-precision 0.90

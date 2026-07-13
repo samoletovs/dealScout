@@ -23,6 +23,7 @@ Personal bargain-hunting wardrobe assistant. A **co-pilot, not an autopilot**: d
 - `dealscout/digest.py` — compose the periodic 🟢/🟡 digest.
 - `dealscout/run.py` — watch-list entrypoint: load → collect → judge → notify.
 - `dealscout/run_digest.py` — digest entrypoint: read inbox → parse → judge → email digest.
+- `dealscout/eval.py` — golden-set scorer for the judge (drift scorecard: band accuracy + deal precision/recall). Cases live in `evals/golden.yaml`; run `python -m dealscout.eval`.
 
 ## Where the owner's real profile lives
 
