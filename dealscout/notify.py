@@ -1,17 +1,17 @@
 """Notify — email a buy-signal and write a buy-signals report for VS Code review.
 
-v1 email is a stub; wire SMTP (env: DEALSCOUT_SMTP_*) or Azure Communication
-Services later. The markdown report is the primary artefact for the VS Code cockpit.
+Email goes through the shared `courier` service (Azure Communication Services Email),
+so dealScout needs no mail account of its own. The markdown report is the primary
+artefact for the VS Code cockpit.
 """
 
 from __future__ import annotations
 
 import logging
 import os
-from email.message import EmailMessage
 from pathlib import Path
 
-import aiosmtplib
+import aiohttp
 
 from .feedback import feedback_text
 from .models import Product, Verdict
@@ -72,34 +72,40 @@ def write_report(
 
 
 async def send_email(subject: str, body: str) -> bool:
-    """Send the buy-signal email over SMTP (env-configured).
+    """Email the buy-signal via the shared courier service (ACS Email).
 
-    Reads DEALSCOUT_SMTP_HOST/PORT/USER/PASS and DEALSCOUT_EMAIL_TO. If the host
-    or recipient is not configured, logs and skips (so local/CI runs don't fail).
-    Returns True if an email was sent.
+    Reads COURIER_URL, COURIER_KEY and DEALSCOUT_EMAIL_TO. If any is missing, logs
+    and skips (so local/CI runs don't fail). The recipient must be on courier's
+    allowlist. Returns True if courier accepted the message.
     """
-    host = os.getenv("DEALSCOUT_SMTP_HOST")
+    url = os.getenv("COURIER_URL")
+    key = os.getenv("COURIER_KEY")
     to_addr = os.getenv("DEALSCOUT_EMAIL_TO")
-    if not host or not to_addr:
-        logger.warning("email not configured (DEALSCOUT_SMTP_HOST/EMAIL_TO) — skipping send")
+    if not url or not key or not to_addr:
+        logger.warning(
+            "courier not configured (COURIER_URL/COURIER_KEY/DEALSCOUT_EMAIL_TO) — skipping send"
+        )
         return False
 
-    message = EmailMessage()
-    message["From"] = os.getenv("DEALSCOUT_SMTP_USER") or to_addr
-    message["To"] = to_addr
-    message["Subject"] = subject
-    message.set_content(body)
+    payload = {"to": to_addr, "subject": subject, "text": body}
     html = markdown_to_html(body)
     if html:
-        message.add_alternative(html, subtype="html")
+        payload["html"] = html
 
-    await aiosmtplib.send(
-        message,
-        hostname=host,
-        port=int(os.getenv("DEALSCOUT_SMTP_PORT") or "587"),
-        username=os.getenv("DEALSCOUT_SMTP_USER"),
-        password=os.getenv("DEALSCOUT_SMTP_PASS"),
-        start_tls=True,
-    )
-    logger.info("sent buy-signal email to %s", to_addr)
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                url,
+                params={"code": key},
+                json=payload,
+                timeout=aiohttp.ClientTimeout(total=30),
+            ) as resp:
+                if resp.status >= 400:
+                    logger.error("courier send failed: HTTP %s", resp.status)
+                    return False
+    except aiohttp.ClientError as exc:
+        logger.error("courier send failed: %s", exc)
+        return False
+
+    logger.info("sent buy-signal email via courier to %s", to_addr)
     return True

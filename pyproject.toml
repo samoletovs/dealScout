@@ -8,7 +8,6 @@ dependencies = [
     "requests>=2.31",
     "beautifulsoup4>=4.12",
     "aiohttp>=3.9",
-    "aiosmtplib>=3.0",
 ]
 
 [tool.pytest.ini_options]

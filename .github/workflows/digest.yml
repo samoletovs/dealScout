@@ -19,8 +19,6 @@ jobs:
           DEALSCOUT_IMAP_HOST: ${{ secrets.DEALSCOUT_IMAP_HOST }}
           DEALSCOUT_IMAP_USER: ${{ secrets.DEALSCOUT_IMAP_USER }}
           DEALSCOUT_IMAP_PASS: ${{ secrets.DEALSCOUT_IMAP_PASS }}
-          DEALSCOUT_SMTP_HOST: ${{ secrets.DEALSCOUT_SMTP_HOST }}
-          DEALSCOUT_SMTP_PORT: ${{ secrets.DEALSCOUT_SMTP_PORT }}
-          DEALSCOUT_SMTP_USER: ${{ secrets.DEALSCOUT_SMTP_USER }}
-          DEALSCOUT_SMTP_PASS: ${{ secrets.DEALSCOUT_SMTP_PASS }}
+          COURIER_URL: ${{ secrets.COURIER_URL }}
+          COURIER_KEY: ${{ secrets.COURIER_KEY }}
           DEALSCOUT_EMAIL_TO: ${{ secrets.DEALSCOUT_EMAIL_TO }}
