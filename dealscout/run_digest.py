@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 from pathlib import Path
 
 from .config import load_config
 from .digest import compose_digest, render_senders
-from .inbox import fetch_recent, fetch_since, health, mailbox_counts
+from .feedback import collect_feedback, summarize_feedback
+from .inbox import fetch_feedback, fetch_recent, fetch_since, health, mailbox_counts
 from .models import SaleEvent
 from .newsletters import event_band, parse_newsletter
 from .notify import send_email
@@ -43,13 +45,19 @@ async def run(config_path: Path) -> str:
             events.append((event, event_band(event, config)))
 
     senders = summarize_senders(fetch_since(7))  # last 7 days → subscription health
-    digest = compose_digest(events) + "\n" + render_senders(senders)
+    feedback_address = os.getenv("DEALSCOUT_IMAP_USER") or os.getenv("DEALSCOUT_SMTP_USER") or ""
+    feedback = collect_feedback(fetch_feedback())
+    digest = (
+        compose_digest(events, feedback_address)
+        + "\n" + summarize_feedback(feedback)
+        + "\n" + render_senders(senders)
+    )
     out = Path("out/digest.md")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(digest, encoding="utf-8")
     logger.info(
-        "digest: %d new deal(s); active senders=%s",
-        len(events), [d for d, _ in senders],
+        "digest: %d new deal(s), %d rating(s); active senders=%s",
+        len(events), len(feedback), [d for d, _ in senders],
     )
 
     kept = [pair for pair in events if pair[1] in ("must-look", "good")]

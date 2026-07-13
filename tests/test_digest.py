@@ -26,6 +26,16 @@ def test_digest_is_friendly_when_empty():
     assert "nothing worth" in compose_digest([]).lower()
 
 
+def test_digest_adds_feedback_prompt_when_address_given():
+    events = [(_event("BOSS", 50.0, ("shirt",)), "must-look")]
+
+    out = compose_digest(events, feedback_address="deals@example.com")
+
+    assert "👍 keep" in out and "👎 skip" in out
+    assert "mailto:deals@example.com" in out
+
+
+
 def test_render_senders_lists_domains_with_counts():
     out = render_senders([("hugoboss.com", 3), ("cos.com", 1)])
     assert "hugoboss.com (3)" in out

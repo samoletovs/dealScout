@@ -17,6 +17,8 @@ from datetime import date, timedelta
 from email.header import decode_header, make_header
 from email.message import Message
 
+from .feedback import FEEDBACK_SUBJECT
+
 logger = logging.getLogger(__name__)
 
 
@@ -100,9 +102,10 @@ def _fetch(criteria: str, *, mark_seen: bool, limit: int, mailbox: str = "INBOX"
 
 def fetch_recent(limit: int = 100) -> list[tuple[str, str, str]]:
     """Fetch UNSEEN newsletters for deal alerts, then mark them read so the same
-    sale isn't re-alerted next run. Returns [] if IMAP is not configured.
+    sale isn't re-alerted next run. Feedback replies are excluded (they are read
+    separately by fetch_feedback). Returns [] if IMAP is not configured.
     """
-    out = _fetch("UNSEEN", mark_seen=True, limit=limit)
+    out = _fetch(f'(UNSEEN NOT SUBJECT "{FEEDBACK_SUBJECT}")', mark_seen=True, limit=limit)
     logger.info("fetched %d new newsletter(s) for deals", len(out))
     return out
 
@@ -122,12 +125,24 @@ def fetch_since(days: int = 7, limit: int = 300) -> list[tuple[str, str, str]]:
         for parts in _fetch(criteria, mark_seen=False, limit=limit, mailbox=mailbox):
             if own and own in parts[0].lower():
                 continue  # skip our own sent digests
+            if FEEDBACK_SUBJECT.lower() in parts[1].lower():
+                continue  # feedback replies aren't newsletters
             key = (parts[0], parts[1])
             if key not in seen:
                 seen.add(key)
                 combined.append(parts)
     logger.info("scanned %d newsletter(s) in the last %d days (all mail + spam)", len(combined), days)
     return combined
+
+
+def fetch_feedback(limit: int = 200) -> list[tuple[str, str, str]]:
+    """Fetch 👍/👎 feedback replies (subject carries the feedback marker) from the
+    INBOX. Not marked \\Seen — the mailbox is the ledger, re-tallied idempotently
+    each run. Returns [] if IMAP is not configured.
+    """
+    out = _fetch(f'(SUBJECT "{FEEDBACK_SUBJECT}")', mark_seen=False, limit=limit)
+    logger.info("fetched %d feedback reply(ies)", len(out))
+    return out
 
 
 def mailbox_counts() -> dict[str, int]:

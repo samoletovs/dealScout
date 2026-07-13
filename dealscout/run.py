@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 from pathlib import Path
 
 from .collector import collect
@@ -34,7 +35,8 @@ async def run(config_path: Path) -> list[tuple[Product, Verdict]]:
         if verdict.is_deal:
             signals.append((product, verdict))
 
-    report = write_report(signals, Path("out/buy-signals.md"))
+    feedback_address = os.getenv("DEALSCOUT_IMAP_USER") or os.getenv("DEALSCOUT_SMTP_USER") or ""
+    report = write_report(signals, Path("out/buy-signals.md"), feedback_address)
     if signals:
         await send_email(f"dealScout: {len(signals)} deal(s)", report.read_text(encoding="utf-8"))
     else:

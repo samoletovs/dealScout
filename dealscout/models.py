@@ -52,6 +52,15 @@ class Verdict:
 
 
 @dataclass(frozen=True)
+class Feedback:
+    """A user's 👍/👎 reaction to a surfaced deal, read back from an email reply."""
+
+    url: str
+    verdict: str  # "up" | "down"
+    when: str = ""  # ISO date, if known
+
+
+@dataclass(frozen=True)
 class SaleEvent:
     """A sale announced in a brand newsletter (brand-level, not per-item)."""
 

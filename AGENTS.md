@@ -21,6 +21,7 @@ Personal bargain-hunting wardrobe assistant. A **co-pilot, not an autopilot**: d
 - `dealscout/senders.py` — summarize inbox senders (subscription-health signal).
 - `dealscout/inbox.py` — read recent newsletters from the dedicated Gmail via IMAP (App Password).
 - `dealscout/digest.py` — compose the periodic 🟢/🟡 digest.
+- `dealscout/feedback.py` — 👍/👎 act-on loop: emit rating links in emails, read replies back from the inbox (the mailbox is the ledger), tally them. A 👎 on a surfaced deal is a golden-set candidate.
 - `dealscout/run.py` — watch-list entrypoint: load → collect → judge → notify.
 - `dealscout/run_digest.py` — digest entrypoint: read inbox → parse → judge → email digest.
 - `dealscout/eval.py` — golden-set scorer for the judge (drift scorecard: band accuracy + deal precision/recall). Cases live in `evals/golden.yaml`; run `python -m dealscout.eval`.
