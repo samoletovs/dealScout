@@ -4,14 +4,13 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 from pathlib import Path
 
 from .collector import collect
 from .config import load_config
 from .judge import judge
 from .models import Product, Verdict, WatchItem
-from .notify import send_email, write_report
+from .notify import feedback_base_url, send_email, write_report
 
 logging.basicConfig(
     level=logging.INFO,
@@ -35,8 +34,7 @@ async def run(config_path: Path) -> list[tuple[Product, Verdict]]:
         if verdict.is_deal:
             signals.append((product, verdict))
 
-    feedback_address = os.getenv("DEALSCOUT_IMAP_USER") or os.getenv("DEALSCOUT_SMTP_USER") or ""
-    report = write_report(signals, Path("out/buy-signals.md"), feedback_address)
+    report = write_report(signals, Path("out/buy-signals.md"), feedback_base_url())
     if signals:
         await send_email(f"dealScout: {len(signals)} deal(s)", report.read_text(encoding="utf-8"))
     else:

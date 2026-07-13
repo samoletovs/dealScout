@@ -26,13 +26,13 @@ def test_digest_is_friendly_when_empty():
     assert "nothing worth" in compose_digest([]).lower()
 
 
-def test_digest_adds_feedback_prompt_when_address_given():
+def test_digest_adds_feedback_prompt_when_base_url_given():
     events = [(_event("BOSS", 50.0, ("shirt",)), "must-look")]
 
-    out = compose_digest(events, feedback_address="deals@example.com")
+    out = compose_digest(events, feedback_base_url="https://courier.example.com/api/feedback")
 
     assert "👍 keep" in out and "👎 skip" in out
-    assert "mailto:deals@example.com" in out
+    assert "https://courier.example.com/api/feedback" in out
 
 
 

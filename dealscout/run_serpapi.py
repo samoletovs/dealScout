@@ -12,9 +12,10 @@ import logging
 from pathlib import Path
 
 from .config import load_config
+from .feedback import summarize_feedback
 from .judge import judge
 from .models import Product, Verdict
-from .notify import send_email, write_report
+from .notify import feedback_base_url, read_feedback, render_report, send_email
 from .serpsearch import scan
 
 logging.basicConfig(
@@ -48,9 +49,15 @@ async def run(config_path: Path) -> list[tuple[Product, Verdict]]:
             )
             signals.append((product, verdict))
 
-    report = write_report(signals, Path("out/serpapi-signals.md"))
+    base = feedback_base_url()
+    entries = await read_feedback()
+    body = render_report(signals, base) + "\n" + summarize_feedback(entries)
+    out = Path("out/serpapi-signals.md")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(body, encoding="utf-8")
+    logger.info("wrote buy-signals report -> %s", out)
     if signals:
-        await send_email(f"dealScout scan: {len(signals)} deal(s)", report.read_text(encoding="utf-8"))
+        await send_email(f"dealScout scan: {len(signals)} deal(s)", body)
     else:
         logger.info("scan found no on-profile deals this run")
     return signals

@@ -8,46 +8,48 @@ from dealscout.feedback import (
     DOWN,
     UP,
     collect_feedback,
-    feedback_mailto,
+    feedback_link,
     feedback_text,
+    latest_by_url,
     parse_feedback,
+    parse_feedback_jsonl,
     summarize_feedback,
 )
 from dealscout.models import Feedback
 
-ADDR = "deals@example.com"
+BASE = "https://courier.example.com/api/feedback"
 URL = "https://shop.example.com/boss-wool-crew"
 
 
-def test_feedback_mailto_encodes_verdict_and_url():
-    link = feedback_mailto(ADDR, URL, UP)
+def test_feedback_link_encodes_verdict_project_and_url():
+    link = feedback_link(BASE, URL, UP)
 
-    assert link.startswith(f"mailto:{ADDR}?subject=")
-    assert "dealScout%20feedback%3A%20up" in link
-    assert "up%20https%3A" in link  # verdict token + url in the body
+    assert link.startswith(f"{BASE}?")
+    assert "p=dealscout" in link and "v=up" in link
+    assert "u=https%3A%2F%2F" in link  # product url is percent-encoded
 
 
-def test_feedback_mailto_rejects_bad_verdict():
+def test_feedback_link_rejects_bad_verdict():
     with pytest.raises(ValueError, match="verdict"):
-        feedback_mailto(ADDR, URL, "maybe")
+        feedback_link(BASE, URL, "maybe")
 
 
-def test_feedback_text_empty_without_address():
+def test_feedback_text_empty_without_base_url():
     assert feedback_text("", URL) == ""
 
 
 def test_feedback_text_includes_both_choices():
-    line = feedback_text(ADDR, URL)
+    line = feedback_text(BASE, URL)
 
     assert "👍 keep" in line and "👎 skip" in line
-    assert line.count("mailto:") == 2
+    assert line.count(BASE) == 2
 
 
-def test_feedback_text_uses_markdown_links():
-    line = feedback_text(ADDR, URL)
+def test_feedback_text_uses_markdown_https_links():
+    line = feedback_text(BASE, URL)
 
-    assert line.startswith("rate: [👍 keep](mailto:")
-    assert "[👎 skip](mailto:" in line
+    assert line.startswith("rate: [👍 keep](https://")
+    assert "[👎 skip](https://" in line
 
 
 def test_parse_feedback_reads_verdict_from_subject_and_url_from_body():
@@ -103,3 +105,29 @@ def test_summarize_feedback_counts_and_lists_skips():
 
     assert "1 kept · 1 skipped" in out
     assert f"👎 {URL}-2" in out
+
+
+def test_parse_feedback_jsonl_reads_rows_and_skips_junk():
+    text = (
+        f'{{"project":"dealscout","verdict":"up","url":"{URL}","ts":"2026-07-13T10:00:00+00:00"}}\n'
+        "not json\n"
+        f'{{"verdict":"down","url":"{URL}-2","ts":"2026-07-13T11:00:00+00:00"}}\n'
+        '{"verdict":"maybe","url":"x"}\n'  # unknown verdict -> dropped
+    )
+
+    entries = parse_feedback_jsonl(text)
+
+    assert [e.verdict for e in entries] == [UP, DOWN]
+    assert entries[0].url == URL
+
+
+def test_latest_by_url_keeps_most_recent_vote():
+    entries = [
+        Feedback(url=URL, verdict=UP, when="2026-07-13T10:00:00+00:00"),
+        Feedback(url=URL, verdict=DOWN, when="2026-07-13T12:00:00+00:00"),  # changed mind
+    ]
+
+    latest = latest_by_url(entries)
+
+    assert len(latest) == 1
+    assert latest[0].verdict == DOWN

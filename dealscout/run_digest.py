@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 from pathlib import Path
 
 from .config import load_config
@@ -13,7 +12,7 @@ from .feedback import collect_feedback, summarize_feedback
 from .inbox import fetch_feedback, fetch_recent, fetch_since, health, mailbox_counts
 from .models import SaleEvent
 from .newsletters import event_band, parse_newsletter
-from .notify import send_email
+from .notify import feedback_base_url, send_email
 from .senders import summarize_senders
 
 logging.basicConfig(
@@ -45,10 +44,9 @@ async def run(config_path: Path) -> str:
             events.append((event, event_band(event, config)))
 
     senders = summarize_senders(fetch_since(7))  # last 7 days → subscription health
-    feedback_address = os.getenv("DEALSCOUT_IMAP_USER") or os.getenv("DEALSCOUT_SMTP_USER") or ""
     feedback = collect_feedback(fetch_feedback())
     digest = (
-        compose_digest(events, feedback_address)
+        compose_digest(events, feedback_base_url())
         + "\n" + summarize_feedback(feedback)
         + "\n" + render_senders(senders)
     )

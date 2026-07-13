@@ -1,16 +1,19 @@
 """User feedback on surfaced deals — the "did I act on it?" signal.
 
-Each deal in an email carries 👍/👎 ``mailto:`` links that reply to the dealScout
-mailbox with a verdict token and the product URL. The digest run reads those replies
-back from the inbox (the mailbox *is* the ledger — no separate store) and reports the
-tally, closing the loop: a 👎 on a surfaced deal is a false positive that can be added
-to ``evals/golden.yaml`` to sharpen the judge.
+Each deal in an email carries 👍/👎 links to courier's ``/api/feedback`` endpoint,
+which appends the vote to a per-project blob. The next run reads the tally back via
+``/api/feedback/export`` and reports it, closing the loop: a 👎 on a surfaced deal is a
+false positive that can be added to ``evals/golden.yaml`` to sharpen the judge.
+
+(The ``mailto:`` reply parser — ``parse_feedback``/``collect_feedback`` — is retained
+for the dormant newsletter-digest path; the live scan uses the HTTP ledger below.)
 
 Everything here is pure and side-effect free, so it is easy to unit-test.
 """
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 from urllib.parse import quote
@@ -19,7 +22,7 @@ from .models import Feedback
 
 logger = logging.getLogger(__name__)
 
-#: Subject marker used to route replies back to the feedback ledger.
+#: Subject marker used to route replies back to the feedback ledger (legacy IMAP path).
 FEEDBACK_SUBJECT = "dealScout feedback"
 UP = "up"
 DOWN = "down"
@@ -30,25 +33,25 @@ _URL_RE = re.compile(r"https?://[^\s<>\"')]+")
 _TAGGED_URL_RE = re.compile(r"\b(up|down)\b\s+(https?://[^\s<>\"')]+)", re.IGNORECASE)
 
 
-def feedback_mailto(address: str, product_url: str, verdict: str) -> str:
-    """Build a ``mailto:`` link that replies with the verdict token and product URL."""
+def feedback_link(base_url: str, product_url: str, verdict: str, project: str = "dealscout") -> str:
+    """Build an HTTPS link to courier's feedback endpoint for a verdict + product URL."""
     if verdict not in _VERDICTS:
         raise ValueError(f"verdict must be one of {_VERDICTS}, got {verdict!r}")
-    subject = quote(f"{FEEDBACK_SUBJECT}: {verdict}")
-    body = quote(f"{verdict} {product_url}")
-    return f"mailto:{address}?subject={subject}&body={body}"
+    query = f"p={quote(project)}&v={verdict}&u={quote(product_url, safe='')}"
+    sep = "&" if "?" in base_url else "?"
+    return f"{base_url}{sep}{query}"
 
 
-def feedback_text(address: str, product_url: str) -> str:
-    """A one-line 👍/👎 prompt as markdown ``mailto:`` links, or "" if no address.
+def feedback_text(base_url: str, product_url: str, project: str = "dealscout") -> str:
+    """A one-line 👍/👎 prompt as markdown links, or "" if no feedback URL.
 
     Markdown links render as clickable buttons in the HTML email alternative and stay
     readable in the plain-text part.
     """
-    if not address:
+    if not base_url:
         return ""
-    up = feedback_mailto(address, product_url, UP)
-    down = feedback_mailto(address, product_url, DOWN)
+    up = feedback_link(base_url, product_url, UP, project)
+    down = feedback_link(base_url, product_url, DOWN, project)
     return f"rate: [👍 keep]({up}) · [👎 skip]({down})"
 
 
@@ -91,6 +94,37 @@ def collect_feedback(messages: list[tuple[str, str, str]]) -> list[Feedback]:
     ]
     logger.info("parsed %d feedback reply(ies)", len(out))
     return out
+
+
+def parse_feedback_jsonl(text: str) -> list[Feedback]:
+    """Parse courier's feedback export (one JSON object per line) into Feedback entries."""
+    out: list[Feedback] = []
+    for line in (text or "").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            row = json.loads(line)
+        except ValueError:
+            continue
+        verdict = str(row.get("verdict", "")).lower()
+        if verdict not in _VERDICTS:
+            continue
+        out.append(
+            Feedback(url=str(row.get("url", "")), verdict=verdict, when=str(row.get("ts", "")))
+        )
+    logger.info("parsed %d feedback row(s)", len(out))
+    return out
+
+
+def latest_by_url(entries: list[Feedback]) -> list[Feedback]:
+    """Collapse to the most recent verdict per URL (dedupes email prefetch / re-votes)."""
+    latest: dict[str, Feedback] = {}
+    for fb in entries:
+        current = latest.get(fb.url)
+        if current is None or fb.when >= current.when:
+            latest[fb.url] = fb
+    return list(latest.values())
 
 
 def summarize_feedback(entries: list[Feedback]) -> str:

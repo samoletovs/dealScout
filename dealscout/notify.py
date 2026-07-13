@@ -13,8 +13,8 @@ from pathlib import Path
 
 import aiohttp
 
-from .feedback import feedback_text
-from .models import Product, Verdict
+from .feedback import feedback_text, latest_by_url, parse_feedback_jsonl
+from .models import Feedback, Product, Verdict
 
 try:
     import markdown as _markdown
@@ -41,11 +41,11 @@ def markdown_to_html(body: str) -> str | None:
     )
 
 
-def render_report(signals: list[tuple[Product, Verdict]], feedback_address: str = "") -> str:
+def render_report(signals: list[tuple[Product, Verdict]], feedback_base_url: str = "") -> str:
     """Render a markdown buy-signals report.
 
-    When a feedback address is given, each deal gets a 👍/👎 prompt whose replies
-    are read back from the mailbox (see dealscout.feedback).
+    When a courier feedback base URL is given, each deal gets a 👍/👎 prompt whose
+    clicks are read back via courier's export (see dealscout.feedback).
     """
     if not signals:
         return "# dealScout — no buy-signals this run\n"
@@ -54,7 +54,7 @@ def render_report(signals: list[tuple[Product, Verdict]], feedback_address: str 
         lines.append(f"## {product.title} — €{product.price:.0f} (score {verdict.score})")
         lines.append(f"- {product.url}")
         lines.append(f"- why: {', '.join(verdict.reasons)}")
-        prompt = feedback_text(feedback_address, product.url)
+        prompt = feedback_text(feedback_base_url, product.url)
         if prompt:
             lines.append(f"- {prompt}")
         lines.append("")
@@ -62,11 +62,11 @@ def render_report(signals: list[tuple[Product, Verdict]], feedback_address: str 
 
 
 def write_report(
-    signals: list[tuple[Product, Verdict]], path: Path, feedback_address: str = ""
+    signals: list[tuple[Product, Verdict]], path: Path, feedback_base_url: str = ""
 ) -> Path:
     """Write the buy-signals report to disk and return its path."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(render_report(signals, feedback_address), encoding="utf-8")
+    path.write_text(render_report(signals, feedback_base_url), encoding="utf-8")
     logger.info("wrote buy-signals report -> %s", path)
     return path
 
@@ -109,3 +109,36 @@ async def send_email(subject: str, body: str) -> bool:
 
     logger.info("sent buy-signal email via courier to %s", to_addr)
     return True
+
+
+def feedback_base_url() -> str:
+    """Courier's feedback endpoint, derived from COURIER_URL (…/api/send → …/api/feedback)."""
+    url = os.getenv("COURIER_URL", "")
+    return url.replace("/api/send", "/api/feedback") if url else ""
+
+
+async def read_feedback(project: str = "dealscout") -> list[Feedback]:
+    """Read the 👍/👎 tally back from courier's export endpoint (latest vote per URL).
+
+    Best-effort: returns [] if courier isn't configured or the call fails, so a run
+    never breaks just because feedback couldn't be read.
+    """
+    base = feedback_base_url()
+    key = os.getenv("COURIER_KEY")
+    if not base or not key:
+        return []
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                f"{base}/export",
+                params={"code": key, "p": project},
+                timeout=aiohttp.ClientTimeout(total=30),
+            ) as resp:
+                if resp.status >= 400:
+                    logger.warning("courier feedback export failed: HTTP %s", resp.status)
+                    return []
+                text = await resp.text()
+    except aiohttp.ClientError as exc:
+        logger.warning("courier feedback export failed: %s", exc)
+        return []
+    return latest_by_url(parse_feedback_jsonl(text))

@@ -12,12 +12,12 @@ logger = logging.getLogger(__name__)
 _BAND_TITLE = {"must-look": "🟢 Must-look", "good": "🟡 Good offers"}
 
 
-def compose_digest(events: list[tuple[SaleEvent, str]], feedback_address: str = "") -> str:
+def compose_digest(events: list[tuple[SaleEvent, str]], feedback_base_url: str = "") -> str:
     """Compose a markdown digest from (SaleEvent, band) pairs.
 
     Only 'must-look' and 'good' bands are included, grouped by band and sorted
     by discount depth. Returns a friendly 'nothing' note when there's no signal.
-    When a feedback address is given, each deal gets a 👍/👎 prompt.
+    When a courier feedback base URL is given, each deal gets a 👍/👎 prompt.
     """
     keep = [(event, band) for event, band in events if band in _BAND_TITLE]
     if not keep:
@@ -36,7 +36,7 @@ def compose_digest(events: list[tuple[SaleEvent, str]], feedback_address: str = 
             link = f" — [shop]({event.url})" if event.url else ""
             lines.append(f"- **{event.brand}** — {disc} ({cats}){link}")
             lines.append(f"  - _{event.headline}_")
-            prompt = feedback_text(feedback_address, event.url)
+            prompt = feedback_text(feedback_base_url, event.url)
             if prompt:
                 lines.append(f"  - {prompt}")
         lines.append("")
