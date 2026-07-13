@@ -91,17 +91,19 @@ watch:
     category: knitwear
     note: "example — replace with a real product URL"
 
-# Google Shopping scan via SerpApi (opt-in). Dormant until SERPAPI_KEY is set AND
-# enabled: true. Free tier ~250 searches/month = one search per query per run, so keep
-# the list small. Shopping has no fabric data, so results are candidates (fabric on click).
+# Google Shopping scan via SerpApi (opt-in). enabled: true, but the scan stays dormant
+# until the SERPAPI_KEY secret is also set — no key means scan() returns nothing. Free
+# tier ~250 searches/month = one search per query per run; 6 queries ≈ 180/month. Shopping
+# has no fabric data, so results are candidates (fabric verified on click).
 serpapi:
-  enabled: false
+  enabled: true
   country: lv               # gl param for Google Shopping
   max_results: 20           # cap per query
   require_known_brand: true # only keep results whose title matches a brand tier above
-  queries:                  # each scanned with on_sale=true
+  queries:                  # each scanned with on_sale=true — tune to taste
     - { q: "BOSS wool jumper men", category: knitwear }
     - { q: "GANT lambswool sweater men", category: knitwear }
     - { q: "Sunspel cotton t-shirt", category: tee }
     - { q: "Lacoste pique polo men", category: shirt_casual }
-    - { q: "Massimo Dutti wool coat men", category: outerwear }
+    - { q: "Polo Ralph Lauren oxford shirt men", category: shirt_casual }
+    - { q: "Massimo Dutti wool trousers men", category: trousers }
