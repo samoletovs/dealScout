@@ -16,7 +16,29 @@ import aiosmtplib
 from .feedback import feedback_text
 from .models import Product, Verdict
 
+try:
+    import markdown as _markdown
+except ImportError:  # pragma: no cover - markdown is a declared dependency
+    _markdown = None
+
 logger = logging.getLogger(__name__)
+
+
+def markdown_to_html(body: str) -> str | None:
+    """Render a markdown email body to HTML, or None if markdown isn't available.
+
+    Attached as an alternative so 👍/👎 feedback links render as clickable buttons —
+    plain-text ``mailto:`` links aren't reliably clickable outside Gmail.
+    """
+    if _markdown is None:
+        return None
+    rendered = _markdown.markdown(body)
+    return (
+        "<!DOCTYPE html><html><body style=\"font-family:system-ui,-apple-system,"
+        "'Segoe UI',Roboto,sans-serif;line-height:1.5;max-width:640px;margin:0 auto;"
+        "padding:8px;\">"
+        f"{rendered}</body></html>"
+    )
 
 
 def render_report(signals: list[tuple[Product, Verdict]], feedback_address: str = "") -> str:
@@ -67,6 +89,9 @@ async def send_email(subject: str, body: str) -> bool:
     message["To"] = to_addr
     message["Subject"] = subject
     message.set_content(body)
+    html = markdown_to_html(body)
+    if html:
+        message.add_alternative(html, subtype="html")
 
     await aiosmtplib.send(
         message,

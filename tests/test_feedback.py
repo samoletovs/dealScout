@@ -43,6 +43,13 @@ def test_feedback_text_includes_both_choices():
     assert line.count("mailto:") == 2
 
 
+def test_feedback_text_uses_markdown_links():
+    line = feedback_text(ADDR, URL)
+
+    assert line.startswith("rate: [👍 keep](mailto:")
+    assert "[👎 skip](mailto:" in line
+
+
 def test_parse_feedback_reads_verdict_from_subject_and_url_from_body():
     fb = parse_feedback("Re: dealScout feedback: down", f"down {URL}\n\nnot my style")
 

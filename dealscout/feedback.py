@@ -40,12 +40,16 @@ def feedback_mailto(address: str, product_url: str, verdict: str) -> str:
 
 
 def feedback_text(address: str, product_url: str) -> str:
-    """A one-line 👍/👎 prompt with ``mailto:`` links, or "" if no address is set."""
+    """A one-line 👍/👎 prompt as markdown ``mailto:`` links, or "" if no address.
+
+    Markdown links render as clickable buttons in the HTML email alternative and stay
+    readable in the plain-text part.
+    """
     if not address:
         return ""
     up = feedback_mailto(address, product_url, UP)
     down = feedback_mailto(address, product_url, DOWN)
-    return f"rate: 👍 keep {up}  ·  👎 skip {down}"
+    return f"rate: [👍 keep]({up}) · [👎 skip]({down})"
 
 
 def parse_feedback(subject: str, body: str) -> Feedback | None:
