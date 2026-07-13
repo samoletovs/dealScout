@@ -97,7 +97,8 @@ watch:
 # has no fabric data, so results are candidates (fabric verified on click).
 serpapi:
   enabled: true
-  country: lv               # gl param for Google Shopping
+  country: de               # gl param — Google Shopping isn't available in the Baltics,
+                            # so search a nearby supported EU market (DE: EUR, ships to LV)
   max_results: 20           # cap per query
   require_known_brand: true # only keep results whose title matches a brand tier above
   queries:                  # each scanned with on_sale=true — tune to taste

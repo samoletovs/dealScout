@@ -89,7 +89,10 @@ async def _search(query: str, api_key: str, gl: str) -> list[dict]:
                 SERPAPI_URL, params=params, timeout=aiohttp.ClientTimeout(total=30)
             ) as resp:
                 if resp.status >= 400:
-                    logger.error("SerpApi search failed for %r: HTTP %s", query, resp.status)
+                    detail = (await resp.text())[:300]
+                    logger.error(
+                        "SerpApi search failed for %r: HTTP %s — %s", query, resp.status, detail
+                    )
                     return []
                 data = await resp.json()
     except (aiohttp.ClientError, OSError, ValueError) as exc:
@@ -110,7 +113,9 @@ async def scan(config: dict, api_key: str | None = None) -> list[Product]:
         logger.info("SerpApi scan skipped (no SERPAPI_KEY or serpapi.enabled is false)")
         return []
 
-    gl = str(sconf.get("country") or config.get("deliver_to") or "lv").lower()
+    # Google Shopping isn't available in the Baltics — default to a nearby supported EU
+    # market (not deliver_to, which may be an unsupported country and would 400 the request).
+    gl = str(sconf.get("country") or "de").lower()
     limit = int(sconf.get("max_results") or 20)
     require_brand = bool(sconf.get("require_known_brand", True))
     currency = config.get("currency", "EUR")
