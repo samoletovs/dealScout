@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 from pathlib import Path
 
 import aiohttp
@@ -24,6 +25,16 @@ except ImportError:  # pragma: no cover - markdown is a declared dependency
 logger = logging.getLogger(__name__)
 
 _BAND_EMOJI = {"must-buy": "🟢", "good": "🟡"}
+
+
+def _is_brand_store(brand: str, source: str) -> bool:
+    """True when the store looks like the brand's own shop (e.g. BOSS at 'Hugo Boss').
+
+    Token-based so a short brand ('COS') doesn't false-match a substring ('Costco').
+    """
+    brand_tokens = {t for t in re.split(r"[^a-z0-9]+", brand.lower()) if len(t) >= 3}
+    source_tokens = {t for t in re.split(r"[^a-z0-9]+", source.lower()) if len(t) >= 3}
+    return bool(brand_tokens & source_tokens)
 
 
 def markdown_to_html(body: str) -> str | None:
@@ -56,11 +67,19 @@ def render_report(signals: list[tuple[Product, Verdict]], feedback_base_url: str
     groups: dict[str, list[tuple[Product, Verdict]]] = {}
     for product, verdict in signals:
         groups.setdefault(product.source or "Other stores", []).append((product, verdict))
-    ordered = sorted(groups.items(), key=lambda kv: (-len(kv[1]), kv[0].lower()))
+    is_brand = {
+        store: any(_is_brand_store(p.brand, store) for p, _ in items)
+        for store, items in groups.items()
+    }
+    # Brand's own shops first (the preferred channel), then stores with the most deals.
+    ordered = sorted(
+        groups.items(), key=lambda kv: (not is_brand[kv[0]], -len(kv[1]), kv[0].lower())
+    )
 
     lines = ["# dealScout — buy-signals\n"]
     for store, items in ordered:
-        lines.append(f"## {store} — {len(items)} deal(s)")
+        suffix = " (brand store)" if is_brand[store] else ""
+        lines.append(f"## {store} — {len(items)} deal(s){suffix}")
         for product, verdict in items:
             tag = _BAND_EMOJI.get(verdict.band, "")
             head = f"{tag} " if tag else ""
