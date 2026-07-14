@@ -42,18 +42,18 @@ def markdown_to_html(body: str) -> str | None:
 
 
 def render_report(signals: list[tuple[Product, Verdict]], feedback_base_url: str = "") -> str:
-    """Render a markdown buy-signals report.
+    """Render a compact markdown buy-signals report.
 
-    When a courier feedback base URL is given, each deal gets a 👍/👎 prompt whose
-    clicks are read back via courier's export (see dealscout.feedback).
+    Each deal's title is a link to the product page (Shopping's "check on click"), so
+    the email stays tight — no raw URLs dumped inline. When a courier feedback base URL
+    is given, each deal also gets a 👍/👎 prompt read back via courier's export.
     """
     if not signals:
         return "# dealScout — no buy-signals this run\n"
     lines = ["# dealScout — buy-signals\n"]
     for product, verdict in signals:
-        lines.append(f"## {product.title} — €{product.price:.0f} (score {verdict.score})")
-        lines.append(f"- {product.url}")
-        lines.append(f"- why: {', '.join(verdict.reasons)}")
+        lines.append(f"### [{product.title} — €{product.price:.0f}]({product.url})")
+        lines.append(f"- {', '.join(verdict.reasons)}")
         prompt = feedback_text(feedback_base_url, product.url)
         if prompt:
             lines.append(f"- {prompt}")

@@ -36,6 +36,14 @@ def test_feedback_base_url_derives_from_courier_url(monkeypatch):
     assert feedback_base_url() == "https://c.example.com/api/feedback"
 
 
+def test_render_report_links_title_and_omits_raw_url():
+    body = render_report([_signal(url="https://shop.example.com/boss")])
+
+    # title is a clickable link to the product; no bare URL line hogging space
+    assert "[BOSS wool crew — €45](https://shop.example.com/boss)" in body
+    assert "\n- https://shop.example.com/boss" not in body
+
+
 def test_markdown_to_html_renders_headings_and_bullets():
     html = markdown_to_html("# Title\n\n- one\n- two\n")
 
