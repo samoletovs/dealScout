@@ -8,6 +8,7 @@ from dealscout.feedback import (
     DOWN,
     UP,
     collect_feedback,
+    downvoted_urls,
     feedback_link,
     feedback_text,
     latest_by_url,
@@ -131,3 +132,13 @@ def test_latest_by_url_keeps_most_recent_vote():
 
     assert len(latest) == 1
     assert latest[0].verdict == DOWN
+
+
+def test_downvoted_urls_collects_only_down_votes():
+    entries = [
+        Feedback(url="https://a", verdict=UP),
+        Feedback(url="https://b", verdict=DOWN),
+        Feedback(url="", verdict=DOWN),  # no url -> ignored
+    ]
+
+    assert downvoted_urls(entries) == {"https://b"}

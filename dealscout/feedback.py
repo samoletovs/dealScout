@@ -127,6 +127,11 @@ def latest_by_url(entries: list[Feedback]) -> list[Feedback]:
     return list(latest.values())
 
 
+def downvoted_urls(entries: list[Feedback]) -> set[str]:
+    """URLs the user 👎'd — surfacing paths drop these so a rejected deal never returns."""
+    return {fb.url for fb in entries if fb.verdict == DOWN and fb.url}
+
+
 def summarize_feedback(entries: list[Feedback]) -> str:
     """Render a Markdown tally of 👍/👎 feedback for the digest."""
     if not entries:

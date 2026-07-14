@@ -12,7 +12,7 @@ import logging
 from pathlib import Path
 
 from .config import load_config
-from .feedback import summarize_feedback
+from .feedback import downvoted_urls, summarize_feedback
 from .judge import judge
 from .models import Product, Verdict
 from .notify import feedback_base_url, read_feedback, render_report, send_email
@@ -37,8 +37,13 @@ async def run(config_path: Path) -> list[tuple[Product, Verdict]]:
     # band, never-above and discount still apply. Fabric/logo is verified on click.
     cand_config = {**config, "filters": {**config.get("filters", {}), "natural_fibre_min": 0}}
 
+    entries = await read_feedback()
+    rejected = downvoted_urls(entries)  # never re-surface a deal you 👎'd
+
     signals: list[tuple[Product, Verdict]] = []
     for product in candidates:
+        if product.url in rejected:
+            continue
         verdict = judge(product, cand_config)
         if verdict.is_deal:
             verdict = Verdict(
@@ -48,9 +53,10 @@ async def run(config_path: Path) -> list[tuple[Product, Verdict]]:
                 verdict.band,
             )
             signals.append((product, verdict))
+    if rejected:
+        logger.info("respecting %d 👎 vote(s) — rejected deals won't be re-surfaced", len(rejected))
 
     base = feedback_base_url()
-    entries = await read_feedback()
     body = render_report(signals, base) + "\n" + summarize_feedback(entries)
     out = Path("out/serpapi-signals.md")
     out.parent.mkdir(parents=True, exist_ok=True)
