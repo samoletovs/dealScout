@@ -13,7 +13,7 @@ from pathlib import Path
 
 import aiohttp
 
-from .feedback import feedback_text, latest_by_url, parse_feedback_jsonl
+from .feedback import feedback_link, latest_by_url, parse_feedback_jsonl
 from .models import Feedback, Product, Verdict
 
 try:
@@ -22,6 +22,8 @@ except ImportError:  # pragma: no cover - markdown is a declared dependency
     _markdown = None
 
 logger = logging.getLogger(__name__)
+
+_BAND_EMOJI = {"must-buy": "🟢", "good": "🟡"}
 
 
 def markdown_to_html(body: str) -> str | None:
@@ -42,27 +44,39 @@ def markdown_to_html(body: str) -> str | None:
 
 
 def render_report(signals: list[tuple[Product, Verdict]], feedback_base_url: str = "") -> str:
-    """Render a compact markdown buy-signals report.
+    """Render a compact markdown buy-signals report, grouped by store.
 
-    Each deal's title is a link to the product page (Shopping's "check on click"), so
-    the email stays tight — no raw URLs dumped inline. When a courier feedback base URL
-    is given, each deal also gets a 👍/👎 prompt read back via courier's export.
+    Deals are grouped by store, most deals first, so you can pick several items from one
+    shop and get a single delivery. Used items are filtered out upstream, so everything
+    here is new. A courier feedback base URL adds inline 👍/👎 links per deal.
     """
     if not signals:
         return "# dealScout — no buy-signals this run\n"
-    lines = ["# dealScout — buy-signals\n"]
+
+    groups: dict[str, list[tuple[Product, Verdict]]] = {}
     for product, verdict in signals:
-        lines.append(f"### [{product.title} — €{product.price:.0f}]({product.url})")
-        detail = list(verdict.reasons)
-        ref = product.reference_price
-        if ref and ref > product.price:
-            pct = round(100 * (1 - product.price / ref))
-            detail.insert(0, f"was €{ref:.0f} (-{pct}%)")
-        lines.append(f"- {', '.join(detail)}")
-        prompt = feedback_text(feedback_base_url, product.url)
-        if prompt:
-            lines.append(f"- {prompt}")
+        groups.setdefault(product.source or "Other stores", []).append((product, verdict))
+    ordered = sorted(groups.items(), key=lambda kv: (-len(kv[1]), kv[0].lower()))
+
+    lines = ["# dealScout — buy-signals\n"]
+    for store, items in ordered:
+        lines.append(f"## {store} — {len(items)} deal(s)")
+        for product, verdict in items:
+            tag = _BAND_EMOJI.get(verdict.band, "")
+            head = f"{tag} " if tag else ""
+            bits = [f"{head}[{product.title} — €{product.price:.0f}]({product.url})"]
+            ref = product.reference_price
+            if ref and ref > product.price:
+                pct = round(100 * (1 - product.price / ref))
+                bits.append(f"was €{ref:.0f} (-{pct}%)")
+            bits.append("new")
+            if feedback_base_url:
+                up = feedback_link(feedback_base_url, product.url, "up")
+                down = feedback_link(feedback_base_url, product.url, "down")
+                bits.append(f"[👍]({up}) [👎]({down})")
+            lines.append(f"- {' · '.join(bits)}")
         lines.append("")
+    lines.append("_Prices via Google Shopping — verify fabric & exact item on click._")
     return "\n".join(lines)
 
 

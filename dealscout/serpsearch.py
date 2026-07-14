@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 
 import aiohttp
 
@@ -21,6 +22,12 @@ from .models import Product
 logger = logging.getLogger(__name__)
 
 SERPAPI_URL = "https://serpapi.com/search.json"
+
+# Titles that betray a used/refurbished listing even when Shopping omits the flag.
+_USED_RE = re.compile(
+    r"\b(restored|refurbished|renewed|pre-?owned|used|second[- ]?hand|open[- ]?box)\b",
+    re.IGNORECASE,
+)
 
 
 def _match_brand(title: str, brands: dict) -> str:
@@ -39,6 +46,32 @@ def _old_price(item: dict) -> float | None:
         return float(old) if old else None
     except (TypeError, ValueError):
         return None
+
+
+def _condition(item: dict, title: str) -> str:
+    """New vs used, from Shopping's ``second_hand_condition`` or a tell-tale title."""
+    raw = str(item.get("second_hand_condition") or "").strip().lower()
+    if raw:
+        return raw  # e.g. "refurbished" | "pre-owned"
+    return "used" if _USED_RE.search(title) else "new"
+
+
+def _allowed_source(source: str, allow: list, block: list) -> bool:
+    """Keep only reputable single-delivery stores.
+
+    Drops marketplace third-party sellers (``"Store - Seller"``), anything on the block
+    list, and — when an allowlist is given — anything not on it.
+    """
+    low = source.strip().lower()
+    if not low:
+        return not allow  # unknown store: keep only when no allowlist is set
+    if " - " in source:  # e.g. "eBay - amazing-wireless" — an individual reseller
+        return False
+    if any(str(b).strip().lower() in low for b in block):
+        return False
+    if allow:
+        return any(str(a).strip().lower() in low for a in allow)
+    return True
 
 
 def build_products(
@@ -69,6 +102,8 @@ def build_products(
                 url=item.get("product_link") or item.get("link") or "",
                 materials={},  # unknown from Shopping — fabric verified on click
                 brand=_match_brand(title, brands),
+                source=str(item.get("source") or "").strip(),
+                condition=_condition(item, title),
             )
         )
     return products
@@ -118,6 +153,9 @@ async def scan(config: dict, api_key: str | None = None) -> list[Product]:
     gl = str(sconf.get("country") or "de").lower()
     limit = int(sconf.get("max_results") or 20)
     require_brand = bool(sconf.get("require_known_brand", True))
+    exclude_used = bool(sconf.get("exclude_used", True))
+    allow_stores = list(sconf.get("preferred_stores") or [])
+    block_stores = list(sconf.get("exclude_sources") or [])
     currency = config.get("currency", "EUR")
     brands = config.get("brands", {})
     queries = sconf.get("queries") or []
@@ -131,6 +169,9 @@ async def scan(config: dict, api_key: str | None = None) -> list[Product]:
         products = build_products(results, entry.get("category", ""), currency, brands)
         if require_brand:
             products = [p for p in products if p.brand]
+        if exclude_used:
+            products = [p for p in products if p.condition == "new"]
+        products = [p for p in products if _allowed_source(p.source, allow_stores, block_stores)]
         out.extend(products)
 
     logger.info(

@@ -101,6 +101,9 @@ serpapi:
                             # so search a nearby supported EU market (DE: EUR, ships to LV)
   max_results: 20           # cap per query
   require_known_brand: true # only keep results whose title matches a brand tier above
+  exclude_used: true        # hard-drop refurbished / pre-owned / used listings (new only)
+  preferred_stores: []      # allowlist of retailers (e.g. [Zalando, "About You"]); [] = any reputable
+  exclude_sources: [eBay, Amazon, AliExpress, Wish, Etsy]  # never marketplaces / individual resellers
   queries:                  # each scanned with on_sale=true — tune to taste
     - { q: "BOSS wool jumper men", category: knitwear }
     - { q: "GANT lambswool sweater men", category: knitwear }

@@ -39,6 +39,8 @@ class Product:
     quality_signals: frozenset[str] = frozenset()
     care: str = ""  # e.g. "machine wash" / "dry clean only"
     brand: str = ""  # used for brand-tier filtering
+    source: str = ""  # store/seller (from Shopping) — for grouping + marketplace filtering
+    condition: str = "new"  # "new" | "used" | "refurbished" | "pre-owned" (from Shopping)
 
 
 @dataclass(frozen=True)

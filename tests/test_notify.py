@@ -6,7 +6,7 @@ from dealscout.models import Product, Verdict
 from dealscout.notify import feedback_base_url, markdown_to_html, render_report
 
 
-def _signal(url: str = "https://shop.example.com/p") -> tuple[Product, Verdict]:
+def _signal(url: str = "https://shop.example.com/p", source: str = "Test Store") -> tuple[Product, Verdict]:
     product = Product(
         title="BOSS wool crew",
         category="knitwear",
@@ -15,6 +15,7 @@ def _signal(url: str = "https://shop.example.com/p") -> tuple[Product, Verdict]:
         currency="EUR",
         url=url,
         materials={"wool": 1.0},
+        source=source,
     )
     return product, Verdict(True, 42.0, ("70% off", "€45 → must-buy"), "must-buy")
 
@@ -26,7 +27,7 @@ def test_markdown_to_html_makes_feedback_links_clickable():
 
     assert html is not None
     assert '<a href="https://courier.example.com/api/feedback' in html
-    assert "👍 keep" in html and "👎 skip" in html
+    assert "👍" in html and "👎" in html
     assert html.lstrip().startswith("<!DOCTYPE html>")
 
 
@@ -49,6 +50,19 @@ def test_render_report_shows_discount_when_reference_price_present():
 
     # _signal has reference_price 150 and price 45 -> 70% off
     assert "was €150 (-70%)" in body
+
+
+def test_render_report_groups_by_store_most_first():
+    a = _signal(url="https://s/1", source="Zalando")
+    b = _signal(url="https://s/2", source="Zalando")
+    c = _signal(url="https://s/3", source="About You")
+
+    body = render_report([a, c, b])
+
+    assert "## Zalando — 2 deal(s)" in body
+    assert "## About You — 1 deal(s)" in body
+    assert body.index("Zalando") < body.index("About You")  # store with more deals first
+    assert " · new" in body  # everything is labelled new
 
 
 def test_markdown_to_html_renders_headings_and_bullets():

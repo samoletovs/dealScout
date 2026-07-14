@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 
 from dealscout.judge import judge
-from dealscout.serpsearch import _match_brand, build_products, scan
+from dealscout.serpsearch import _allowed_source, _match_brand, build_products, scan
 
 BRANDS = {"basket": ["BOSS", "GANT"], "better": ["Sunspel"], "worse": ["H&M"]}
 
@@ -69,3 +69,33 @@ def test_candidate_feeds_the_judge_with_fibre_gate_off():
 
     assert verdict.is_deal is True
     assert verdict.band == "must-buy"
+
+
+def test_build_products_captures_source_and_condition():
+    results = [
+        {"title": "BOSS wool jumper", "extracted_price": 89.0, "source": "Zalando"},
+        {"title": "Restored BOSS jumper", "extracted_price": 50.0, "source": "Back Market"},
+        {
+            "title": "GANT knit",
+            "extracted_price": 70.0,
+            "source": "eBay - reseller",
+            "second_hand_condition": "refurbished",
+        },
+    ]
+
+    by_title = {p.title: p for p in build_products(results, "knitwear", "EUR", BRANDS)}
+
+    assert by_title["BOSS wool jumper"].source == "Zalando"
+    assert by_title["BOSS wool jumper"].condition == "new"
+    assert by_title["Restored BOSS jumper"].condition == "used"  # from the title
+    assert by_title["GANT knit"].condition == "refurbished"  # from the flag
+
+
+def test_allowed_source_blocks_marketplaces_and_respects_allowlist():
+    assert _allowed_source("eBay - amazing-wireless", [], ["ebay"]) is False  # reseller pattern
+    assert _allowed_source("eBay", [], ["ebay"]) is False  # blocklist
+    assert _allowed_source("Zalando", [], ["ebay"]) is True  # reputable, not blocked
+    assert _allowed_source("Zalando", ["zalando"], []) is True  # on the allowlist
+    assert _allowed_source("Best Buy", ["zalando"], []) is False  # allowlist set, not on it
+    assert _allowed_source("", [], []) is True  # unknown store, no allowlist -> keep
+    assert _allowed_source("", ["zalando"], []) is False  # unknown store, allowlist set -> drop
