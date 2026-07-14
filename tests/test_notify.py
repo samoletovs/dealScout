@@ -44,6 +44,13 @@ def test_render_report_links_title_and_omits_raw_url():
     assert "\n- https://shop.example.com/boss" not in body
 
 
+def test_render_report_shows_discount_when_reference_price_present():
+    body = render_report([_signal(url="https://shop.example.com/boss")])
+
+    # _signal has reference_price 150 and price 45 -> 70% off
+    assert "was €150 (-70%)" in body
+
+
 def test_markdown_to_html_renders_headings_and_bullets():
     html = markdown_to_html("# Title\n\n- one\n- two\n")
 

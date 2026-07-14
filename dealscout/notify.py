@@ -53,7 +53,12 @@ def render_report(signals: list[tuple[Product, Verdict]], feedback_base_url: str
     lines = ["# dealScout — buy-signals\n"]
     for product, verdict in signals:
         lines.append(f"### [{product.title} — €{product.price:.0f}]({product.url})")
-        lines.append(f"- {', '.join(verdict.reasons)}")
+        detail = list(verdict.reasons)
+        ref = product.reference_price
+        if ref and ref > product.price:
+            pct = round(100 * (1 - product.price / ref))
+            detail.insert(0, f"was €{ref:.0f} (-{pct}%)")
+        lines.append(f"- {', '.join(detail)}")
         prompt = feedback_text(feedback_base_url, product.url)
         if prompt:
             lines.append(f"- {prompt}")

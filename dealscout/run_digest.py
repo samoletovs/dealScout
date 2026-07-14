@@ -59,10 +59,17 @@ async def run(config_path: Path) -> str:
     )
 
     kept = [pair for pair in events if pair[1] in ("must-look", "good")]
-    if kept or senders:
-        await send_email(f"dealScout — {len(kept)} deal(s), {len(senders)} active sender(s)", digest)
+    if kept:
+        await send_email(f"dealScout digest — {len(kept)} deal(s)", digest)
+    elif not senders:
+        # No deals AND no newsletters arrived — subscriptions may be dead; worth an alert.
+        await send_email("dealScout — no newsletters this week?", digest)
     else:
-        logger.info("no newsletters in the last 7 days — check subscriptions")
+        logger.info(
+            "digest: 0 deal(s) but %d active sender(s) — skipping email to cut noise "
+            "(report written to out/digest.md)",
+            len(senders),
+        )
     return digest
 
 
