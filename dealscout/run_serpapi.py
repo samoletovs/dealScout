@@ -74,7 +74,7 @@ def main() -> None:
     config_path = Path("config.local.yaml")
     if not config_path.exists():
         config_path = Path("config.example.yaml")
-        logger.warning("config.local.yaml not found — using %s", config_path)
+        logger.info("config.local.yaml not found — using %s", config_path)
     asyncio.run(run(config_path))
 
 
