@@ -11,3 +11,6 @@ venv/
 .env
 config.local.yaml
 out/
+
+# Local-only personal-info pattern overrides
+scripts/.leak-patterns.local.txt
