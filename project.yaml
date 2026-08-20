@@ -1,0 +1,18 @@
+name: dealScout
+purpose: "Personal bargain-hunting wardrobe assistant — watches a curated list of quality menswear, judges when a price is genuinely unmissable, and emails a buy-signal for a human to act on"
+users: "A single shopper with specific quality/fabric/logo rules; built multi-user-ready"
+stage: active
+goals:
+  - "Watch product pages and feeds for a curated wishlist"
+  - "Judge price against both a target and qualitative rules, surfacing only can't-say-no deals"
+  - "Notify by email plus a reviewable buy-signals report"
+  - "Never buy unattended and never store card details — EU SCA needs a human anyway"
+  - "Keep false positives low enough that the signal stays worth reading"
+similar:
+  - "CamelCamelCamel (price history and alerts)"
+  - "Honey / Keepa (deal detection)"
+  - "Slickdeals (curated deal feeds)"
+quality:
+  - tests
+  - ci-cd
+  - api
