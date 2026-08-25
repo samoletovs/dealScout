@@ -16,6 +16,7 @@ import logging
 import sys
 from pathlib import Path
 
+from .collector import enrich_all
 from .config import load_config
 from .feedback import downvoted_urls
 from .hunt import judge_hunt
@@ -63,14 +64,30 @@ async def run_hunt(
     report_news_only: bool = True,
 ) -> tuple[list[Result], list[Product]]:
     """Run one hunt. Returns (results worth reporting, all candidates seen)."""
-    candidates = await scout(hunt, config)
-    monitor_conf = config.get("monitor") or {}
-    min_drop = float(monitor_conf.get("min_drop_pct", DEFAULT_MIN_DROP_PCT))
+    candidates = [p for p in await scout(hunt, config, vocab=vocab) if p.url not in rejected]
 
+    scrape = config.get("scrape") or {}
+    delay = float(scrape.get("delay_seconds", 1.0))
+    limit = int(scrape.get("max_confirmations", 25))
+
+    # Triage on what the listing said, then confirm only the survivors on their own page.
+    # A listing page rarely states sizes: confirming everything would cost a request per
+    # product, and confirming nothing would mean emailing boots that do not exist in the
+    # size we actually need.
+    shortlisted = {p.url for p in candidates if judge_hunt(p, hunt, vocab).is_deal}
+    to_confirm = [
+        p
+        for p in candidates
+        if p.url in shortlisted and (not p.sizes_known or p.reference_price is None)
+    ][:limit]
+    if to_confirm:
+        logger.info("hunt %s: confirming %d shortlisted product(s)", hunt.id, len(to_confirm))
+        confirmed = {p.url: p for p in await enrich_all(to_confirm, delay)}
+        candidates = [confirmed.get(p.url, p) for p in candidates]
+
+    min_drop = float((config.get("monitor") or {}).get("min_drop_pct", DEFAULT_MIN_DROP_PCT))
     results: list[Result] = []
     for product in candidates:
-        if product.url in rejected:
-            continue
         verdict = judge_hunt(product, hunt, vocab)
         if not verdict.is_deal:
             continue
@@ -79,6 +96,7 @@ async def run_hunt(
             continue
         results.append((product, verdict, change))
 
+    results.sort(key=lambda result: result[1].score, reverse=True)
     logger.info(
         "hunt %s: %d candidate(s) -> %d to report", hunt.id, len(candidates), len(results)
     )

@@ -172,6 +172,28 @@ def normalise_sizes(values: Iterable[object]) -> frozenset[str]:
     return frozenset(s for s in (normalise_size(v) for v in values) if s)
 
 
+# Below this, a number is not a European shoe size. UK sizing runs 1-13, so a bare "4.5"
+# from a British retailer normalises perfectly and means EU 37-ish, not EU 4.5.
+EU_SIZE_FLOOR = 20.0
+
+
+def looks_like_eu(sizes: Iterable[str]) -> bool:
+    """True when a size set plausibly uses EU sizing at all.
+
+    Reading a UK size table as EU would reject every boot that actually fits, and a
+    confident wrong answer is the one failure mode a co-pilot must not have. Callers
+    treat a False here as "the page stated sizes, but not in a system we can read" —
+    i.e. unknown, so the human verifies — rather than as "the size is unavailable".
+    """
+    for size in sizes:
+        try:
+            if float(size) >= EU_SIZE_FLOOR:
+                return True
+        except (TypeError, ValueError):
+            continue
+    return False
+
+
 def size_matches(wanted: Iterable[str], available: Iterable[str]) -> bool:
     """True when any wanted size is available (both normalised before comparing)."""
     want = normalise_sizes(wanted)

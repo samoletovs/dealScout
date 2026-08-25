@@ -151,9 +151,30 @@ hunts:
       must_buy: 70               # 🟢 grab instantly
       good_offer: 100            # 🟡 worth it
       never_above: 100           # ⛔ hard ceiling
-      min_reference_price: 200   # RRP gate: proves it's the flagship, not a lookalike
+      # RRP gate: proves it's the flagship, not a lookalike. 110, NOT 200 — measured, not
+      # guessed. €200+ is the *adult* Elite RRP; the junior version of the same boot lists
+      # at €119.95–€129.95 (adidas Predator/F50 Elite Kids, read off unisportstore.com on
+      # 2026-08-25), so a 200 gate rejected every junior Elite boot in existence. 110 still
+      # clears the junior League/Academy takedowns, which list at €69.95.
+      # Note the gate cannot do this job alone: Nike's junior Vapor 16 *Pro* lists at
+      # €139.95, above every junior Elite. The `tier` requirement is what rejects it.
+      min_reference_price: 110
     watch:                       # retailer listing pages, already sorted by discount
+      # Known-good, previously bought from. Behind Akamai bot protection: it answers a
+      # complete browser header set and silently tarpits anything less, so keep the
+      # request rate low — see collector.BROWSER_HEADERS.
       - "https://www.sportsdirect.lv/football/football-boots/kids-football-boots#dcp=1&dppp=60&OrderBy=discountvalue_desc"
+      # Unisport (DK) — ships to LV for €7. Publishes full per-size stock AND RRP in the
+      # page, so a find here can be confirmed in the size before you click.
+      - "https://www.unisportstore.com/kids-boot-sale/"
+      - "https://www.unisportstore.com/kids-football-boots/"
+      - "https://www.unisportstore.com/discounted/football-boots-outlet/"
+      # Pro:Direct IE (EU store, CZ warehouse) — ships to LV. Its listings carry links
+      # only, so the scout reads the product pages of plausible titles. Deliberately NOT
+      # sorted price-ascending: that returns the 50 cheapest, which are always takedown
+      # models, and the Elite boots never appear in the list at all. Sizes there are UK,
+      # which the collector reports as unknown rather than mis-reading as EU.
+      - "https://www.prodirectsport.ie/collections/football-kids-boots-sale"
     queries:                     # SerpApi (dormant without SERPAPI_KEY) — costs 1 search each
       - "Nike Mercurial Superfly 10 Elite junior AG"
       - "Nike Mercurial Vapor 16 Elite junior football boots"
@@ -161,7 +182,7 @@ hunts:
       - "adidas Predator Elite junior AG football boots"
       - "adidas F50 Elite junior football boots"
       - "Puma Future Ultimate junior football boots"
-    notes: "Under €100 · RRP €200+ · AG preferred, FG accepted · ships to Latvia"
+    notes: "Under €100 · junior Elite RRP €120+ · AG preferred, FG accepted · ships to Latvia"
 
   # A second hunt proves the engine is not boots-specific. Disabled until needed.
   - id: running-adult
@@ -197,6 +218,8 @@ monitor:
 # Politeness when reading watch pages (respect robots/ToS; prefer feeds).
 scrape:
   delay_seconds: 1.0
+  max_confirmations: 25        # product pages one hunt may open to confirm size + RRP
+  link_budget: 12              # product pages a single link-only listing may cost us
 
 # Vocabulary overrides — teach the extractor new words without a code change.
 # Shape: category -> attribute -> value -> [patterns]. A value listed here REPLACES

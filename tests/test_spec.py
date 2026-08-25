@@ -5,6 +5,7 @@ from __future__ import annotations
 from dealscout.spec import (
     DEFAULT_VOCAB,
     extract_attrs,
+    looks_like_eu,
     merge_vocab,
     normalise_size,
     normalise_sizes,
@@ -133,3 +134,21 @@ def test_size_matches_should_be_false_when_no_wanted_size_is_available():
 
 def test_size_matches_should_be_false_when_nothing_is_wanted():
     assert size_matches([], ["37"]) is False
+
+
+def test_looks_like_eu_should_accept_a_european_size_table():
+    assert looks_like_eu({"36", "37.5", "38"}) is True
+
+
+def test_looks_like_eu_should_reject_a_uk_size_table():
+    # UK 4/4.5/5 normalise perfectly but mean EU 36-38, not EU 4-5.
+    assert looks_like_eu({"4", "4.5", "5"}) is False
+
+
+def test_looks_like_eu_should_accept_a_mixed_table_containing_eu_sizes():
+    assert looks_like_eu({"4", "37"}) is True
+
+
+def test_looks_like_eu_should_reject_an_empty_or_unparseable_table():
+    assert looks_like_eu([]) is False
+    assert looks_like_eu(["one size"]) is False

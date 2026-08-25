@@ -2,7 +2,32 @@
 
 from __future__ import annotations
 
-from dealscout.collector import parse_ldjson_product, parse_materials
+import asyncio
+
+from dealscout.collector import (
+    _ROBOTS,
+    enrich,
+    parse_ldjson_links,
+    parse_ldjson_product,
+    parse_ldjson_products,
+    parse_materials,
+    robots_allows,
+)
+from dealscout.models import Product
+
+
+async def _always_allowed(url, agent="*"):
+    return True
+
+
+def _serves(html):
+    """A stand-in for collector.fetch that always serves the same page."""
+
+    async def _fetch(url, timeout=20.0, retries=1):
+        return html
+
+    return _fetch
+
 
 _HTML = """
 <html><head>
@@ -42,3 +67,175 @@ def test_parse_ldjson_extracts_material():
 
 def test_parse_ldjson_returns_none_without_structured_data():
     assert parse_ldjson_product(_HTML_NO_LDJSON, "https://shop.example/x", "tee") is None
+
+# --- ProductGroup, ItemList and PDP enrichment (added with the hunt engine) ---
+
+_GROUP_HTML = """
+<html><head>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"ProductGroup",
+ "name":"adidas Kids F50 Elite FG","brand":{"@type":"Brand","name":"adidas"},
+ "hasVariant":[
+   {"@type":"Product","name":"adidas Kids F50 Elite FG - 36.5",
+    "offers":{"@type":"Offer","price":"89.00","priceCurrency":"EUR",
+              "availability":"http://schema.org/InStock"}},
+   {"@type":"Product","name":"adidas Kids F50 Elite FG - 37.5",
+    "offers":{"@type":"Offer","price":"89.00","priceCurrency":"EUR",
+              "availability":"http://schema.org/OutOfStock"}},
+   {"@type":"Product","name":"adidas Kids F50 Elite FG - 38",
+    "offers":{"@type":"Offer","price":"129.00","priceCurrency":"EUR",
+              "availability":"http://schema.org/InStock"}}]}
+</script></head><body>x</body></html>
+"""
+
+_GROUP_UK_HTML = _GROUP_HTML.replace("36.5", "4").replace("37.5", "4.5").replace(" - 38", " - 5")
+
+_LIST_HTML = """
+<html><head>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"ItemList","itemListElement":[
+ {"@type":"ListItem","position":"1","name":"adidas Kids F50 Elite FG",
+  "url":"/products/adidas-kids-f50-elite-fg-1026183"},
+ {"@type":"ListItem","position":"2","name":"Puma Kids Future 7 Play FG",
+  "url":"/products/puma-kids-future-7-play-1019345"},
+ {"@type":"ListItem","position":"3","name":"duplicate",
+  "url":"/products/adidas-kids-f50-elite-fg-1026183"}]}
+</script></head><body>x</body></html>
+"""
+
+
+def test_should_read_a_product_group_as_one_product_not_one_per_size():
+    products = parse_ldjson_products(_GROUP_HTML, "https://shop.eu/p", "football_boots")
+    assert len(products) == 1
+    assert products[0].title == "adidas Kids F50 Elite FG"
+
+
+def test_should_take_the_cheapest_variant_price_and_the_dearest_as_the_rrp():
+    [product] = parse_ldjson_products(_GROUP_HTML, "https://shop.eu/p", "football_boots")
+    assert product.price == 89.00
+    assert product.reference_price == 129.00
+
+
+def test_should_read_only_the_in_stock_variant_sizes():
+    [product] = parse_ldjson_products(_GROUP_HTML, "https://shop.eu/p", "football_boots")
+    assert product.sizes_known is True
+    assert product.sizes == frozenset({"36.5", "38"})
+
+
+def test_should_treat_a_uk_size_variant_table_as_unknown():
+    # Sizes 4/4.5/5 are UK. Reading them as EU would reject every boot that fits.
+    [product] = parse_ldjson_products(_GROUP_UK_HTML, "https://shop.eu/p", "football_boots")
+    assert product.sizes_known is False
+    assert product.sizes == frozenset()
+
+
+def test_should_read_the_links_of_a_listing_that_publishes_no_products():
+    links = parse_ldjson_links(_LIST_HTML, "https://shop.eu/collections/kids-sale")
+    assert links == [
+        ("adidas Kids F50 Elite FG",
+         "https://shop.eu/products/adidas-kids-f50-elite-fg-1026183"),
+        ("Puma Kids Future 7 Play FG",
+         "https://shop.eu/products/puma-kids-future-7-play-1019345"),
+    ]
+
+
+def test_should_find_no_links_on_a_page_without_an_item_list():
+    assert parse_ldjson_links(_HTML, "https://shop.example/merino") == []
+
+
+_BREADCRUMB_HTML = """
+<html><head>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[
+ {"@type":"ListItem","position":1,"name":"Home","item":"https://shop.eu/"},
+ {"@type":"ListItem","position":2,"name":"Football","item":"https://shop.eu/football"}]}
+</script></head><body>x</body></html>
+"""
+
+
+def test_should_not_follow_breadcrumb_links_as_if_they_were_products():
+    # Breadcrumbs are ListItems too; following them costs a request per level for nothing.
+    assert parse_ldjson_links(_BREADCRUMB_HTML, "https://shop.eu/football/boots") == []
+
+
+_FLAT_CRUMB_HTML = _BREADCRUMB_HTML.replace("BreadcrumbList", "ItemList")
+
+
+def test_should_drop_an_ancestor_link_even_when_it_is_typed_as_a_plain_item_list():
+    # Some retailers publish breadcrumbs as an ItemList. A product page is never an
+    # ancestor path of the listing you found it on.
+    assert parse_ldjson_links(_FLAT_CRUMB_HTML, "https://shop.eu/football/boots/kids") == []
+
+
+def _boot(**overrides) -> Product:
+    base = dict(
+        title="adidas Predator Elite FG Kids", category="football_boots", price=44.95,
+        reference_price=None, currency="EUR", url="https://shop.eu/p",
+    )
+    base.update(overrides)
+    return Product(**base)
+
+
+_STOCK_PAGE = (
+    '<html><body><script>var d = "{'
+    '\\"stock\\":[{\\"name\\":\\"EU 37\\",\\"availability\\":\\"in stock\\",'
+    '\\"price\\":\\"44.95\\",\\"recommended_retail_price\\":\\"119.95\\"}]'
+    '}";</script></body></html>'
+)
+
+
+def test_enrich_should_fill_in_the_sizes_and_rrp_a_listing_omitted(monkeypatch):
+    monkeypatch.setattr("dealscout.collector.robots_allows", _always_allowed)
+    monkeypatch.setattr("dealscout.collector.fetch", _serves(_STOCK_PAGE))
+    enriched = asyncio.run(enrich(_boot(), delay=0))
+    assert enriched.sizes_known is True
+    assert enriched.sizes == frozenset({"37"})
+    assert enriched.reference_price == 119.95
+
+
+def test_enrich_should_never_overwrite_what_the_listing_already_knew(monkeypatch):
+    monkeypatch.setattr("dealscout.collector.robots_allows", _always_allowed)
+    monkeypatch.setattr("dealscout.collector.fetch", _serves(_STOCK_PAGE))
+    known = _boot(sizes=frozenset({"38"}), sizes_known=True, reference_price=200.0)
+    enriched = asyncio.run(enrich(known, delay=0))
+    assert enriched.sizes == frozenset({"38"})
+    assert enriched.reference_price == 200.0
+
+
+def test_enrich_should_return_the_product_untouched_when_the_page_is_silent(monkeypatch):
+    monkeypatch.setattr("dealscout.collector.robots_allows", _always_allowed)
+    monkeypatch.setattr("dealscout.collector.fetch", _serves("<html>nothing</html>"))
+    product = _boot()
+    assert asyncio.run(enrich(product, delay=0)) == product
+
+
+def test_enrich_should_not_fetch_a_page_robots_txt_disallows(monkeypatch):
+    called: list[str] = []
+
+    async def refuse(url, agent="*"):
+        return False
+
+    async def record(url, timeout=20.0, retries=1):
+        called.append(url)
+        return _STOCK_PAGE
+
+    monkeypatch.setattr("dealscout.collector.robots_allows", refuse)
+    monkeypatch.setattr("dealscout.collector.fetch", record)
+    product = _boot()
+    assert asyncio.run(enrich(product, delay=0)) == product
+    assert called == []
+
+
+def test_robots_allows_should_honour_a_disallow_rule(monkeypatch):
+    monkeypatch.setattr(
+        "dealscout.collector.fetch", _serves("User-agent: *\nDisallow: /private/")
+    )
+    _ROBOTS.clear()
+    assert asyncio.run(robots_allows("https://shop.eu/private/x")) is False
+    assert asyncio.run(robots_allows("https://shop.eu/public/x")) is True
+
+
+def test_robots_allows_should_fail_open_when_robots_txt_is_unreadable(monkeypatch):
+    monkeypatch.setattr("dealscout.collector.fetch", _serves(None))
+    _ROBOTS.clear()
+    assert asyncio.run(robots_allows("https://shop.eu/anything")) is True

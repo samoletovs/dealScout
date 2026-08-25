@@ -5,7 +5,13 @@ from __future__ import annotations
 import asyncio
 
 from dealscout.models import Hunt, Product
-from dealscout.scout import _match_brand, scout, shopping_products
+from dealscout.scout import (
+    _match_brand,
+    scout,
+    shopping_products,
+    title_confirms,
+    title_plausible,
+)
 
 HUNT = Hunt.from_dict(
     {
@@ -15,6 +21,41 @@ HUNT = Hunt.from_dict(
         "watch": ["https://www.sportsdirect.lv/kids-football-boots"],
         "queries": ["Nike Mercurial Superfly Elite junior"],
         "exclude": {"sources": ["dhgate"]},
+    }
+)
+
+# Same hunt, but with the requirements that make the link pre-filter meaningful.
+HUNT_REQ = Hunt.from_dict(
+    {
+        "id": "boots-junior",
+        "category": "football_boots",
+        "require": {"tier": ["elite"]},
+        "exclude": {"models": ["Legend 10 Elite"]},
+    }
+)
+HUNT_REQ_WATCH = Hunt.from_dict(
+    {
+        "id": "boots-junior",
+        "category": "football_boots",
+        "require": {"tier": ["elite"]},
+        "watch": ["https://shop.eu/kids-sale"],
+    }
+)
+
+# Two requirements, so a title must state both to count as confirmed.
+HUNT_REQ_SOLE = Hunt.from_dict(
+    {
+        "id": "boots-junior",
+        "category": "football_boots",
+        "require": {"tier": ["elite"], "soleplate": ["AG", "FG"]},
+    }
+)
+HUNT_SOLE_WATCH = Hunt.from_dict(
+    {
+        "id": "boots-junior",
+        "category": "football_boots",
+        "require": {"tier": ["elite"], "soleplate": ["AG", "FG"]},
+        "watch": ["https://shop.eu/kids-sale"],
     }
 )
 
@@ -40,17 +81,25 @@ def _hit(url: str, source: str = "11teamsports", price: float = 70.0) -> dict:
 
 
 def _patch_sources(monkeypatch, listing: list[Product], results: list[dict]) -> list[str]:
-    """Replace both network sources; returns the list that records search queries."""
+    """Replace every network source; returns the list that records search queries."""
     queried: list[str] = []
 
     async def fake_listing(url, category, delay=1.0):
         return list(listing)
+
+    async def fake_links(url, delay=1.0):
+        return []
+
+    async def fake_collect(item):
+        return None
 
     async def fake_search(query, api_key, gl):
         queried.append(query)
         return list(results)
 
     monkeypatch.setattr("dealscout.scout.collect_listing", fake_listing)
+    monkeypatch.setattr("dealscout.scout.collect_links", fake_links)
+    monkeypatch.setattr("dealscout.scout.collect", fake_collect)
     monkeypatch.setattr("dealscout.scout._search", fake_search)
     return queried
 
@@ -192,3 +241,117 @@ def test_scout_should_respect_the_configured_result_limit(monkeypatch):
     )
     products = asyncio.run(scout(HUNT, {"serpapi": {"max_results": 3}}, api_key="test-key"))
     assert len(products) == 3
+
+
+def test_title_plausible_should_keep_a_title_that_says_nothing():
+    # Silence is not contradiction: a bare name must survive to be read properly.
+    assert title_plausible("adidas F50 Kids", HUNT_REQ) is True
+
+
+def test_title_plausible_should_reject_a_title_that_contradicts_a_requirement():
+    assert title_plausible("adidas Predator Academy FG Kids", HUNT_REQ) is False
+
+
+def test_title_plausible_should_keep_a_title_that_satisfies_the_requirement():
+    assert title_plausible("adidas Predator Elite FG Kids", HUNT_REQ) is True
+
+
+def test_title_plausible_should_reject_a_boot_already_owned():
+    assert title_plausible("Nike Kids Legend 10 Elite FG", HUNT_REQ) is False
+
+
+def test_scout_should_follow_listing_links_when_a_page_lists_no_products(monkeypatch):
+    # Pro:Direct-style: the listing carries an ItemList of links, prices live on the PDP.
+    fetched: list[str] = []
+
+    async def fake_listing(url, category, delay=1.0):
+        return []
+
+    async def fake_links(url, delay=1.0):
+        return [
+            ("adidas Kids F50 Elite FG", "https://shop.eu/elite"),
+            ("adidas Kids F50 Academy FG", "https://shop.eu/academy"),
+        ]
+
+    async def fake_collect(item):
+        fetched.append(item.url)
+        return _p(item.url)
+
+    async def fake_search(query, api_key, gl):
+        return []
+
+    monkeypatch.setattr("dealscout.scout.collect_listing", fake_listing)
+    monkeypatch.setattr("dealscout.scout.collect_links", fake_links)
+    monkeypatch.setattr("dealscout.scout.collect", fake_collect)
+    monkeypatch.setattr("dealscout.scout._search", fake_search)
+
+    products = asyncio.run(scout(HUNT_REQ_WATCH, {"scrape": {"delay_seconds": 0}}, api_key=None))
+    # The Academy link is discarded on its title alone — never worth a request.
+    assert fetched == ["https://shop.eu/elite"]
+    assert [p.url for p in products] == ["https://shop.eu/elite"]
+
+
+def test_scout_should_cap_how_many_product_pages_one_listing_costs(monkeypatch):
+    fetched: list[str] = []
+
+    async def fake_listing(url, category, delay=1.0):
+        return []
+
+    async def fake_links(url, delay=1.0):
+        return [(f"adidas F50 Elite FG {n}", f"https://shop.eu/{n}") for n in range(20)]
+
+    async def fake_collect(item):
+        fetched.append(item.url)
+        return _p(item.url)
+
+    async def fake_search(query, api_key, gl):
+        return []
+
+    monkeypatch.setattr("dealscout.scout.collect_listing", fake_listing)
+    monkeypatch.setattr("dealscout.scout.collect_links", fake_links)
+    monkeypatch.setattr("dealscout.scout.collect", fake_collect)
+    monkeypatch.setattr("dealscout.scout._search", fake_search)
+
+    config = {"scrape": {"delay_seconds": 0, "link_budget": 4}}
+    asyncio.run(scout(HUNT_REQ_WATCH, config, api_key=None))
+    assert len(fetched) == 4
+
+
+def test_title_confirms_should_recognise_a_title_that_states_everything_required():
+    assert title_confirms("adidas Kids F50 Elite FG", HUNT_REQ_SOLE) is True
+
+
+def test_title_confirms_should_reject_a_title_that_leaves_a_requirement_unstated():
+    assert title_confirms("adidas Kids Copa 19.4 FG", HUNT_REQ_SOLE) is False
+
+
+def test_scout_should_spend_its_budget_on_the_titles_that_already_look_right(monkeypatch):
+    # A listing sorted cheapest-first puts takedown models on top; without ordering, the
+    # whole budget goes to EUR 15 junk and the Elite boots are never seen.
+    fetched: list[str] = []
+
+    async def fake_listing(url, category, delay=1.0):
+        return []
+
+    async def fake_links(url, delay=1.0):
+        return [
+            ("adidas Kids Copa 19.4 FG", "https://shop.eu/junk1"),
+            ("adidas Kids X Speedflow .4 FxG", "https://shop.eu/junk2"),
+            ("adidas Kids F50 Elite FG", "https://shop.eu/elite"),
+        ]
+
+    async def fake_collect(item):
+        fetched.append(item.url)
+        return _p(item.url)
+
+    async def fake_search(query, api_key, gl):
+        return []
+
+    monkeypatch.setattr("dealscout.scout.collect_listing", fake_listing)
+    monkeypatch.setattr("dealscout.scout.collect_links", fake_links)
+    monkeypatch.setattr("dealscout.scout.collect", fake_collect)
+    monkeypatch.setattr("dealscout.scout._search", fake_search)
+
+    config = {"scrape": {"delay_seconds": 0, "link_budget": 1}}
+    asyncio.run(scout(HUNT_SOLE_WATCH, config, api_key=None))
+    assert fetched == ["https://shop.eu/elite"]
