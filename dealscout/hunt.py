@@ -19,7 +19,7 @@ import logging
 
 from .judge import discount_pct
 from .models import Hunt, Product, Verdict
-from .spec import extract_attrs, size_matches
+from .spec import extract_attrs, normalise_sizes
 
 logger = logging.getLogger(__name__)
 
@@ -121,14 +121,19 @@ def judge_hunt(
 
     # --- size availability ---
     if hunt.sizes:
+        available = normalise_sizes(hunt.sizes) & normalise_sizes(product.sizes)
         if not product.sizes_known:
             unknowns.append("size")
-        elif hunt.require_size_in_stock and not size_matches(hunt.sizes, product.sizes):
+        elif available:
+            reasons.append(f"size {'/'.join(sorted(available))} in stock")
+        elif hunt.require_size_in_stock:
             return Verdict(
                 False, 0.0, (f"rejected: size {'/'.join(hunt.sizes)} not in stock",)
             )
         else:
-            reasons.append(f"size {'/'.join(sorted(set(hunt.sizes) & set(product.sizes)))} in stock")
+            # The page listed its sizes and ours was not among them. This hunt opted out
+            # of the hard gate, so flag it — but never claim stock we did not see.
+            unknowns.append("size")
 
     # --- band ---
     if hunt.must_buy is not None and product.price <= hunt.must_buy:
