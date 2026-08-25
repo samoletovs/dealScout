@@ -126,6 +126,10 @@ def judge_hunt(
                 False, 0.0, (f"rejected: {attr}={attrs.get(attr)} not in {'/'.join(allowed)}",)
             )
         if state == UNKNOWN:
+            if attr in hunt.require_stated:
+                return Verdict(
+                    False, 0.0, (f"rejected: {attr} not stated — cannot be confirmed",)
+                )
             unknowns.append(attr)
 
     # --- size availability ---

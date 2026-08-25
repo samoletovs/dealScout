@@ -15,6 +15,7 @@ from dealscout.collector import (
     parse_ldjson_product,
     parse_ldjson_products,
     parse_materials,
+    parse_shopify_products,
     robots_allows,
 )
 from dealscout.models import Product, WatchItem
@@ -348,3 +349,58 @@ def test_collect_should_ignore_a_listing_name_for_a_different_product(monkeypatc
     item = WatchItem(url="https://sd.lv/p-084390", category="football_boots")
     product = asyncio.run(collect(item, title_hint="adidas Predator Elite FG"))
     assert product.title == "Puma Ultra 5 Ultimate FG Juniors"  # the page's own title
+
+# --- Shopify collection endpoint (komanda.lv, the local adidas dealer) ---
+
+_SHOPIFY = """{"products":[
+ {"title":"Predator Elite FT FG J","handle":"predator-elite-ft-fg-j","vendor":"adidas",
+  "variants":[
+   {"title":"36","price":"130.00","compare_at_price":"260.00","available":true},
+   {"title":"37","price":"130.00","compare_at_price":"260.00","available":false},
+   {"title":"38","price":"130.00","compare_at_price":"260.00","available":true}]},
+ {"title":"adidas Copa Pure IV Elite FG","handle":"copa-pure-iv","vendor":"adidas",
+  "variants":[{"title":"42","price":"240.00","compare_at_price":null,"available":true}]},
+ {"title":"No variants","handle":"nope","vendor":"adidas","variants":[]}]}"""
+
+
+def test_should_read_a_shopify_collection_payload():
+    products = parse_shopify_products(_SHOPIFY, "https://komanda.lv/collections/fg/products.json",
+                                      "football_boots")
+    assert [p.title for p in products] == [
+        "adidas Predator Elite FT FG J", "adidas Copa Pure IV Elite FG"
+    ]
+
+
+def test_should_read_only_the_available_shopify_variants_as_stock():
+    [boot, _] = parse_shopify_products(_SHOPIFY, "https://komanda.lv/c/products.json", "x")
+    assert boot.sizes_known is True
+    assert boot.sizes == frozenset({"36", "38"})  # 37 exists but is unavailable
+
+
+def test_should_take_the_shopify_compare_at_price_as_the_rrp():
+    [boot, other] = parse_shopify_products(_SHOPIFY, "https://komanda.lv/c/products.json", "x")
+    assert boot.price == 130.00
+    assert boot.reference_price == 260.00
+    assert other.reference_price is None
+
+
+def test_should_build_the_shopify_product_url_from_the_handle():
+    [boot, _] = parse_shopify_products(_SHOPIFY, "https://komanda.lv/c/products.json", "x")
+    assert boot.url == "https://komanda.lv/products/predator-elite-ft-fg-j"
+
+
+def test_should_not_prefix_a_vendor_already_present_in_the_shopify_title():
+    [_, other] = parse_shopify_products(_SHOPIFY, "https://komanda.lv/c/products.json", "x")
+    assert other.title == "adidas Copa Pure IV Elite FG"
+
+
+def test_should_not_prefix_a_vendor_that_is_just_the_shop_name():
+    # komanda.lv sets `vendor` to itself; prefixing it pollutes brand matching.
+    payload = _SHOPIFY.replace('"vendor":"adidas"', '"vendor":"komanda.lv"')
+    [boot, _] = parse_shopify_products(payload, "https://komanda.lv/c/products.json", "x")
+    assert boot.title == "Predator Elite FT FG J"
+
+
+def test_should_ignore_a_payload_that_is_not_a_shopify_collection():
+    assert parse_shopify_products("<html>not json</html>", "https://x.lv/", "x") == []
+    assert parse_shopify_products('{"items":[]}', "https://x.lv/", "x") == []

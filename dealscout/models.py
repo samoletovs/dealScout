@@ -136,6 +136,10 @@ class Hunt:
     exclude_models: tuple[str, ...] = ()  # substring match on title — e.g. one already owned
     exclude_urls: tuple[str, ...] = ()
     exclude_sources: tuple[str, ...] = ()
+    # Attributes where "the page didn't say" means reject, not flag. Use for anything read
+    # only from the title: no amount of clicking will make a title state a tier it omits,
+    # so flagging it would surface the same unresolvable candidate on every future run.
+    require_stated: tuple[str, ...] = ()
     must_buy: float | None = None  # 🟢 grab instantly
     good_offer: float | None = None  # 🟡 worth it
     never_above: float | None = None  # ⛔ hard reject
@@ -164,6 +168,7 @@ class Hunt:
             sizes=_tuple(data.get("sizes")),
             brands=_tuple(data.get("brands")),
             require={k: _tuple(v) for k, v in (data.get("require") or {}).items()},
+            require_stated=_tuple(data.get("require_stated")),
             prefer={k: _tuple(v) for k, v in (data.get("prefer") or {}).items()},
             exclude_models=_tuple(exclude.get("models")),
             exclude_urls=_tuple(exclude.get("urls")),

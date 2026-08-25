@@ -246,3 +246,31 @@ def test_brands_only_should_keep_a_brand_named_in_the_title_alone():
         _product(title="Puma Ultra 5 Ultimate Firm Ground Football Boots Juniors", brand=""), hunt
     )
     assert verdict.is_deal is True
+
+
+def test_an_unstated_attribute_is_flagged_by_default():
+    verdict = judge_hunt(_product(title="adidas Predator Accuracy.2 FG"), _hunt())
+    assert verdict.is_deal is True
+    assert any("verify on click: tier" in r for r in verdict.reasons)
+
+
+def test_require_stated_should_reject_an_attribute_the_title_never_states():
+    # A title cannot be made to state a tier by clicking, so flagging it would resurface
+    # the same takedown on every run.
+    hunt = _hunt(require_stated=["tier"])
+    verdict = judge_hunt(_product(title="adidas Predator Accuracy.2 FG"), hunt)
+    assert verdict.is_deal is False
+    assert "tier not stated" in verdict.reasons[0]
+
+
+def test_require_stated_should_still_accept_an_attribute_that_is_stated():
+    hunt = _hunt(require_stated=["tier"])
+    assert judge_hunt(_product(), hunt).is_deal is True
+
+
+def test_require_stated_should_not_affect_an_attribute_it_does_not_name():
+    # soleplate is unstated here, but only tier must be stated — so it is flagged.
+    hunt = _hunt(require_stated=["tier"])
+    verdict = judge_hunt(_product(title="Nike Jr. Mercurial Superfly 10 Elite"), hunt)
+    assert verdict.is_deal is True
+    assert any("verify on click: soleplate" in r for r in verdict.reasons)

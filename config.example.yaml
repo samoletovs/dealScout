@@ -139,6 +139,9 @@ hunts:
     require:
       tier: [elite]              # the athlete boot only; rejects Academy/Club/League/Pro
       soleplate: [AG, FG]        # artificial or firm ground; rejects TF/IC/SG
+    require_stated: [tier]       # tier is read from the title, so an unstated tier can
+                                 # never be confirmed by clicking — reject, don't flag,
+                                 # or the same takedown resurfaces on every run.
     prefer:
       soleplate: [AG, FG]        # AG scores above FG
       fit: [junior]
@@ -183,6 +186,13 @@ hunts:
       # models, and the Elite boots never appear in the list at all. Sizes there are UK,
       # which the collector reports as unknown rather than mis-reading as EU.
       - "https://www.prodirectsport.ie/collections/football-kids-boots-sale"
+      # komanda.lv — adidas official dealer for the Baltics, physical shop at Duntes iela 7,
+      # Rīga, so a find here can be tried on before buying. Runs on Shopify: the collection
+      # endpoint returns one variant per size with an availability flag, which is the
+      # cleanest source in this list — one request, no scraping, exact stock.
+      - "https://komanda.lv/collections/futbola-apavi/products.json?limit=250"
+      - "https://komanda.lv/collections/berniem/products.json?limit=250"
+      - "https://komanda.lv/collections/ag-un-tf/products.json?limit=250"
     queries:                     # SerpApi (dormant without SERPAPI_KEY) — costs 1 search each
       - "Nike Mercurial Superfly 10 Elite junior AG"
       - "Nike Mercurial Vapor 16 Elite junior football boots"

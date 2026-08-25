@@ -474,6 +474,70 @@ def parse_ldjson_links(html: str, url: str) -> list[tuple[str, str]]:
     return links
 
 
+def parse_shopify_products(payload: str, url: str, category: str) -> list[Product]:
+    """Products from a Shopify ``/collections/<name>/products.json`` payload.
+
+    Shopify hands over exactly what a hunt needs — one variant per size, each with an
+    ``available`` flag and a ``compare_at_price`` — for one request per collection and no
+    scraping at all. Worth preferring wherever a retailer runs on it.
+    """
+    try:
+        data = json.loads(payload)
+    except (json.JSONDecodeError, TypeError):
+        return []
+    if not isinstance(data, dict) or not isinstance(data.get("products"), list):
+        return []
+
+    origin = f"{urlsplit(url).scheme}://{urlsplit(url).netloc}"
+    source = urlsplit(url).netloc.removeprefix("www.")
+    products: list[Product] = []
+    for node in data["products"]:
+        if not isinstance(node, dict):
+            continue
+        variants = [v for v in (node.get("variants") or []) if isinstance(v, dict)]
+        prices = [p for p in (_to_float(v.get("price")) for v in variants) if p]
+        if not prices:
+            continue
+
+        vendor = str(node.get("vendor") or "").strip()
+        name = str(node.get("title") or "").strip()
+        # Some shops set `vendor` to their own name rather than the brand. Prefixing that
+        # onto every title pollutes brand matching, so only a real brand is prefixed.
+        if not vendor or vendor.lower() in name.lower() or vendor.lower() in source.lower():
+            title = name
+        else:
+            title = f"{vendor} {name}".strip()
+
+        sizes: set[str] = set()
+        labelled: list[str] = []
+        for variant in variants:
+            size = normalise_size(variant.get("title") or variant.get("option1"))
+            if not size:
+                continue
+            labelled.append(size)
+            if variant.get("available"):
+                sizes.add(size)
+
+        was = [p for p in (_to_float(v.get("compare_at_price")) for v in variants) if p]
+        reference = max(was, default=None)
+        known = bool(labelled) and looks_like_eu(labelled)
+        products.append(
+            Product(
+                title=title,
+                category=category,
+                price=min(prices),
+                reference_price=reference if reference and reference > min(prices) else None,
+                currency="EUR",
+                url=f"{origin}/products/{node.get('handle', '')}",
+                brand=vendor,
+                source=source,
+                sizes=frozenset(sizes) if known else frozenset(),
+                sizes_known=known,
+            )
+        )
+    return products
+
+
 async def fetch(url: str, timeout: float = 20.0, retries: int = 1) -> str | None:
     """GET a page's HTML, or None on error/non-200.
 
@@ -570,9 +634,13 @@ async def collect_listing(url: str, category: str, delay: float = 1.0) -> list[P
     html = await fetch(url)
     if html is None:
         return []
-    products = parse_ldjson_products(html, url, category)
+    # A Shopify collection endpoint hands over structured data directly; no parsing of
+    # rendered markup, and one request covers a whole collection.
+    products = parse_shopify_products(html, url, category) or parse_ldjson_products(
+        html, url, category
+    )
     if not products:
-        logger.info("no ld+json Product found at %s", url)
+        logger.info("no product found at %s", url)
     else:
         logger.info("collected %d product(s) from %s", len(products), url)
     if delay > 0:
