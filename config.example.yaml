@@ -149,6 +149,10 @@ hunts:
       models:                    # already owned — don't buy the same boot twice
         - "Legend 10 Elite"
         - "Tiempo Legend 10"
+        # Retailers write the same boot in Roman numerals: Pro:Direct lists it as
+        # "Nike Tiempo Legend X Elite". Without this line the owned boot resurfaces on
+        # every run — and it is currently €60, so it would surface as a 🟢 must-buy.
+        - "Tiempo Legend X"
       urls:
         - "https://www.sportsdirect.lv/nike-kids-legend-10-elite-firm-ground-football-boots-084181"
     price:
@@ -180,12 +184,24 @@ hunts:
       # it. Measured 2026-08-25: nothing Elite below €114.95 has a 37 in stock.
       - "https://www.unisportstore.com/football-boots-on-sale/"
       - "https://www.unisportstore.com/ag-football-boots/"
-      # Pro:Direct IE (EU store, CZ warehouse) — ships to LV. Its listings carry links
-      # only, so the scout reads the product pages of plausible titles. Deliberately NOT
-      # sorted price-ascending: that returns the 50 cheapest, which are always takedown
-      # models, and the Elite boots never appear in the list at all. Sizes there are UK,
-      # which the collector reports as unknown rather than mis-reading as EU.
-      - "https://www.prodirectsport.ie/collections/football-kids-boots-sale"
+      # Pro:Direct IE (EU store, CZ warehouse) — ships to LV.
+      #
+      # Runs on Shopify. Measured 2026-08-25: the HTML listing shows UK sizes (which the
+      # collector correctly refuses to read as EU, so everything came back "unverified"),
+      # but the Shopify products.json endpoint publishes the SAME stock in **EU** sizes
+      # with a per-variant `available` flag. So read the JSON, not the page: one request
+      # per collection, exact per-size stock, no link budget spent on product pages.
+      - "https://www.prodirectsport.ie/collections/football-kids-boots-sale/products.json?limit=250"
+      - "https://www.prodirectsport.ie/collections/football-kids-boots/products.json?limit=250"
+      # Adult ranges, and this is where size 37/37.5 actually lives. The junior grids top
+      # out and sell out; the adult sale carries Elite boots in 37 and 37.5 at junior
+      # prices. Measured 2026-08-25: Puma Future Ultimate FG/AG, EU 37 AND 37.5 in stock,
+      # €65 against an RRP of €220. The kids-only watch list could never have seen it.
+      # Paged because a Shopify collection returns at most 250 products per request.
+      - "https://www.prodirectsport.ie/collections/football-boots-sale/products.json?limit=250&page=1"
+      - "https://www.prodirectsport.ie/collections/football-boots-sale/products.json?limit=250&page=2"
+      - "https://www.prodirectsport.ie/collections/football-boots-sale/products.json?limit=250&page=3"
+      - "https://www.prodirectsport.ie/collections/football-boots/products.json?limit=250&page=1"
       # komanda.lv — adidas official dealer for the Baltics, physical shop at Duntes iela 7,
       # Rīga, so a find here can be tried on before buying. Runs on Shopify: the collection
       # endpoint returns one variant per size with an availability flag, which is the
@@ -193,6 +209,21 @@ hunts:
       - "https://komanda.lv/collections/futbola-apavi/products.json?limit=250"
       - "https://komanda.lv/collections/berniem/products.json?limit=250"
       - "https://komanda.lv/collections/ag-un-tf/products.json?limit=250"
+      # --- Latvia, local. Cheapest delivery, local returns, no customs. ---
+      # futbola-apavi.lv — a Riga-run OpenCart football-boot specialist (~1300 SKUs; the
+      # same operator also runs viskasfutbolui.lt and putsad.ee). Publishes no ld+json at
+      # all, and its listing is bare image anchors, so the scout recovers names from the
+      # URL slug and the price from the rendered markup. Sizes are not machine-readable
+      # here, so anything it finds is capped at 🟡 "verify on click" — which is honest.
+      - "https://www.futbola-apavi.lv/futbola-apavi"
+      - "https://www.futbola-apavi.lv/futbola-apavi/nike"
+      - "https://www.futbola-apavi.lv/futbola-apavi/adidas"
+      # 11teamsports (DE) — ships to LV for €9.90 in 2-5 days. Runs Shopware, and its
+      # product pages publish one ld+json Product block *per size* with an availability
+      # flag, so per-size stock is exact. `serie=Elite` is a real facet, so the sale page
+      # can be asked for the tier directly instead of filtering 700 boots client-side.
+      - "https://www.11teamsports.com/de-de/sale/fussballschuhe/?serie=Elite"
+      - "https://www.11teamsports.com/de-de/fussballschuhe/kinder-fussballschuhe/"
     queries:                     # SerpApi (dormant without SERPAPI_KEY) — costs 1 search each
       - "Nike Mercurial Superfly 10 Elite junior AG"
       - "Nike Mercurial Vapor 16 Elite junior football boots"

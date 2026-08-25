@@ -22,7 +22,7 @@ import aiohttp
 from bs4 import BeautifulSoup
 
 from .models import Product, WatchItem
-from .spec import looks_like_eu, normalise_size
+from .spec import is_eu_size, looks_like_eu, normalise_size
 from .variants import extract_size_stock
 
 logger = logging.getLogger(__name__)
@@ -229,6 +229,14 @@ def _product_from_node(node: dict, url: str, category: str, page_text: str) -> P
         materials = parse_materials(str(node.get("description", "")) or page_text)
 
     sizes, sizes_known = _offer_sizes(offers)
+    # Shopware stores (11teamsports.com) put the size on the Product node itself and emit
+    # one whole Product block per size, rather than one Offer per size. Read that too, or
+    # every such page reports "sizes unknown" and the owner has to click to find out.
+    if not sizes_known:
+        own = normalise_size(node.get("size"))
+        if own and is_eu_size(own):
+            sizes_known = True
+            sizes = frozenset({own}) if any(_in_stock(o) for o in offers) else frozenset()
     link = str(node.get("url") or "").strip()
     if link.startswith("/"):
         link = urljoin(url, link)
@@ -294,8 +302,38 @@ def parse_ldjson_product(html: str, url: str, category: str) -> Product | None:
 # A product URL on most storefronts ends in a numeric product id. Good enough to tell a
 # product link from navigation, and it is only ever used to *shortlist* pages to read.
 _PRODUCT_HREF_RE = re.compile(r'href="([^"#?]*?-(\d{5,})[^"]*)"', re.IGNORECASE)
+# Shopware storefronts (11teamsports.com) publish ids nowhere in the URL — a product is
+# just `/de-de/p/<slug>`. Without this the id-based matcher above found only the handful
+# of products whose colour code happened to contain five digits.
+_PRODUCT_PATH_RE = re.compile(r'href="([^"#?]*/p/[a-z0-9][^"]*)"', re.IGNORECASE)
 _TILE_BRAND_RE = re.compile(r'productdescriptionbrand"[^>]*>([^<]*)<', re.IGNORECASE)
 _TILE_NAME_RE = re.compile(r'productdescriptionname"[^>]*>([^<]*)<', re.IGNORECASE)
+# Trailing product id and file extension on an SEO slug: ".../nike-phantom-fg-42559".
+# Stripped in two passes because the id sits *before* the extension, so a single
+# end-anchored alternation only ever removes whichever one happens to be last.
+# The id shape matches _PRODUCT_HREF_RE above, so a 2-3 digit model number like
+# "Copa 20" or "F50" survives.
+_SLUG_EXT_RE = re.compile(r"\.(?:html?|php|aspx)$", re.IGNORECASE)
+_SLUG_ID_RE = re.compile(r"(?:-\d{5,})+$")
+
+
+def title_from_slug(link: str) -> str:
+    """A readable product name recovered from an SEO URL slug ('' when there isn't one).
+
+    The tile regexes above are one retailer's markup. Plenty of shops — every OpenCart
+    storefront, for instance — render a listing as bare image anchors with no text, so the
+    only name on offer is the slug: ``/nike-tiempo-maestro-club-fg-mg-42559``. A nameless
+    link cannot be pre-filtered, and under ``brands_only`` it is not merely unfiltered but
+    actively *rejected*, so a whole retailer silently yields nothing. The slug is a good
+    enough name for that pre-filter, which only ever reads brand and attribute words.
+    """
+    slug = urlsplit(link).path.rstrip("/").rsplit("/", 1)[-1]
+    slug = _SLUG_ID_RE.sub("", _SLUG_EXT_RE.sub("", slug))
+    words = [w for w in re.split(r"[-_]+", slug) if w]
+    # A slug of pure digits is an id, not a name; one word is too thin to filter on.
+    if len(words) < 2 or all(w.isdigit() for w in words):
+        return ""
+    return " ".join(words)
 
 
 def parse_html_links(html: str, url: str) -> list[tuple[str, str]]:
@@ -311,7 +349,11 @@ def parse_html_links(html: str, url: str) -> list[tuple[str, str]]:
     order: list[str] = []
     here = urlsplit(url).path.rstrip("/")
     host = urlsplit(url).netloc
-    for match in _PRODUCT_HREF_RE.finditer(html):
+    matches = sorted(
+        [*_PRODUCT_HREF_RE.finditer(html), *_PRODUCT_PATH_RE.finditer(html)],
+        key=lambda m: m.start(),
+    )
+    for match in matches:
         absolute = urljoin(url, unescape(match.group(1)))
         parts = urlsplit(absolute)
         if parts.netloc != host:
@@ -330,7 +372,9 @@ def parse_html_links(html: str, url: str) -> list[tuple[str, str]]:
         titles[absolute] = " ".join(
             unescape(part.group(1)).strip() for part in (brand, name) if part
         ).strip()
-    return [(titles[link], link) for link in order]
+    # Fall back to the slug for anything the tile markup left nameless, so a retailer
+    # whose listing is pure image anchors still offers something to pre-filter on.
+    return [(titles[link] or title_from_slug(link), link) for link in order]
 
 
 # Ordered best-first: an explicit machine-readable price beats a rendered one.
@@ -339,10 +383,16 @@ _PRICE_PATTERNS = (
     r'property="product:price:amount"[^>]*content="([\d.,]+)"',
     r'id="lblSellingPrice"[^>]*>\s*([^<]+?)<',
     r'class="[^"]*(?:curPrice|sellingPrice|price--current)[^"]*"[^>]*>\s*([^<]+?)<',
+    # futbola-apavi.lv (OpenCart) renders `<div class="price"><span class="new">59,99€
+    # </span><span class="old">69,99€</span></div>`. Matched on the exact class — a
+    # wildcard on "new" would also catch `class="news"` — and listed last, so it only
+    # applies when no machine-readable price was published at all.
+    r'class="new"[^>]*>\s*([^<]+?)<',
 )
 _RRP_PATTERNS = (
     r'id="lblTicketPrice"[^>]*>\s*([^<]+?)<',
     r'class="[^"]*(?:ticketPrice|wasPrice|price--was|rrp)[^"]*"[^>]*>\s*([^<]+?)<',
+    r'class="old"[^>]*>\s*([^<]+?)<',
 )
 _MONEY_RE = re.compile(r"(\d{1,6}(?:[.,]\d{3})*(?:[.,]\d{1,2})?)")
 
@@ -407,20 +457,39 @@ def parse_html_product(html: str, url: str, category: str) -> Product | None:
     )
 
 
+def _merge_size_variant(existing: Product, extra: Product) -> Product:
+    """Fold another ld+json node for the same product into the one already collected.
+
+    Shopware emits one complete Product block *per size*, all sharing a name and a URL.
+    Treating those as duplicates kept only the first block — and since the blocks arrive
+    in no useful order, that first one is usually out of stock, so a boot that really was
+    available in EU 37 came back with no sizes at all.
+    """
+    references = [r for r in (existing.reference_price, extra.reference_price) if r]
+    return replace(
+        existing,
+        price=min(existing.price, extra.price),
+        reference_price=max(references) if references else None,
+        sizes=existing.sizes | extra.sizes,
+        sizes_known=existing.sizes_known or extra.sizes_known,
+    )
+
+
 def parse_ldjson_products(html: str, url: str, category: str) -> list[Product]:
     """Extract EVERY Product from a page — works for a listing page as well as a PDP."""
     blobs, page_text = _ldjson_nodes(html)
     products: list[Product] = []
-    seen: set[str] = set()
+    at: dict[str, int] = {}
     for blob in blobs:
         for node in _walk_products(blob):
             product = _product_from_node(node, url, category, page_text)
             if product is None:
                 continue
             key = f"{product.url}|{product.title}"
-            if key in seen:
+            if key in at:
+                products[at[key]] = _merge_size_variant(products[at[key]], product)
                 continue
-            seen.add(key)
+            at[key] = len(products)
             products.append(product)
     return products
 
