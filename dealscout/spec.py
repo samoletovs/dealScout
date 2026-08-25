@@ -97,13 +97,19 @@ DEFAULT_VOCAB: dict[str, dict[str, dict[str, list[str]]]] = {
 }
 
 _SIZE_PREFIX_RE = re.compile(r"^\s*(?:euro|eur|eu|size|sz|storlek|razmer)[\s.:]*", re.IGNORECASE)
-_SIZE_NUM_RE = re.compile(r"^(\d{1,2})(?:[.,](\d))?$")
-_SIZE_PAREN_RE = re.compile(r"\(\s*(\d{1,2}(?:[.,]\d)?)\s*\)")
+_SIZE_NUM_RE = re.compile(r"^(\d{1,2})(?:[.,](\d{1,2}))?$")
+_SIZE_PAREN_RE = re.compile(r"\(\s*(\d{1,2}(?:[.,]\d{1,2})?)\s*\)")
 # Half sizes as retailers actually print them: Shopify variant titles from
 # prodirectsport.ie read "37½", and some shops write "37 1/2". Both used to fall through
 # the numeric match and normalise to "", silently deleting every half size from the stock
 # set — which is exactly the size a junior 37/37.5 hunt is looking for.
 _SIZE_HALF_RE = re.compile(r"\s*(?:\u00bd|1\s*/\s*2)")
+# adidas sizes in thirds, printed "36⅔" / "37⅓" (or "36 2/3" / "37 1/3"). These are not a
+# curiosity: adidas EU 37 *is* 37⅓, so dropping them hid every adidas Elite boot in the
+# owner's size. Kept as precise decimals rather than rounded to 37 — a boot that fits is
+# worth finding, but claiming 37⅓ "is" 37 would be a confident guess about someone's foot.
+_SIZE_THIRD_RE = re.compile(r"\s*(?:\u2153|1\s*/\s*3)")
+_SIZE_TWO_THIRD_RE = re.compile(r"\s*(?:\u2154|2\s*/\s*3)")
 _APOSTROPHE_RE = re.compile(r"[''`\u2019]")
 
 
@@ -165,8 +171,11 @@ def normalise_size(raw: object) -> str:
     size, so callers can skip it rather than compare noise.
     """
     text = str(raw or "").strip()
-    # Fold halves before anything else: the '/' split below would otherwise cut
+    # Fold fractions before anything else: the '/' split below would otherwise cut
     # "37 1/2" at the slash and leave "37 1", which then fails the numeric match.
+    # Two-thirds first, so "2/3" is not misread as a "1/3" plus stray digit.
+    text = _SIZE_TWO_THIRD_RE.sub(".67", text)
+    text = _SIZE_THIRD_RE.sub(".33", text)
     text = _SIZE_HALF_RE.sub(".5", text)
     bracketed = _SIZE_PAREN_RE.search(text)
     if bracketed:
@@ -178,7 +187,9 @@ def normalise_size(raw: object) -> str:
     if not match:
         return ""
     whole, frac = match.group(1), match.group(2)
-    if frac and frac != "0":
+    # "38.0" and "38.50" are the same size as "38" and "38.5"; compare them that way.
+    frac = (frac or "").rstrip("0")
+    if frac:
         return f"{whole}.{frac}"
     return whole
 

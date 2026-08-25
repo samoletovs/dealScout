@@ -1,0 +1,64 @@
+name: dealScout hunt
+
+# The hunt engine (scout -> judge -> monitor -> notify), which is a different entrypoint
+# from `watch.yml`'s `dealscout.run`. Twice daily, because the thing being waited for is
+# a single junior size coming back into stock, and it sells out in hours.
+
+on:
+  schedule:
+    - cron: "0 6 * * *" # daily 06:00 UTC
+    - cron: "0 17 * * *" # and again at 17:00 UTC
+  workflow_dispatch:
+    inputs:
+      hunt:
+        description: "Hunt id to run (blank = every enabled hunt)"
+        required: false
+        default: ""
+
+jobs:
+  hunt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+
+      # The monitor's whole job is to stay quiet about things it has already reported, so
+      # an email means something actually changed. That requires last run's ledger: with a
+      # cold state every boot looks NEW and the hunt mails the same list every morning
+      # until it is ignored. Restore-keys let a run start from the most recent state even
+      # though the primary key is unique per run.
+      - name: Restore monitor state
+        uses: actions/cache/restore@v4
+        with:
+          path: state
+          key: dealscout-hunt-state-${{ github.run_id }}
+          restore-keys: |
+            dealscout-hunt-state-
+
+      - run: python -m dealscout.run_hunt ${{ github.event.inputs.hunt }}
+        env:
+          COURIER_URL: ${{ secrets.COURIER_URL }}
+          COURIER_KEY: ${{ secrets.COURIER_KEY }}
+          DEALSCOUT_EMAIL_TO: ${{ secrets.DEALSCOUT_EMAIL_TO }}
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+
+      - name: Save monitor state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: state
+          key: dealscout-hunt-state-${{ github.run_id }}
+
+      # The rendered report, kept so a run can be inspected after the fact — useful when
+      # the answer is "nothing", which is the expected answer most days.
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hunt-report
+          path: out/
+          if-no-files-found: ignore
+          retention-days: 30

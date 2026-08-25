@@ -114,6 +114,22 @@ def test_normalise_size_should_canonicalise_common_labels():
     assert normalise_size(" size 37 ") == "37"
 
 
+def test_normalise_size_should_read_adidas_third_sizes():
+    # adidas sizes in thirds and prints them "37⅓" / "36⅔". EU 37 in adidas *is* 37⅓, so
+    # dropping these hid every adidas Elite boot in the owner's size — 238 in-stock
+    # variants at prodirectsport.ie alone, measured 2026-08-26.
+    assert normalise_size("37\u2153") == "37.33"
+    assert normalise_size("36\u2154") == "36.67"
+    assert normalise_size("38\u2154") == "38.67"
+    assert normalise_size("37 1/3") == "37.33"
+    assert normalise_size("36 2/3") == "36.67"
+
+
+def test_normalise_size_should_treat_trailing_zeros_as_the_same_size():
+    assert normalise_size("38.0") == "38"
+    assert normalise_size("38.50") == "38.5"
+
+
 def test_normalise_size_should_return_empty_for_an_unparseable_value():
     assert normalise_size("One Size") == ""
     assert normalise_size(None) == ""
