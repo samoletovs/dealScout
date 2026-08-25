@@ -120,6 +120,22 @@ def test_normalise_size_should_return_empty_for_an_unparseable_value():
     assert normalise_size("") == ""
 
 
+def test_normalise_size_should_read_half_size_glyphs_as_point_five():
+    # Pro:Direct's Shopify variant titles print half sizes as "37½". These used to fall
+    # through the numeric match and normalise to "", which silently deleted every half
+    # size from the stock set — 37.5 being exactly the size the junior hunt wants.
+    assert normalise_size("37\u00bd") == "37.5"
+    assert normalise_size("36\u00bd") == "36.5"
+    assert normalise_size("37 1/2") == "37.5"
+    assert normalise_size("4.5 (37\u00bd)") == "37.5"
+
+
+def test_normalise_size_should_not_round_a_half_size_down_to_the_whole_size():
+    # The dangerous failure is not "unparseable", it is a confident wrong answer: calling
+    # a 37½-only boot a 37 would send the owner to buy a boot that does not fit.
+    assert normalise_size("37\u00bd") != "37"
+
+
 def test_normalise_sizes_should_drop_anything_unparseable():
     assert normalise_sizes(["EU 37", "one size", "37,5", None]) == frozenset({"37", "37.5"})
 
