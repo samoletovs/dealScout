@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 
 from dealscout.collector import (
     _ROBOTS,
@@ -17,6 +18,7 @@ from dealscout.collector import (
     parse_materials,
     parse_shopify_products,
     robots_allows,
+    title_from_slug,
 )
 from dealscout.models import Product, WatchItem
 
@@ -404,3 +406,135 @@ def test_should_not_prefix_a_vendor_that_is_just_the_shop_name():
 def test_should_ignore_a_payload_that_is_not_a_shopify_collection():
     assert parse_shopify_products("<html>not json</html>", "https://x.lv/", "x") == []
     assert parse_shopify_products('{"items":[]}', "https://x.lv/", "x") == []
+
+
+def test_should_read_half_sizes_from_a_shopify_payload_that_prints_them_as_glyphs():
+    # Pro:Direct's products.json prints half sizes as "37½". Dropping them lost exactly
+    # the size the junior hunt wants, so an in-stock 37½ Elite boot was invisible.
+    payload = json.dumps(
+        {
+            "products": [
+                {
+                    "title": "Puma Future Ultimate FG/AG",
+                    "handle": "puma-future-ultimate-fg-ag",
+                    "vendor": "Puma",
+                    "variants": [
+                        {"title": "37", "price": "65.00", "compare_at_price": "220.00",
+                         "available": True},
+                        {"title": "37\u00bd", "price": "65.00", "compare_at_price": "220.00",
+                         "available": True},
+                        {"title": "38\u00bd", "price": "65.00", "compare_at_price": "220.00",
+                         "available": False},
+                    ],
+                }
+            ]
+        }
+    )
+    [boot] = parse_shopify_products(
+        payload, "https://www.prodirectsport.ie/c/products.json", "football_boots"
+    )
+    assert boot.sizes_known is True
+    assert boot.sizes == frozenset({"37", "37.5"})  # 38.5 is listed but out of stock
+
+
+def test_title_from_slug_should_recover_a_name_from_an_seo_url():
+    assert (
+        title_from_slug("https://www.futbola-apavi.lv/nike-tiempo-maestro-elite-fg-42559")
+        == "nike tiempo maestro elite fg"
+    )
+    assert (
+        title_from_slug("https://shop.example/store/adidas-f50-elite-ag-100234.html")
+        == "adidas f50 elite ag"
+    )
+
+
+def test_title_from_slug_should_return_empty_when_the_slug_is_not_a_name():
+    assert title_from_slug("https://shop.example/12345678") == ""
+    assert title_from_slug("https://shop.example/boots") == ""
+    assert title_from_slug("https://shop.example/") == ""
+
+
+def test_should_fall_back_to_the_slug_when_a_listing_tile_has_no_text():
+    # An OpenCart listing (futbola-apavi.lv) renders bare image anchors. Without a name
+    # the link cannot be pre-filtered, and under `brands_only` it is actively rejected —
+    # so the whole retailer silently yielded nothing.
+    html = (
+        '<a href="/nike-phantom-6-low-elite-fg-42731"><img src="a.jpg"></a>'
+        '<a href="/adidas-predator-elite-ag-42732"><img src="b.jpg"></a>'
+    )
+    links = parse_html_links(html, "https://www.futbola-apavi.lv/futbola-apavi")
+    assert links == [
+        ("nike phantom 6 low elite fg", "https://www.futbola-apavi.lv/nike-phantom-6-low-elite-fg-42731"),
+        ("adidas predator elite ag", "https://www.futbola-apavi.lv/adidas-predator-elite-ag-42732"),
+    ]
+
+
+def test_should_prefer_real_tile_text_over_the_slug():
+    html = (
+        '<a href="/nike-phantom-6-low-elite-fg-42731"></a>'
+        '<div class="productdescriptionbrand">Nike</div>'
+        '<div class="productdescriptionname">Phantom 6 Low Elite FG</div>'
+    )
+    [(name, _)] = parse_html_links(html, "https://www.sportsdirect.lv/football/")
+    assert name == "Nike Phantom 6 Low Elite FG"
+
+
+def test_should_find_shopware_style_product_links_without_a_numeric_id():
+    # 11teamsports (Shopware) has no id in the URL — a product is just `/p/<slug>`, so
+    # the id-based matcher found only the few whose colour code held five digits.
+    html = (
+        '<a href="/de-de/p/adidas-predator-elite-ft-fg-kids-schwarz">x</a>'
+        '<a href="/de-de/fussballschuhe/kinder-fussballschuhe/">nav</a>'
+    )
+    links = parse_html_links(html, "https://www.11teamsports.com/de-de/sale/fussballschuhe/")
+    assert links == [
+        (
+            "adidas predator elite ft fg kids schwarz",
+            "https://www.11teamsports.com/de-de/p/adidas-predator-elite-ft-fg-kids-schwarz",
+        )
+    ]
+
+
+def _size_variant_page(*rows: tuple[str, str]) -> str:
+    """A Shopware-shaped page: one whole ld+json Product block per size."""
+    blocks = "".join(
+        '<script type="application/ld+json">'
+        + json.dumps(
+            {
+                "@type": "Product",
+                "name": "adidas Predator Elite FT FG Kids",
+                "url": "https://www.11teamsports.com/de-de/p/predator-elite",
+                "size": size,
+                "offers": {
+                    "@type": "Offer",
+                    "price": "139.95",
+                    "priceCurrency": "EUR",
+                    "availability": f"https://schema.org/{stock}",
+                },
+            }
+        )
+        + "</script>"
+        for size, stock in rows
+    )
+    return f"<html><body>{blocks}</body></html>"
+
+
+def test_should_merge_per_size_ldjson_blocks_into_one_product():
+    # 11teamsports emits one complete Product block per size, all sharing a name and URL.
+    # Treating them as duplicates kept only the first — which is usually out of stock —
+    # so a boot genuinely available in EU 37 reported no sizes at all.
+    html = _size_variant_page(
+        ("29", "OutOfStock"), ("37", "InStock"), ("37,5", "InStock"), ("38", "OutOfStock")
+    )
+    [boot] = parse_ldjson_products(html, "https://www.11teamsports.com/de-de/p/x", "football_boots")
+    assert boot.sizes_known is True
+    assert boot.sizes == frozenset({"37", "37.5"})
+
+
+def test_should_not_report_stock_when_every_size_variant_is_out_of_stock():
+    # The distinction that matters: "stated, and none available" must not read as
+    # "unknown", or an out-of-stock boot resurfaces every run as "verify on click".
+    html = _size_variant_page(("37", "OutOfStock"), ("38", "OutOfStock"))
+    [boot] = parse_ldjson_products(html, "https://www.11teamsports.com/de-de/p/x", "football_boots")
+    assert boot.sizes_known is True
+    assert boot.sizes == frozenset()
