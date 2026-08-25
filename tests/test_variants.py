@@ -7,6 +7,7 @@ from dealscout.variants import (
     extract_size_stock,
     find_variant_arrays,
     in_stock,
+    read_select_options,
     read_variants,
 )
 
@@ -128,3 +129,52 @@ def test_extract_size_stock_should_prefer_the_richest_size_table():
         '{"size":"38","availability":"in stock"}]}'
     )
     assert extract_size_stock(page).sizes == frozenset({"37", "38"})
+
+
+# Sports Direct publishes no per-size JSON at all — the dropdown is the only statement
+# of what is buyable. Sizes are dual notation, "UK (EU)".
+_SELECT_PAGE = """
+<html><body>
+<select id="sizeDdl" class="SizeDropDown">
+  <option value="0">L&#x16B;dzu, izv&#x113;lieties</option>
+  <option value="3.5 (36)" class="greyOut" title="nav pieejams" data-stock-qty="0"> 3.5 (36) </option>
+  <option value="4.5 (37.5)" class="greyOut" title="nav pieejams" data-stock-qty="0"> 4.5 (37.5) </option>
+  <option value="6 (39)" class="" title="select" data-stock-qty="15"> 6 (39) </option>
+</select>
+</body></html>
+"""
+
+
+def test_should_read_a_size_dropdown_when_the_page_has_no_json_payload():
+    stock = extract_size_stock(_SELECT_PAGE)
+    assert stock.known is True
+    assert stock.sizes == frozenset({"39"})
+
+
+def test_should_read_the_eu_half_of_a_uk_eu_dual_size_label():
+    # "4.5 (37.5)" is UK 4.5 / EU 37.5 — the hunt is written in EU.
+    assert read_select_options(_SELECT_PAGE).known is True
+    assert "37.5" not in read_select_options(_SELECT_PAGE).sizes  # greyed out, not buyable
+
+
+def test_should_treat_a_greyed_out_option_as_out_of_stock():
+    assert read_select_options(_SELECT_PAGE).sizes == frozenset({"39"})
+
+
+def test_should_treat_a_disabled_option_as_out_of_stock():
+    page = (
+        '<select><option value="37" disabled>37</option>'
+        '<option value="38">38</option></select>'
+    )
+    assert read_select_options(page).sizes == frozenset({"38"})
+
+
+def test_should_ignore_a_quantity_dropdown():
+    # 1-5 are not EU sizes; reading them as sizes would invent stock.
+    page = '<select id="qty"><option value="1">1</option><option value="2">2</option></select>'
+    assert read_select_options(page).known is False
+
+
+def test_should_prefer_a_json_payload_over_a_dropdown_when_both_exist():
+    page = '{"stock":[{"size":"37","availability":"in stock"}]}' + _SELECT_PAGE
+    assert extract_size_stock(page).sizes == frozenset({"37"})

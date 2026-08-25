@@ -19,8 +19,9 @@ import json
 import logging
 import re
 from dataclasses import dataclass
+from html import unescape
 
-from .spec import looks_like_eu, normalise_size
+from .spec import is_eu_size, looks_like_eu, normalise_size
 
 logger = logging.getLogger(__name__)
 
@@ -195,14 +196,63 @@ def read_variants(rows: list[dict]) -> SizeStock:
 def extract_size_stock(html: str) -> SizeStock:
     """Best per-size stock reading for a product page (empty when the page is silent).
 
-    Prefers the array that labels the most sizes: a page often carries several arrays and
-    the richest one is the size picker.
+    Tries the embedded JSON payload first, then a rendered size ``<select>``. Prefers the
+    reading that labels the most sizes: a page often carries several, and the richest one
+    is the size picker.
     """
     best = SizeStock()
     for rows in find_variant_arrays(_deescape(html)):
         found = read_variants(rows)
-        if found.known and len(found.sizes) >= len(best.sizes) and not best.known:
+        if found.known and (not best.known or len(found.sizes) > len(best.sizes)):
             best = found
-        elif found.known and len(found.sizes) > len(best.sizes):
-            best = found
+    if best.known:
+        return best
+    return read_select_options(html)
+
+
+_SELECT_RE = re.compile(r"<select\b[^>]*>(.*?)</select>", re.IGNORECASE | re.DOTALL)
+_OPTION_RE = re.compile(r"<option\b([^>]*)>(.*?)</option>", re.IGNORECASE | re.DOTALL)
+_TAG_RE = re.compile(r"<[^>]+>")
+
+# Markers a storefront puts on an option you cannot actually buy.
+_DISABLED_CLASSES = ("greyout", "grey-out", "disabled", "unavailable", "soldout", "sold-out")
+
+
+def _option_available(attrs: str, label: str) -> bool:
+    low = attrs.lower()
+    if "disabled" in low:
+        return False
+    if any(marker in low.replace("_", "") for marker in _DISABLED_CLASSES):
+        return False
+    quantity = re.search(r'data-stock-qty\s*=\s*"(\d+)"', low)
+    if quantity and int(quantity.group(1)) == 0:
+        return False
+    return in_stock(label) is not False
+
+
+def read_select_options(html: str) -> SizeStock:
+    """Per-size stock from a rendered size ``<select>``.
+
+    Sports Direct and other Frasers storefronts publish no per-size JSON at all; the only
+    statement of what is buyable is the dropdown, where an unavailable size is greyed out
+    and carries ``data-stock-qty="0"``. Reading it is the difference between "we don't
+    know" and "that boot does not exist in your size".
+    """
+    best = SizeStock()
+    for block in _SELECT_RE.findall(html):
+        available: set[str] = set()
+        labelled: list[str] = []
+        for attrs, inner in _OPTION_RE.findall(block):
+            value = re.search(r'value\s*=\s*"([^"]*)"', attrs)
+            text = unescape(_TAG_RE.sub(" ", inner)).strip()
+            size = normalise_size(unescape(value.group(1)) if value else "") or normalise_size(text)
+            if not is_eu_size(size):
+                continue  # a placeholder like "Please choose" (value="0"), or a UK size
+            labelled.append(size)
+            if _option_available(attrs, text):
+                available.add(size)
+        if not labelled or not looks_like_eu(labelled):
+            continue  # a quantity or colour picker, not sizes
+        if not best.known or len(labelled) > len(best.sizes):
+            best = SizeStock(frozenset(available), True, None)
     return best

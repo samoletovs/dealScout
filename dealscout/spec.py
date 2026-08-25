@@ -98,6 +98,7 @@ DEFAULT_VOCAB: dict[str, dict[str, dict[str, list[str]]]] = {
 
 _SIZE_PREFIX_RE = re.compile(r"^\s*(?:euro|eur|eu|size|sz|storlek|razmer)[\s.:]*", re.IGNORECASE)
 _SIZE_NUM_RE = re.compile(r"^(\d{1,2})(?:[.,](\d))?$")
+_SIZE_PAREN_RE = re.compile(r"\(\s*(\d{1,2}(?:[.,]\d)?)\s*\)")
 _APOSTROPHE_RE = re.compile(r"[''`\u2019]")
 
 
@@ -153,11 +154,17 @@ def extract_attrs(title: str, category: str, vocab: dict | None = None) -> dict[
 def normalise_size(raw: object) -> str:
     """Normalise a size label to a canonical string ('EU 37,5' -> '37.5', '38.0' -> '38').
 
-    Returns "" when the value isn't a plain numeric size, so callers can skip it
-    rather than compare noise.
+    Handles the dual notation British retailers use, ``4.5 (37.5)``, where the bracketed
+    value is the EU size — the one a hunt is written in. Returns "" when the value isn't
+    a plain numeric size, so callers can skip it rather than compare noise.
     """
-    text = _SIZE_PREFIX_RE.sub("", str(raw or "")).strip()
-    text = text.split("/")[0].strip()  # "37.5 / UK 4.5" -> EU part
+    text = str(raw or "").strip()
+    bracketed = _SIZE_PAREN_RE.search(text)
+    if bracketed:
+        text = bracketed.group(1)
+    else:
+        text = _SIZE_PREFIX_RE.sub("", text).strip()
+        text = text.split("/")[0].strip()  # "37.5 / UK 4.5" -> EU part
     match = _SIZE_NUM_RE.match(text)
     if not match:
         return ""
@@ -177,6 +184,14 @@ def normalise_sizes(values: Iterable[object]) -> frozenset[str]:
 EU_SIZE_FLOOR = 20.0
 
 
+def is_eu_size(size: object) -> bool:
+    """True when a single normalised size is plausibly a European shoe size."""
+    try:
+        return float(str(size)) >= EU_SIZE_FLOOR
+    except (TypeError, ValueError):
+        return False
+
+
 def looks_like_eu(sizes: Iterable[str]) -> bool:
     """True when a size set plausibly uses EU sizing at all.
 
@@ -185,13 +200,7 @@ def looks_like_eu(sizes: Iterable[str]) -> bool:
     treat a False here as "the page stated sizes, but not in a system we can read" —
     i.e. unknown, so the human verifies — rather than as "the size is unavailable".
     """
-    for size in sizes:
-        try:
-            if float(size) >= EU_SIZE_FLOOR:
-                return True
-        except (TypeError, ValueError):
-            continue
-    return False
+    return any(is_eu_size(size) for size in sizes)
 
 
 def size_matches(wanted: Iterable[str], available: Iterable[str]) -> bool:
