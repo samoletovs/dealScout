@@ -111,3 +111,97 @@ serpapi:
     - { q: "Lacoste pique polo men", category: shirt_casual }
     - { q: "Polo Ralph Lauren oxford shirt men", category: shirt_casual }
     - { q: "Massimo Dutti wool trousers men", category: trousers }
+
+# ---------------------------------------------------------------------------
+# HUNTS — the repeatable part.
+#
+# A hunt is a declarative brief: what to find, for whom, and what makes it a deal.
+# The engine is domain-neutral, so "Elite football boots in EU 37" and "carbon-plated
+# running shoes in EU 42" are two configs over the same code. Run them with:
+#
+#     python -m dealscout.run_hunt              # every enabled hunt
+#     python -m dealscout.run_hunt boots-junior # one hunt, even if disabled
+#
+# `require` gates (a stated value that doesn't match = reject). `prefer` only scores,
+# ranked best-first. An attribute the page never stated is *unknown*, not failed: the
+# find is still surfaced, flagged "verify on click", and capped below 🟢 must-buy.
+# ---------------------------------------------------------------------------
+hunts:
+  - id: boots-junior
+    enabled: true
+    label: "Football boots — Elite, EU 37/37.5, under €100"
+    for: junior                  # opaque household role, never a real name
+    category: football_boots     # selects the vocabulary used to read titles
+    deliver_to: LV
+    sizes: ["37", "37.5"]
+    brands: [Nike, adidas, Puma] # ranked — Nike scores highest, Puma lowest
+    require:
+      tier: [elite]              # the athlete boot only; rejects Academy/Club/League/Pro
+      soleplate: [AG, FG]        # artificial or firm ground; rejects TF/IC/SG
+    prefer:
+      soleplate: [AG, FG]        # AG scores above FG
+      fit: [junior]
+    exclude:
+      models:                    # already owned — don't buy the same boot twice
+        - "Legend 10 Elite"
+        - "Tiempo Legend 10"
+      urls:
+        - "https://www.sportsdirect.lv/nike-kids-legend-10-elite-firm-ground-football-boots-084181"
+    price:
+      must_buy: 70               # 🟢 grab instantly
+      good_offer: 100            # 🟡 worth it
+      never_above: 100           # ⛔ hard ceiling
+      min_reference_price: 200   # RRP gate: proves it's the flagship, not a lookalike
+    watch:                       # retailer listing pages, already sorted by discount
+      - "https://www.sportsdirect.lv/football/football-boots/kids-football-boots#dcp=1&dppp=60&OrderBy=discountvalue_desc"
+    queries:                     # SerpApi (dormant without SERPAPI_KEY) — costs 1 search each
+      - "Nike Mercurial Superfly 10 Elite junior AG"
+      - "Nike Mercurial Vapor 16 Elite junior football boots"
+      - "Nike Phantom Elite junior football boots"
+      - "adidas Predator Elite junior AG football boots"
+      - "adidas F50 Elite junior football boots"
+      - "Puma Future Ultimate junior football boots"
+    notes: "Under €100 · RRP €200+ · AG preferred, FG accepted · ships to Latvia"
+
+  # A second hunt proves the engine is not boots-specific. Disabled until needed.
+  - id: running-adult
+    enabled: false
+    label: "Running shoes — race-day plated, EU 42"
+    for: sam
+    category: running_shoes
+    deliver_to: LV
+    sizes: ["42", "42.5"]
+    brands: [Nike, adidas, Saucony, Hoka, Asics, Puma]
+    require:
+      tier: [elite]
+    prefer:
+      plate: [carbon]
+      surface: [road]
+    price:
+      must_buy: 120
+      good_offer: 180
+      never_above: 200
+      min_reference_price: 220
+    queries:
+      - "Nike Vaporfly 3 sale"
+      - "adidas Adizero Adios Pro 4 sale"
+      - "Saucony Endorphin Elite sale"
+    notes: "Race-day only — carbon plate, road"
+
+# Monitor — memory between runs, so a cron reports news instead of repeating itself.
+monitor:
+  state_path: state/hunts.json
+  min_drop_pct: 5              # re-alert on a product already seen once it drops this much
+  forget_after_days: 90        # a product gone this long is genuinely news if it returns
+
+# Politeness when reading watch pages (respect robots/ToS; prefer feeds).
+scrape:
+  delay_seconds: 1.0
+
+# Vocabulary overrides — teach the extractor new words without a code change.
+# Shape: category -> attribute -> value -> [patterns]. A value listed here REPLACES
+# the built-in for that attribute (see dealscout/spec.py DEFAULT_VOCAB).
+# vocab:
+#   football_boots:
+#     tier:
+#       elite: [elite, ultimate, premium, "made in japan"]
