@@ -90,7 +90,7 @@ def _patch_sources(monkeypatch, listing: list[Product], results: list[dict]) -> 
     async def fake_links(url, delay=1.0):
         return []
 
-    async def fake_collect(item):
+    async def fake_collect(item, title_hint=""):
         return None
 
     async def fake_search(query, api_key, gl):
@@ -260,6 +260,25 @@ def test_title_plausible_should_reject_a_boot_already_owned():
     assert title_plausible("Nike Kids Legend 10 Elite FG", HUNT_REQ) is False
 
 
+def test_title_plausible_should_ignore_brand_unless_the_hunt_gates_on_it():
+    assert title_plausible("Skechers SKX 01 Elite FG", HUNT_REQ) is True
+
+
+def test_title_plausible_should_reject_an_off_brand_title_when_brands_are_a_gate():
+    # Saves the request budget for boots the hunt would actually buy.
+    gated = Hunt.from_dict(
+        {
+            "id": "b",
+            "category": "football_boots",
+            "require": {"tier": ["elite"]},
+            "brands": ["Nike", "adidas", "Puma"],
+            "brands_only": True,
+        }
+    )
+    assert title_plausible("Skechers SKX 01 Elite FG", gated) is False
+    assert title_plausible("Puma Ultra 5 Ultimate FG Juniors", gated) is True
+
+
 def test_scout_should_follow_listing_links_when_a_page_lists_no_products(monkeypatch):
     # Pro:Direct-style: the listing carries an ItemList of links, prices live on the PDP.
     fetched: list[str] = []
@@ -273,7 +292,7 @@ def test_scout_should_follow_listing_links_when_a_page_lists_no_products(monkeyp
             ("adidas Kids F50 Academy FG", "https://shop.eu/academy"),
         ]
 
-    async def fake_collect(item):
+    async def fake_collect(item, title_hint=""):
         fetched.append(item.url)
         return _p(item.url)
 
@@ -300,7 +319,7 @@ def test_scout_should_cap_how_many_product_pages_one_listing_costs(monkeypatch):
     async def fake_links(url, delay=1.0):
         return [(f"adidas F50 Elite FG {n}", f"https://shop.eu/{n}") for n in range(20)]
 
-    async def fake_collect(item):
+    async def fake_collect(item, title_hint=""):
         fetched.append(item.url)
         return _p(item.url)
 
@@ -340,7 +359,7 @@ def test_scout_should_spend_its_budget_on_the_titles_that_already_look_right(mon
             ("adidas Kids F50 Elite FG", "https://shop.eu/elite"),
         ]
 
-    async def fake_collect(item):
+    async def fake_collect(item, title_hint=""):
         fetched.append(item.url)
         return _p(item.url)
 

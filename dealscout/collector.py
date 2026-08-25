@@ -13,6 +13,7 @@ import json
 import logging
 import re
 from dataclasses import replace
+from html import unescape
 from typing import Any
 from urllib.parse import urljoin, urlsplit
 from urllib.robotparser import RobotFileParser
@@ -25,6 +26,8 @@ from .spec import looks_like_eu, normalise_size
 from .variants import extract_size_stock
 
 logger = logging.getLogger(__name__)
+
+_TAG_STRIP_RE = re.compile(r"<[^>]+>")
 
 # A bare custom User-Agent with no other headers is silently *tarpitted* by the CDN bot
 # protection several European retailers sit behind (Akamai especially): TCP connects,
@@ -288,6 +291,122 @@ def parse_ldjson_product(html: str, url: str, category: str) -> Product | None:
     return products[0] if products else None
 
 
+# A product URL on most storefronts ends in a numeric product id. Good enough to tell a
+# product link from navigation, and it is only ever used to *shortlist* pages to read.
+_PRODUCT_HREF_RE = re.compile(r'href="([^"#?]*?-(\d{5,})[^"]*)"', re.IGNORECASE)
+_TILE_BRAND_RE = re.compile(r'productdescriptionbrand"[^>]*>([^<]*)<', re.IGNORECASE)
+_TILE_NAME_RE = re.compile(r'productdescriptionname"[^>]*>([^<]*)<', re.IGNORECASE)
+
+
+def parse_html_links(html: str, url: str) -> list[tuple[str, str]]:
+    """Product-shaped anchors on a listing page that publishes no structured data.
+
+    A last resort for retailers with neither Product nor ItemList ld+json. A tile usually
+    links to the same product more than once — an image anchor and a text anchor — so
+    every occurrence is examined and the first that yields a name wins. Taking only the
+    first would return an empty name whenever the image anchor came first, and a nameless
+    link cannot be pre-filtered, which is the whole point of reading it.
+    """
+    titles: dict[str, str] = {}
+    order: list[str] = []
+    here = urlsplit(url).path.rstrip("/")
+    host = urlsplit(url).netloc
+    for match in _PRODUCT_HREF_RE.finditer(html):
+        absolute = urljoin(url, unescape(match.group(1)))
+        parts = urlsplit(absolute)
+        if parts.netloc != host:
+            continue
+        path = parts.path.rstrip("/")
+        if not path or here.startswith(path):
+            continue
+        if absolute not in titles:
+            titles[absolute] = ""
+            order.append(absolute)
+        if titles[absolute]:
+            continue
+        window = html[match.end() : match.end() + 3000]
+        brand = _TILE_BRAND_RE.search(window)
+        name = _TILE_NAME_RE.search(window)
+        titles[absolute] = " ".join(
+            unescape(part.group(1)).strip() for part in (brand, name) if part
+        ).strip()
+    return [(titles[link], link) for link in order]
+
+
+# Ordered best-first: an explicit machine-readable price beats a rendered one.
+_PRICE_PATTERNS = (
+    r'itemprop="price"[^>]*content="([\d.,]+)"',
+    r'property="product:price:amount"[^>]*content="([\d.,]+)"',
+    r'id="lblSellingPrice"[^>]*>\s*([^<]+?)<',
+    r'class="[^"]*(?:curPrice|sellingPrice|price--current)[^"]*"[^>]*>\s*([^<]+?)<',
+)
+_RRP_PATTERNS = (
+    r'id="lblTicketPrice"[^>]*>\s*([^<]+?)<',
+    r'class="[^"]*(?:ticketPrice|wasPrice|price--was|rrp)[^"]*"[^>]*>\s*([^<]+?)<',
+)
+_MONEY_RE = re.compile(r"(\d{1,6}(?:[.,]\d{3})*(?:[.,]\d{1,2})?)")
+
+
+def _money(text: object) -> float | None:
+    """Read a rendered price ('167,39 €', '1 234.50') as a float."""
+    match = _MONEY_RE.search(unescape(str(text or "")).replace("\xa0", " ").replace(" ", ""))
+    if not match:
+        return None
+    raw = match.group(1)
+    # Whichever separator comes last is the decimal one.
+    if "," in raw and "." in raw:
+        raw = raw.replace(".", "").replace(",", ".") if raw.rfind(",") > raw.rfind(".") else raw.replace(",", "")
+    elif "," in raw:
+        raw = raw.replace(",", ".") if len(raw.split(",")[-1]) <= 2 else raw.replace(",", "")
+    try:
+        return float(raw)
+    except ValueError:
+        return None
+
+
+def _first_match(html: str, patterns: tuple[str, ...]) -> float | None:
+    for pattern in patterns:
+        for found in re.findall(pattern, html, re.IGNORECASE):
+            value = _money(found)
+            if value:
+                return value
+    return None
+
+
+def parse_html_product(html: str, url: str, category: str) -> Product | None:
+    """Read a product page that publishes no ld+json Product at all.
+
+    Sports Direct — the owner's own known-good retailer — is one of these: the page
+    carries only a breadcrumb blob, and the price and per-size stock exist purely as
+    rendered HTML. Returns None rather than a half-product when there is no price.
+    """
+    price = _first_match(html, _PRICE_PATTERNS)
+    if price is None:
+        return None
+
+    title = ""
+    og_title = re.search(r'property="og:title"[^>]*content="([^"]*)"', html, re.IGNORECASE)
+    if og_title:
+        title = unescape(og_title.group(1)).strip()
+    if not title:
+        page_title = re.search(r"<title[^>]*>(.*?)</title>", html, re.IGNORECASE | re.DOTALL)
+        title = unescape(_TAG_STRIP_RE.sub(" ", page_title.group(1))).strip() if page_title else ""
+
+    reference = _first_match(html, _RRP_PATTERNS)
+    stock = extract_size_stock(html)
+    return Product(
+        title=title or url,
+        category=category,
+        price=price,
+        reference_price=reference if reference and reference > price else None,
+        currency="EUR",
+        url=url,
+        source=urlsplit(url).netloc.removeprefix("www."),
+        sizes=stock.sizes,
+        sizes_known=stock.known,
+    )
+
+
 def parse_ldjson_products(html: str, url: str, category: str) -> list[Product]:
     """Extract EVERY Product from a page — works for a listing page as well as a PDP."""
     blobs, page_text = _ldjson_nodes(html)
@@ -412,8 +531,15 @@ async def robots_allows(url: str, agent: str = "*") -> bool:
     return True
 
 
-async def collect(item: WatchItem) -> Product | None:
-    """Fetch a watch item and parse it into a Product (None if unreadable/disallowed)."""
+async def collect(item: WatchItem, title_hint: str = "") -> Product | None:
+    """Fetch a watch item and parse it into a Product (None if unreadable/disallowed).
+
+    ``title_hint`` is the name the listing gave this link. Some retailers put the brand
+    in the listing tile but leave it out of the product page's own title — Sports Direct
+    renders "Ultra 5 Ultimate ... Juniors" on a page reached from a tile reading "Puma
+    Ultra 5 Ultimate ... Juniors". The hint is used only when it strictly contains the
+    page's own title, i.e. when it is the same name with more of it.
+    """
     if not await robots_allows(item.url):
         return None
     html = await fetch(item.url)
@@ -421,7 +547,15 @@ async def collect(item: WatchItem) -> Product | None:
         return None
     product = parse_ldjson_product(html, item.url, item.category)
     if product is None:
-        logger.info("no ld+json Product found at %s", item.url)
+        product = parse_html_product(html, item.url, item.category)
+    if product is None:
+        logger.info("no product found at %s", item.url)
+        return None
+
+    hint = title_hint.strip()
+    if hint and product.title.strip() and hint != product.title.strip():
+        if product.title.strip().lower() in hint.lower():
+            product = replace(product, title=hint)
     return product
 
 
@@ -449,7 +583,8 @@ async def collect_listing(url: str, category: str, delay: float = 1.0) -> list[P
 async def collect_links(url: str, delay: float = 1.0) -> list[tuple[str, str]]:
     """Fetch a listing page and return the ``(name, URL)`` pairs it links to.
 
-    For retailers whose listing pages carry an ItemList of links but no prices.
+    Prefers a schema.org ItemList; falls back to product-shaped anchors for retailers
+    that publish no structured data on a listing at all.
     """
     if not await robots_allows(url):
         return []
@@ -458,7 +593,7 @@ async def collect_links(url: str, delay: float = 1.0) -> list[tuple[str, str]]:
         await asyncio.sleep(delay)
     if html is None:
         return []
-    links = parse_ldjson_links(html, url)
+    links = parse_ldjson_links(html, url) or parse_html_links(html, url)
     logger.info("collected %d link(s) from %s", len(links), url)
     return links
 

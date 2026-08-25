@@ -143,6 +143,7 @@ class Hunt:
     min_discount_pct: float = 0.0
     require_size_in_stock: bool = True
     require_new: bool = True
+    brands_only: bool = False  # when True, `brands` is a hard filter, not just a ranking
     queries: tuple[str, ...] = ()  # search strings for the scout
     watch: tuple[str, ...] = ()  # listing/product URLs to poll directly
     notes: str = ""
@@ -174,6 +175,7 @@ class Hunt:
             min_discount_pct=float(price.get("min_discount_pct") or 0),
             require_size_in_stock=bool(data.get("require_size_in_stock", True)),
             require_new=bool(data.get("require_new", True)),
+            brands_only=bool(data.get("brands_only", False)),
             queries=_tuple(data.get("queries")),
             watch=_tuple(data.get("watch")),
             notes=str(data.get("notes") or "").strip(),

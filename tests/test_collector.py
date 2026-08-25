@@ -8,12 +8,16 @@ from dealscout.collector import (
     _ROBOTS,
     enrich,
     parse_ldjson_links,
+    _money,
+    collect,
+    parse_html_links,
+    parse_html_product,
     parse_ldjson_product,
     parse_ldjson_products,
     parse_materials,
     robots_allows,
 )
-from dealscout.models import Product
+from dealscout.models import Product, WatchItem
 
 
 async def _always_allowed(url, agent="*"):
@@ -239,3 +243,108 @@ def test_robots_allows_should_fail_open_when_robots_txt_is_unreadable(monkeypatc
     monkeypatch.setattr("dealscout.collector.fetch", _serves(None))
     _ROBOTS.clear()
     assert asyncio.run(robots_allows("https://shop.eu/anything")) is True
+
+# --- HTML fallback for retailers that publish no ld+json Product (sportsdirect.lv) ---
+
+_SD_TILE = """
+<html><body>
+<a href="/puma-ultra-5-ultimate-firm-ground-football-boots-juniors-084390#colcode=08439011">
+  <span class="productdescriptionbrand">Puma</span>
+  <span class="productdescriptionname">Ultra 5 Ultimate Firm Ground Football Boots Juniors</span>
+</a>
+<a href="/football/football-boots">Back to boots</a>
+</body></html>
+"""
+
+_SD_PDP = """
+<html><head><meta property="og:title" content="Puma Ultra 5 Ultimate FG Juniors" /></head>
+<body>
+<span id="lblTicketPrice">252,00 &#x20AC;</span>
+<span id="lblSellingPrice">58,20 &#x20AC;</span>
+<select id="sizeDdl">
+  <option value="0">Choose</option>
+  <option value="4 (36.5)" class="greyOut" data-stock-qty="0">4 (36.5)</option>
+  <option value="4.5 (37)" class="" data-stock-qty="3">4.5 (37)</option>
+</select>
+</body></html>
+"""
+
+
+def test_should_find_product_links_on_a_listing_with_no_structured_data():
+    # The #colcode fragment is kept deliberately: it identifies the colourway, and two
+    # colourways of one boot have different stock (see monitor.canonical_url).
+    links = parse_html_links(_SD_TILE, "https://sd.lv/football/football-boots/kids")
+    assert links == [
+        ("Puma Ultra 5 Ultimate Firm Ground Football Boots Juniors",
+         "https://sd.lv/puma-ultra-5-ultimate-firm-ground-football-boots-juniors-084390"
+         "#colcode=08439011")
+    ]
+
+
+def test_should_read_the_tile_name_from_a_later_anchor_when_the_first_is_an_image():
+    # A tile links the same product twice: image first, then text. Reading only the first
+    # returns an empty name, and a nameless link cannot be pre-filtered.
+    page = """
+    <a href="/puma-ultra-5-ultimate-boots-084390"><img src="x.jpg"></a>
+    <a href="/puma-ultra-5-ultimate-boots-084390">
+      <span class="productdescriptionbrand">Puma</span>
+      <span class="productdescriptionname">Ultra 5 Ultimate FG Juniors</span>
+    </a>
+    """
+    assert parse_html_links(page, "https://sd.lv/football/boots") == [
+        ("Puma Ultra 5 Ultimate FG Juniors", "https://sd.lv/puma-ultra-5-ultimate-boots-084390")
+    ]
+
+
+def test_should_not_mistake_a_navigation_link_for_a_product():
+    # "/football/football-boots" has no product id and is an ancestor of the listing.
+    links = parse_html_links(_SD_TILE, "https://sd.lv/football/football-boots/kids")
+    assert all("football-boots" != l[1].rsplit("/", 1)[-1] for l in links)
+
+
+def test_should_read_price_rrp_and_sizes_from_a_page_with_no_ldjson():
+    product = parse_html_product(_SD_PDP, "https://sd.lv/p-084390", "football_boots")
+    assert product is not None
+    assert product.price == 58.20
+    assert product.reference_price == 252.00
+    assert product.title == "Puma Ultra 5 Ultimate FG Juniors"
+    assert product.sizes_known is True
+    assert product.sizes == frozenset({"37"})
+
+
+def test_should_refuse_to_invent_a_product_when_there_is_no_price():
+    assert parse_html_product("<html><body>no price</body></html>", "https://sd.lv/p", "x") is None
+
+
+def test_should_ignore_an_rrp_that_is_not_above_the_selling_price():
+    page = _SD_PDP.replace("252,00", "50,00")
+    assert parse_html_product(page, "https://sd.lv/p", "football_boots").reference_price is None
+
+
+def test_should_read_a_comma_decimal_price():
+    assert _money("167,39 \u20ac") == 167.39
+
+
+def test_should_read_a_dot_decimal_price_with_a_thousands_comma():
+    assert _money("1,234.50") == 1234.50
+
+
+def test_should_read_a_price_with_no_decimals():
+    assert _money("&#x20AC; 72") == 72.0
+
+def test_collect_should_take_the_listing_name_when_it_is_the_same_name_with_more_of_it(monkeypatch):
+    # Sports Direct's tile says "Puma Ultra 5 Ultimate..."; its own page title drops the
+    # brand. Losing it means a brand-gated hunt rejects a boot it should buy.
+    monkeypatch.setattr("dealscout.collector.robots_allows", _always_allowed)
+    monkeypatch.setattr("dealscout.collector.fetch", _serves(_SD_PDP))
+    item = WatchItem(url="https://sd.lv/p-084390", category="football_boots")
+    product = asyncio.run(collect(item, title_hint="Puma Ultra 5 Ultimate FG Juniors"))
+    assert product.title == "Puma Ultra 5 Ultimate FG Juniors"
+
+
+def test_collect_should_ignore_a_listing_name_for_a_different_product(monkeypatch):
+    monkeypatch.setattr("dealscout.collector.robots_allows", _always_allowed)
+    monkeypatch.setattr("dealscout.collector.fetch", _serves(_SD_PDP))
+    item = WatchItem(url="https://sd.lv/p-084390", category="football_boots")
+    product = asyncio.run(collect(item, title_hint="adidas Predator Elite FG"))
+    assert product.title == "Puma Ultra 5 Ultimate FG Juniors"  # the page's own title

@@ -81,6 +81,15 @@ def judge_hunt(
     if hunt.require_new and product.condition != "new":
         return Verdict(False, 0.0, (f"rejected: condition is {product.condition}",))
 
+    # A ranked brand list normally only *scores*. When the hunt says these brands and no
+    # others, it gates: a 79%-off Skechers is not a cheap Nike, it is a different boot.
+    if hunt.brands_only and hunt.brands:
+        haystack = f"{product.brand} {product.title}".lower()
+        if not any(b.strip().lower() in haystack for b in hunt.brands if b.strip()):
+            return Verdict(
+                False, 0.0, (f"rejected: brand not in {'/'.join(hunt.brands)}",)
+            )
+
     # --- price gates ---
     if hunt.never_above is not None and product.price > hunt.never_above:
         return Verdict(

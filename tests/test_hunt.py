@@ -224,3 +224,25 @@ def test_an_empty_requirement_should_gate_nothing():
     hunt = _hunt(require={})
     verdict = judge_hunt(_product(title="Nike Jr. Mercurial Superfly 10 Academy TF"), hunt)
     assert verdict.is_deal is True
+
+
+def test_a_brand_list_should_only_rank_by_default():
+    # Skechers is not on the list, but brands_only is off — it still scores as a deal.
+    verdict = judge_hunt(_product(title="Skechers SKX 01 Elite FG", brand="Skechers"), _hunt())
+    assert verdict.is_deal is True
+
+
+def test_brands_only_should_reject_a_brand_off_the_list():
+    hunt = _hunt(brands_only=True)
+    verdict = judge_hunt(_product(title="Skechers SKX 01 Elite FG", brand="Skechers"), hunt)
+    assert verdict.is_deal is False
+    assert "brand not in" in verdict.reasons[0]
+
+
+def test_brands_only_should_keep_a_brand_named_in_the_title_alone():
+    # sportsdirect splits brand and name, so a collector may supply an empty brand.
+    hunt = _hunt(brands_only=True)
+    verdict = judge_hunt(
+        _product(title="Puma Ultra 5 Ultimate Firm Ground Football Boots Juniors", brand=""), hunt
+    )
+    assert verdict.is_deal is True

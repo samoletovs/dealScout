@@ -135,6 +135,7 @@ hunts:
     deliver_to: LV
     sizes: ["37", "37.5"]
     brands: [Nike, adidas, Puma] # ranked — Nike scores highest, Puma lowest
+    brands_only: true            # and nothing else: a 79%-off Skechers is not a cheap Nike
     require:
       tier: [elite]              # the athlete boot only; rejects Academy/Club/League/Pro
       soleplate: [AG, FG]        # artificial or firm ground; rejects TF/IC/SG
@@ -162,8 +163,10 @@ hunts:
     watch:                       # retailer listing pages, already sorted by discount
       # Known-good, previously bought from. Behind Akamai bot protection: it answers a
       # complete browser header set and silently tarpits anything less, so keep the
-      # request rate low — see collector.BROWSER_HEADERS.
-      - "https://www.sportsdirect.lv/football/football-boots/kids-football-boots#dcp=1&dppp=60&OrderBy=discountvalue_desc"
+      # request rate low — see collector.BROWSER_HEADERS. Query string, not a #fragment:
+      # a fragment never reaches the server, so the discount sort simply did not apply.
+      - "https://www.sportsdirect.lv/football/football-boots/kids-football-boots?dcp=1&dppp=60&OrderBy=discountvalue_desc"
+      - "https://www.sportsdirect.lv/football/football-boots?dcp=1&dppp=60&OrderBy=discountvalue_desc"
       # Unisport (DK) — ships to LV for €7. Publishes full per-size stock AND RRP in the
       # page, so a find here can be confirmed in the size before you click.
       - "https://www.unisportstore.com/kids-boot-sale/"
@@ -224,7 +227,7 @@ monitor:
 scrape:
   delay_seconds: 1.0
   max_confirmations: 25        # product pages one hunt may open to confirm size + RRP
-  link_budget: 12              # product pages a single link-only listing may cost us
+  link_budget: 30              # product pages a single link-only listing may cost us
 
 # Vocabulary overrides — teach the extractor new words without a code change.
 # Shape: category -> attribute -> value -> [patterns]. A value listed here REPLACES

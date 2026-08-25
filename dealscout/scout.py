@@ -46,6 +46,10 @@ def title_plausible(title: str, hunt: Hunt, vocab: dict | None = None) -> bool:
         value = attrs.get(attr)
         if value and not any(str(a).strip().lower() == value.strip().lower() for a in allowed):
             return False
+    if hunt.brands_only and hunt.brands:
+        low = title.lower()
+        if not any(b.strip().lower() in low for b in hunt.brands if b.strip()):
+            return False
     return not any(m.strip().lower() in title.lower() for m in hunt.exclude_models if m.strip())
 
 
@@ -144,8 +148,8 @@ async def _from_watch(
         logger.info(
             "hunt %s: %s listed %d link(s), %d plausible", hunt.id, url, len(links), len(plausible)
         )
-        for _, link in plausible:
-            product = await collect(WatchItem(url=link, category=hunt.category))
+        for name, link in plausible:
+            product = await collect(WatchItem(url=link, category=hunt.category), title_hint=name)
             if product is not None:
                 found.append(product)
             await asyncio.sleep(delay)
