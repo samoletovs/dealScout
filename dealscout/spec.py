@@ -99,6 +99,11 @@ DEFAULT_VOCAB: dict[str, dict[str, dict[str, list[str]]]] = {
 _SIZE_PREFIX_RE = re.compile(r"^\s*(?:euro|eur|eu|size|sz|storlek|razmer)[\s.:]*", re.IGNORECASE)
 _SIZE_NUM_RE = re.compile(r"^(\d{1,2})(?:[.,](\d))?$")
 _SIZE_PAREN_RE = re.compile(r"\(\s*(\d{1,2}(?:[.,]\d)?)\s*\)")
+# Half sizes as retailers actually print them: Shopify variant titles from
+# prodirectsport.ie read "37½", and some shops write "37 1/2". Both used to fall through
+# the numeric match and normalise to "", silently deleting every half size from the stock
+# set — which is exactly the size a junior 37/37.5 hunt is looking for.
+_SIZE_HALF_RE = re.compile(r"\s*(?:\u00bd|1\s*/\s*2)")
 _APOSTROPHE_RE = re.compile(r"[''`\u2019]")
 
 
@@ -155,10 +160,14 @@ def normalise_size(raw: object) -> str:
     """Normalise a size label to a canonical string ('EU 37,5' -> '37.5', '38.0' -> '38').
 
     Handles the dual notation British retailers use, ``4.5 (37.5)``, where the bracketed
-    value is the EU size — the one a hunt is written in. Returns "" when the value isn't
-    a plain numeric size, so callers can skip it rather than compare noise.
+    value is the EU size — the one a hunt is written in. Also folds the half-size glyphs
+    ``37½`` and ``37 1/2`` into ``37.5``. Returns "" when the value isn't a plain numeric
+    size, so callers can skip it rather than compare noise.
     """
     text = str(raw or "").strip()
+    # Fold halves before anything else: the '/' split below would otherwise cut
+    # "37 1/2" at the slash and leave "37 1", which then fails the numeric match.
+    text = _SIZE_HALF_RE.sub(".5", text)
     bracketed = _SIZE_PAREN_RE.search(text)
     if bracketed:
         text = bracketed.group(1)
