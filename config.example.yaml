@@ -169,6 +169,11 @@ hunts:
       - "https://www.unisportstore.com/kids-boot-sale/"
       - "https://www.unisportstore.com/kids-football-boots/"
       - "https://www.unisportstore.com/discounted/football-boots-outlet/"
+      # Adult ranges too: they normally start at 38.5, but some models are made in 37 and
+      # that is where size 37 actually exists right now — the junior grids are sold out of
+      # it. Measured 2026-08-25: nothing Elite below €114.95 has a 37 in stock.
+      - "https://www.unisportstore.com/football-boots-on-sale/"
+      - "https://www.unisportstore.com/ag-football-boots/"
       # Pro:Direct IE (EU store, CZ warehouse) — ships to LV. Its listings carry links
       # only, so the scout reads the product pages of plausible titles. Deliberately NOT
       # sorted price-ascending: that returns the 50 cheapest, which are always takedown
