@@ -15,7 +15,8 @@ from pathlib import Path
 import aiohttp
 
 from .feedback import feedback_link, latest_by_url, parse_feedback_jsonl
-from .models import Feedback, Product, Verdict
+from .hunt import resolve_attrs
+from .models import Change, Feedback, Hunt, Product, Verdict
 
 try:
     import markdown as _markdown
@@ -107,6 +108,83 @@ def write_report(
     path.write_text(render_report(signals, feedback_base_url), encoding="utf-8")
     logger.info("wrote buy-signals report -> %s", path)
     return path
+
+
+_CHANGE_BADGE = {
+    "new": "**NEW**",
+    "price-drop": "**↓ PRICE DROP**",
+    "back-in-stock": "**BACK IN STOCK**",
+}
+
+_ATTR_ORDER = ("tier", "soleplate", "silo", "plate", "fit")
+
+
+def _deal_line(
+    product: Product, verdict: Verdict, change: Change | None, attrs: dict, base_url: str
+) -> str:
+    """One deal as a markdown bullet: what it is, what it costs, why it's news."""
+    bits: list[str] = []
+    if change is not None and change.kind in _CHANGE_BADGE:
+        bits.append(_CHANGE_BADGE[change.kind])
+    emoji = _BAND_EMOJI.get(verdict.band, "")
+    label = f"{emoji} " if emoji else ""
+    bits.append(f"{label}[{product.title} — €{product.price:.0f}]({product.url})")
+
+    ref = product.reference_price
+    if ref and ref > product.price:
+        bits.append(f"was €{ref:.0f} (-{round(100 * (1 - product.price / ref))}%)")
+    if change is not None and change.kind == "price-drop" and change.previous_price:
+        bits.append(f"was €{change.previous_price:.0f} last run")
+
+    spec = [attrs[a] for a in _ATTR_ORDER if a in attrs]
+    if spec:
+        bits.append(" · ".join(spec))
+    if product.source:
+        bits.append(product.source)
+    if base_url:
+        up = feedback_link(base_url, product.url, "up")
+        down = feedback_link(base_url, product.url, "down")
+        bits.append(f"[👍]({up}) [👎]({down})")
+    line = f"- {' · '.join(bits)}"
+
+    caveats = [r for r in verdict.reasons if r.startswith("verify on click")]
+    if caveats:
+        line += f"\n  - ⚠️ {caveats[0]}"
+    return line
+
+
+def render_hunt_report(
+    hunt: Hunt,
+    results: list[tuple[Product, Verdict, Change | None]],
+    feedback_base_url: str = "",
+    vocab: dict | None = None,
+) -> str:
+    """Render one hunt's findings, best first, grouped by band."""
+    title = hunt.label or hunt.id
+    lines = [f"# dealScout — {title}\n"]
+    if hunt.notes:
+        lines.append(f"_{hunt.notes}_\n")
+
+    if not results:
+        lines.append("No new matches this run. The hunt stays armed and will report on change.\n")
+        return "\n".join(lines)
+
+    ranked = sorted(results, key=lambda r: -r[1].score)
+    for band, heading in (("must-buy", "🟢 Buy now"), ("good", "🟡 Worth it")):
+        group = [r for r in ranked if r[1].band == band]
+        if not group:
+            continue
+        lines.append(f"## {heading} — {len(group)}")
+        for product, verdict, change in group:
+            attrs = resolve_attrs(product, hunt, vocab)
+            lines.append(_deal_line(product, verdict, change, attrs, feedback_base_url))
+        lines.append("")
+
+    lines.append(
+        "_You check out — dealScout never buys. Confirm size, soleplate and the "
+        "retailer's delivery to your country on click._"
+    )
+    return "\n".join(lines)
 
 
 async def send_email(subject: str, body: str) -> bool:

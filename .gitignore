@@ -12,5 +12,8 @@ venv/
 config.local.yaml
 out/
 
+# Monitor ledger — runtime state, not source. Losing it costs one noisy run.
+state/
+
 # Local-only personal-info pattern overrides
 scripts/.leak-patterns.local.txt

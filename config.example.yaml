@@ -111,3 +111,138 @@ serpapi:
     - { q: "Lacoste pique polo men", category: shirt_casual }
     - { q: "Polo Ralph Lauren oxford shirt men", category: shirt_casual }
     - { q: "Massimo Dutti wool trousers men", category: trousers }
+
+# ---------------------------------------------------------------------------
+# HUNTS — the repeatable part.
+#
+# A hunt is a declarative brief: what to find, for whom, and what makes it a deal.
+# The engine is domain-neutral, so "Elite football boots in EU 37" and "carbon-plated
+# running shoes in EU 42" are two configs over the same code. Run them with:
+#
+#     python -m dealscout.run_hunt              # every enabled hunt
+#     python -m dealscout.run_hunt boots-junior # one hunt, even if disabled
+#
+# `require` gates (a stated value that doesn't match = reject). `prefer` only scores,
+# ranked best-first. An attribute the page never stated is *unknown*, not failed: the
+# find is still surfaced, flagged "verify on click", and capped below 🟢 must-buy.
+# ---------------------------------------------------------------------------
+hunts:
+  - id: boots-junior
+    enabled: true
+    label: "Football boots — Elite, EU 37/37.5, under €100"
+    for: junior                  # opaque household role, never a real name
+    category: football_boots     # selects the vocabulary used to read titles
+    deliver_to: LV
+    sizes: ["37", "37.5"]
+    brands: [Nike, adidas, Puma] # ranked — Nike scores highest, Puma lowest
+    brands_only: true            # and nothing else: a 79%-off Skechers is not a cheap Nike
+    require:
+      tier: [elite]              # the athlete boot only; rejects Academy/Club/League/Pro
+      soleplate: [AG, FG]        # artificial or firm ground; rejects TF/IC/SG
+    require_stated: [tier]       # tier is read from the title, so an unstated tier can
+                                 # never be confirmed by clicking — reject, don't flag,
+                                 # or the same takedown resurfaces on every run.
+    prefer:
+      soleplate: [AG, FG]        # AG scores above FG
+      fit: [junior]
+    exclude:
+      models:                    # already owned — don't buy the same boot twice
+        - "Legend 10 Elite"
+        - "Tiempo Legend 10"
+      urls:
+        - "https://www.sportsdirect.lv/nike-kids-legend-10-elite-firm-ground-football-boots-084181"
+    price:
+      must_buy: 70               # 🟢 grab instantly
+      good_offer: 100            # 🟡 worth it
+      never_above: 100           # ⛔ hard ceiling
+      # RRP gate: proves it's the flagship, not a lookalike. 110, NOT 200 — measured, not
+      # guessed. €200+ is the *adult* Elite RRP; the junior version of the same boot lists
+      # at €119.95–€129.95 (adidas Predator/F50 Elite Kids, read off unisportstore.com on
+      # 2026-08-25), so a 200 gate rejected every junior Elite boot in existence. 110 still
+      # clears the junior League/Academy takedowns, which list at €69.95.
+      # Note the gate cannot do this job alone: Nike's junior Vapor 16 *Pro* lists at
+      # €139.95, above every junior Elite. The `tier` requirement is what rejects it.
+      min_reference_price: 110
+    watch:                       # retailer listing pages, already sorted by discount
+      # Known-good, previously bought from. Behind Akamai bot protection: it answers a
+      # complete browser header set and silently tarpits anything less, so keep the
+      # request rate low — see collector.BROWSER_HEADERS. Query string, not a #fragment:
+      # a fragment never reaches the server, so the discount sort simply did not apply.
+      - "https://www.sportsdirect.lv/football/football-boots/kids-football-boots?dcp=1&dppp=60&OrderBy=discountvalue_desc"
+      - "https://www.sportsdirect.lv/football/football-boots?dcp=1&dppp=60&OrderBy=discountvalue_desc"
+      # Unisport (DK) — ships to LV for €7. Publishes full per-size stock AND RRP in the
+      # page, so a find here can be confirmed in the size before you click.
+      - "https://www.unisportstore.com/kids-boot-sale/"
+      - "https://www.unisportstore.com/kids-football-boots/"
+      - "https://www.unisportstore.com/discounted/football-boots-outlet/"
+      # Adult ranges too: they normally start at 38.5, but some models are made in 37 and
+      # that is where size 37 actually exists right now — the junior grids are sold out of
+      # it. Measured 2026-08-25: nothing Elite below €114.95 has a 37 in stock.
+      - "https://www.unisportstore.com/football-boots-on-sale/"
+      - "https://www.unisportstore.com/ag-football-boots/"
+      # Pro:Direct IE (EU store, CZ warehouse) — ships to LV. Its listings carry links
+      # only, so the scout reads the product pages of plausible titles. Deliberately NOT
+      # sorted price-ascending: that returns the 50 cheapest, which are always takedown
+      # models, and the Elite boots never appear in the list at all. Sizes there are UK,
+      # which the collector reports as unknown rather than mis-reading as EU.
+      - "https://www.prodirectsport.ie/collections/football-kids-boots-sale"
+      # komanda.lv — adidas official dealer for the Baltics, physical shop at Duntes iela 7,
+      # Rīga, so a find here can be tried on before buying. Runs on Shopify: the collection
+      # endpoint returns one variant per size with an availability flag, which is the
+      # cleanest source in this list — one request, no scraping, exact stock.
+      - "https://komanda.lv/collections/futbola-apavi/products.json?limit=250"
+      - "https://komanda.lv/collections/berniem/products.json?limit=250"
+      - "https://komanda.lv/collections/ag-un-tf/products.json?limit=250"
+    queries:                     # SerpApi (dormant without SERPAPI_KEY) — costs 1 search each
+      - "Nike Mercurial Superfly 10 Elite junior AG"
+      - "Nike Mercurial Vapor 16 Elite junior football boots"
+      - "Nike Phantom Elite junior football boots"
+      - "adidas Predator Elite junior AG football boots"
+      - "adidas F50 Elite junior football boots"
+      - "Puma Future Ultimate junior football boots"
+    notes: "Under €100 · junior Elite RRP €120+ · AG preferred, FG accepted · ships to Latvia"
+
+  # A second hunt proves the engine is not boots-specific. Disabled until needed.
+  - id: running-adult
+    enabled: false
+    label: "Running shoes — race-day plated, EU 42"
+    for: sam
+    category: running_shoes
+    deliver_to: LV
+    sizes: ["42", "42.5"]
+    brands: [Nike, adidas, Saucony, Hoka, Asics, Puma]
+    require:
+      tier: [elite]
+    prefer:
+      plate: [carbon]
+      surface: [road]
+    price:
+      must_buy: 120
+      good_offer: 180
+      never_above: 200
+      min_reference_price: 220
+    queries:
+      - "Nike Vaporfly 3 sale"
+      - "adidas Adizero Adios Pro 4 sale"
+      - "Saucony Endorphin Elite sale"
+    notes: "Race-day only — carbon plate, road"
+
+# Monitor — memory between runs, so a cron reports news instead of repeating itself.
+monitor:
+  state_path: state/hunts.json
+  min_drop_pct: 5              # re-alert on a product already seen once it drops this much
+  forget_after_days: 90        # a product gone this long is genuinely news if it returns
+
+# Politeness when reading watch pages (respect robots/ToS; prefer feeds).
+scrape:
+  delay_seconds: 1.0
+  max_confirmations: 25        # product pages one hunt may open to confirm size + RRP
+  link_budget: 30              # product pages a single link-only listing may cost us
+
+# Vocabulary overrides — teach the extractor new words without a code change.
+# Shape: category -> attribute -> value -> [patterns]. A value listed here REPLACES
+# the built-in for that attribute (see dealscout/spec.py DEFAULT_VOCAB).
+# vocab:
+#   football_boots:
+#     tier:
+#       elite: [elite, ultimate, premium, "made in japan"]
