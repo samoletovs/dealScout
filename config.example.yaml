@@ -166,10 +166,13 @@ delivery:
   voetbalshop.nl:
     label: "Voetbalshop (NL)"
     shipping: 24.99
-    note: "Latvia falls under 'Other - Europe' in their own rate table — read off
-           /en/customer-service/ordering on 2026-08-26. The dearest postage of any
-           source here, so a find must be ~€25 better than a Baltic one to be worth it;
-           the shortlist ranks on landed cost, so it will say so."
+    # The reasoning belongs here, not in the email. `note:` is printed on every row, so it
+    # has to be a fact the reader needs at a glance — not an explanation of how we know it.
+    # Latvia falls under "Other - Europe" in their own rate table, read off
+    # /en/customer-service/ordering on 2026-08-26. It is the dearest postage of any source
+    # here, so a find must be roughly €25 better than a Baltic one to be worth it; the
+    # shortlist ranks on landed cost, so it already says so without needing to explain.
+    note: "dearest postage here — €25"
   futbolemotion.com:
     label: "Fútbol Emotion (ES)"
     # Deliberately no `shipping:` figure. Latvia is in their destination list, but the

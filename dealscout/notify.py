@@ -243,6 +243,24 @@ _SHORTLIST_FOOTER = (
 )
 
 
+NOTE_LIMIT = 60  # characters; a per-row aside, not an explanation
+
+
+def short_note(note: str) -> str:
+    """A delivery note trimmed to something that belongs on a row.
+
+    ``note`` is printed beside every product from a source, so a long one is repeated ten
+    times and buries the price it was meant to qualify. This has happened: a note
+    explaining *how* a shipping rate was established — useful reasoning, but reasoning —
+    turned each row into a paragraph. The cap keeps a config mistake from reaching the
+    reader, and the reasoning belongs in a config comment where it costs nothing.
+    """
+    text = " ".join(note.split())
+    if len(text) <= NOTE_LIMIT:
+        return text
+    return text[: NOTE_LIMIT - 1].rstrip(" ,;.—-") + "…"
+
+
 def _shortlist_row(
     product: Product,
     hunt: Hunt,
@@ -288,7 +306,7 @@ def _shortlist_row(
     if delivery.pickup:
         facts.append("🏬 try on before buying")
     if delivery.note:
-        facts.append(delivery.note)
+        facts.append(short_note(delivery.note))
 
     line = f"- {head}\n  - " + " · ".join(facts)
     if base_url:
