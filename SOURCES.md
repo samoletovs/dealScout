@@ -22,6 +22,20 @@ Two notes on tier, both of which have caused wrong conclusions here before:
 
 Last verified: **2026-08-26**.
 
+**Two other things here go stale, and differently.** The retailer facts above rot slowly —
+a shop changes platform or stops shipping to Latvia perhaps once a year. The *boot*
+catalogue in `data/football_boots.yaml` rots on a season: it records which generation of
+each model line is current, and every brand supersedes its flagship annually. It carries
+its own `last_verified` for that reason. When a boot the tool surfaces is labelled
+`current generation` and obviously is not, that file is the place to look — not the
+parsers, which will still be reading the page correctly.
+
+Per-source yields are watched automatically. `dealscout/yields.py` records how many
+products each source returned each run and warns when one falls to half its own recent
+median, which is a much earlier signal than waiting for a source to reach zero — and a
+more honest one, since a collapse to zero looks identical to a broken reader and once
+caused this tool to accuse two healthy retailers of being down.
+
 ---
 
 ## Tier 1 — monitored

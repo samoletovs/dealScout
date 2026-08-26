@@ -232,3 +232,43 @@ def test_short_note_should_collapse_whitespace_from_a_folded_yaml_note():
     from dealscout.notify import short_note
 
     assert short_note("ships to LV,\n   cost at checkout") == "ships to LV, cost at checkout"
+
+
+def test_render_shortlist_warns_when_a_source_yield_falls_sharply():
+    # The earlier signal. A source thins out long before it reaches zero, and the
+    # zero-only alarm is what produced a wrong diagnosis once already.
+    from dealscout.yields import Drop
+
+    coverage = [
+        SourceCoverage("prodirectsport.ie", "Pro:Direct (IE)", count=6, cheapest=62.0, found=15),
+    ]
+    fallen = [Drop(source="sportland.lv", label="Sportland (Rīga)", now=3, baseline=35)]
+
+    body = render_shortlist(
+        SHORTLIST_HUNT,
+        [_boot("A Elite", 40.0, "prodirectsport.ie")],
+        [],
+        SHORTLIST_TABLE,
+        coverage=coverage,
+        fallen=fallen,
+    )
+
+    assert "Yield fell sharply" in body
+    assert "Sportland (Rīga) returned 3, usually about 35" in body
+
+
+def test_render_shortlist_says_nothing_about_yield_when_nothing_fell():
+    coverage = [
+        SourceCoverage("prodirectsport.ie", "Pro:Direct (IE)", count=6, cheapest=62.0, found=15),
+    ]
+
+    body = render_shortlist(
+        SHORTLIST_HUNT,
+        [_boot("A Elite", 40.0, "prodirectsport.ie")],
+        [],
+        SHORTLIST_TABLE,
+        coverage=coverage,
+        fallen=[],
+    )
+
+    assert "Yield fell" not in body
