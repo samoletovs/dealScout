@@ -24,10 +24,11 @@ Last verified: **2026-08-26**.
 
 ---
 
-## Tier 1 — monitored, exact per-size stock
+## Tier 1 — monitored
 
-Everything needed for a buy decision without a click: price, RRP and which sizes are
-actually purchasable.
+Wired into the hunt and read on every run. The **How stock is read** column says how much
+each one can answer without a click: a source that states per-size stock can settle a buy
+decision outright, and one that states only a price is capped at 🟡 *verify on click*.
 
 | Source | Country | Platform | How stock is read | Trust | Elite proof (measured) |
 |---|---|---|---|---|---|
@@ -37,6 +38,8 @@ actually purchasable.
 | **futbola-apavi.lv** | 🇱🇻 LV | OpenCart | rendered size boxes (`read_size_boxes`) | small specialist, unrated | Nike Tiempo Maestro Elite FG €250 (RRP €270) |
 | **teamsport.lv** | 🇱🇻 LV — **official Nike distributor since 1998**, free shipping >€50, Rīga pickup | Magento 2 | rendered listing tiles (`parse_product_tiles`) — no sizes, so 🟡 only | authorised channel, zero authenticity risk | Legend 10 Elite SG-Pro €120 (was €330); ZM Vapor 16 Elite KM FG €120 (was €350) |
 | **sportland.lv** | 🇱🇻 LV — ~80 Baltic stores, official Nike Baltic distributor, **try-on before buying** | Magento 2 / ScandiPWA | its own **GraphQL API**, discovery via sitemap (`magento.py`) — no sizes, so 🟡 only | Frasers Group backing | Nike Phantom GX 2 Elite €99 (was €330); adidas Predator Elite FG €104 (was €260) |
+| **voetbalshop.nl** | 🇳🇱 NL → LV **€24.99** ("Other - Europe") | Magento 2 | rendered listing tiles *with a size swatch* (`parse_product_tiles`) — **exact per-size stock** | large NL specialist | adidas F50 Hyperfast Elite Laceless FG €223.99 (RRP €279.99); Nike ZM Superfly 11 Elite FG €289.99 |
+| **futbolemotion.com** | 🇪🇸 ES → LV, cost quoted per order | custom | ld+json on the listing — no sizes, so 🟡 only | 4.0/5, replies to 96% of negative reviews | Superfly 11 Elite AG-Pro €289.99; F50 Elite FG L-Tech €279.99 |
 
 **11teamsports** is the best-trusted retailer in the whole segment — eleven teamsports
 GmbH (JCK Holding), 66+ stores across 19 countries, and the highest Trustpilot score here
@@ -57,6 +60,31 @@ anchors, so names come from the URL slug and price from markup. Its size picker 
 of radio boxes and **only renders a size it can actually sell** — a boot down to its last
 pair shows one box carrying `data-qty="1"`.
 
+**voetbalshop.nl** is the widest catalogue outside Pro:Direct and the only *listing* here
+that states per-size stock, which normally costs a request per product. Its swatch links
+the sizes it can sell and prints the rest as plain text, so "is this option a link" is the
+shop's own statement of stock rather than an inference about it. Measured 2026-08-26 on
+`/en/football-boots.html`: 48 tiles, 34 with exact stock, and the 14 it declines to answer
+for are **exactly** the 14 whose own `data-sizes` counter says every size is available —
+where the markup draws no distinction and "all in stock" cannot be told from "no stock
+rendered". Paging is ignored, as on teamsport.lv, so breadth comes from category URLs.
+Its postage is the catch: **€24.99 to Latvia**, the dearest of any source here, so a find
+must be about €25 better than a Baltic one to actually be a better buy.
+
+**futbolemotion.com** is the largest Spanish specialist and the best source of colourways
+that never reach the Baltics. Its listing publishes ld+json for every product, so price
+needs no scraping at all. Per-size stock is **not in the page**: the size table renders
+`data-type="availability"` placeholders reading "Loading…" and is filled by a separate API
+call, so every find here is capped at 🟡 *verify on click*. Two further traps, both nearly
+recorded wrong. Its shipping to Latvia is quoted per order ("according to the order's
+volume") and never published as a rate, so it deliberately carries **no `shipping:` figure**
+— an invented number would silently reorder the shortlist. And it names no brand anywhere
+a parser looks: not in the title ("F50 Elite FG L-Tech Football Boots") and not in the
+structured data, while filing every boot under `/…/adidas/…`. Under `brands_only` that
+read as an unknown brand and rejected the entire shop, so the brand is now recovered from
+the retailer's own URL path. Like komanda.lv it publishes no "was" price — judge it on
+absolute price, not on discount.
+
 ### Siblings — deliberately not monitored
 
 `viskasfutbolui.lt` 🇱🇹 and `putsad.ee` 🇪🇪 are the *same operator, catalogue and prices*
@@ -65,18 +93,17 @@ returned identical products at identical prices. They parse correctly, so they a
 a fallback if the LV storefront goes away — but monitoring all three would triple the
 request load for no extra coverage.
 
+The same applies to **11teamsports' other locales** (`.pl`, `.nl`, `.at`): the same
+Shopware platform and the same inventory as the `de-de` store already monitored, so they
+would add requests without adding a single boot. Skipped for that reason, not a technical one.
+
 ---
 
 ## Tier 2 — stocks Elite, monitoring incomplete
 
-Worth the work, not yet done. Listed so effort is spent where it pays.
-
-| Source | Country | Trust | What works | What blocks it |
-|---|---|---|---|---|
-| **teamsport.lv** | 🇱🇻 LV — SIA VIVA SPORT, **official Nike distributor for Latvia since 1998**; free shipping ≥€50, Rīga pickup | authorised channel, zero authenticity risk | Listing names true Elite (`VAPOR 17 ELITE FG`, `TIEMPO MAESTRO ELITE SG-PRO`); Superfly Elite €295–369 | **Solved — see Tier 1.** It was never Cloudflare: the category page is served in full, and only the *product* page withholds its price. |
-| **intersport.lv** | 🇱🇻 LV — INTERSPORT BALTIJA, authorised Nike + adidas, Rīga mall stores | global franchise | Carries Elite per local stock | Not yet probed; DNS/SSL failed on first attempt. Worth a proper qualifier run. |
-| **futbolemotion.com** | 🇪🇸 ES — 18–20 stores, Spain's #1 football specialist | 4.0/5, responds to 96% of negative reviews | Reachable; 46 ld+json products on the listing | Listing publishes no sizes and no Elite proof was recovered from it; needs product-page reading. Good for colourways that never reach the Baltics. |
-| **voetbalshop.nl** | 🇳🇱 NL | — | Listing names adidas F50 Hyperfast Elite | No product links recovered without a browser; LV shipping unconfirmed. |
+Worth the work, not yet done. Listed so effort is spent where it pays. **Currently empty**
+— as of 2026-08-26 every shop surveyed has either been wired into Tier 1 or has a recorded
+reason below why it cannot be. New candidates land here after a qualifier run.
 
 ---
 
@@ -84,13 +111,16 @@ Worth the work, not yet done. Listed so effort is spent where it pays.
 
 | Source | Trust / note | Symptom |
 |---|---|---|
-| **unisportstore.com** 🇩🇰 | Unisport A/S, ~€155M revenue, top-3 European pure-play, €7 flat to LV. 3.7/5. **Now an R-GOL subsidiary.** | HTTP 405 on every request including the homepage. Previously the best source of all — per-size stock *and* RRP — so worth re-testing from another network before writing it off. |
+| **unisportstore.com** 🇩🇰 | Unisport A/S, ~€155M revenue, top-3 European pure-play, €7 flat to LV. 3.7/5. **Now an R-GOL subsidiary.** | HTTP 405 on every request including the homepage — an IP-range block, not a page fault. Previously the best source of all (per-size stock *and* RRP), so the clean route is an **Awin / TradeDoubler affiliate feed**, which a human has to apply for. Not worth further scraping attempts. |
+| **sportsdirect.lv** 🇱🇻 | Frasers Group; good for heavily discounted last-season Elite in person | **Readable in principle, unreachable in practice.** Its category HTML does carry a `var ecommerceData = {…}` block with name, price and brand (a genuine Nike Mercurial Vapor 16 Elite at €171), so the parser is not the problem: it is an IP-level Akamai tarpit that times out from here with both aiohttp and curl regardless of headers or TLS. CI runners are datacentre IPs and will be blocked too. Do not wire it in. |
+| **intersport.lv** 🇱🇻 | INTERSPORT BALTIJA, authorised Nike + adidas, Rīga mall stores | **Definitively dead as a source.** The site is a one-line page containing `<iframe src="http://www.intersport.com/">` — no catalogue, no API, nothing to read. Not "not yet probed"; there is nothing there. |
 | **sportisimo.com** 🇨🇿 | 220+ stores, authorised — but **2.5/5, returns from abroad are the core complaint** | 403 on every category page |
 | kickz.com 🇩🇪 | 3.7/5; subsidiary of 11teamsports, so the parent covers it | 403 (Cloudflare + PerimeterX) |
 | keller-sports.com 🇩🇪 | 2.9–3.4/5, refund delays | no catalogue recovered |
 | geomix.at 🇦🇹 | 2.1/5 and the site was unstable during research | connection failure |
-| sportsdirect.lv 🇱🇻 | Frasers Group; good for heavily discounted last-season Elite in person | Akamai tarpit: answers a complete browser header set, silently hangs on anything less. Times out on every request in CI. |
 | isport.ee 🇪🇪 | official adidas partner for Estonia since 2008 — clean, adidas-only | reachable, but no product links recoverable from the category page |
+
+
 
 ## Excluded by choice
 
@@ -124,8 +154,19 @@ Then add the listing URL to `watch:` in the hunt. Prefer, in order:
 2. a storefront's own GraphQL API (`catalogs:` in the hunt — see `magento.py`),
 3. a page whose ld+json states per-size availability,
 4. a rendered size picker (`<select>` or radio boxes),
-5. rendered listing tiles — name, link and price, but no sizes,
+5. rendered listing tiles (`parse_product_tiles`) — always name, link and price, and on a
+   theme whose tiles carry a size swatch, exact per-size stock too (voetbalshop.nl),
 6. a price with no sizes — still useful, but always 🟡 *verify on click*.
+
+The tile reader is deliberately theme-agnostic. It finds tiles by class token *or* by the
+catalogue data a theme hangs off them, keeps only the outermost match, and then reads each
+tile strictly inside its own element. That last part is the whole safety of it: a listing
+carries more tiles than products, because related-item carousels reuse identical markup,
+and a reader that split the page on a marker string would pair a name with a neighbour's
+price. Splitting on `product-item-info` does exactly that on voetbalshop, whose price sits
+on the element *above* that div and whose size swatch sits *after* it. A wrong price is
+worse than no price, so boundaries come from the parsed tree, never from a regex split.
+
 
 ### When a shop looks like it needs a browser
 
@@ -149,6 +190,12 @@ need none of it:
    blob) before assuming it fetches everything.
 
 Only when all four fail is a browser actually warranted. So far none of them has been.
+
+voetbalshop.nl is the second case to prove it, and it failed step 3 outright: it is
+Magento, but `/graphql` answers **403** from this network, so the route that unlocked
+sportland.lv was simply not on offer. That says nothing about the site — its category
+page renders all 48 tiles server-side, complete with a per-size swatch, and needed only a
+reader that recognised a second theme's conventions. One dead route is not a dead shop.
 
 **On GraphQL specifically:** introspection is the fastest way to learn a schema you have
 no documentation for — `{__type(name:"ProductAttributeFilterInput"){inputFields{name}}}`
