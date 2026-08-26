@@ -7,6 +7,19 @@ and recall on the "would we surface this?" decision (the money metric). It is a
 regression/drift monitor, not pass/fail unit testing, so tuning changes are measurable
 over time.
 
+**Two judges, scored separately.** A case with no ``hunt:`` is scored by the wardrobe
+judge (:func:`dealscout.judge.judge`). A case naming a hunt is scored by the *hunt* judge
+(:func:`dealscout.hunt.judge_hunt`) against that hunt as it is actually configured, so a
+config regression — someone loosening ``min_reference_price``, say — shows up here too.
+Blending the two into one number would hide which of them a change touched, so the
+scorecard reports each.
+
+**Band alone is not enough.** A case can reach the right band for entirely the wrong
+reason: `Diadora Maximus Elite Academy FG` is correctly rejected today, but only because
+Diadora is not in the brand list — nothing has looked at its tier. A case may therefore
+also assert ``expected.attrs``, pinning the *resolved attributes* the verdict was built
+from. That is what stops a golden case certifying an accident.
+
 Run it::
 
     python -m dealscout.eval                 # print + write the scorecard
@@ -19,7 +32,7 @@ import argparse
 import logging
 import os
 import sys
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, field, fields
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -27,8 +40,10 @@ from typing import Any
 import yaml
 
 from .config import load_config
+from .hunt import judge_hunt, resolve_attrs
 from .judge import judge
-from .models import Product
+from .models import Hunt, Product
+from .spec import extract_attrs, merge_vocab
 
 logging.basicConfig(
     level=logging.INFO,
@@ -48,16 +63,26 @@ _PRODUCT_FIELDS = {f.name for f in fields(Product)}
 
 @dataclass(frozen=True)
 class GoldenCase:
-    """One curated case: a product and the band the judge should assign it."""
+    """One curated case: a product and the band the judge should assign it.
+
+    ``hunt_id`` selects which judge scores it. ``expected_attrs`` optionally pins the
+    resolved attributes behind the verdict, so a case cannot pass on a coincidence.
+    """
 
     id: str
     product: Product
     expected_band: str
     note: str = ""
+    hunt_id: str = ""  # "" = score with the wardrobe judge
+    expected_attrs: dict[str, str] = field(default_factory=dict)
 
     @property
     def expected_is_deal(self) -> bool:
         return self.expected_band in DEAL_BANDS
+
+    @property
+    def kind(self) -> str:
+        return "hunt" if self.hunt_id else "wardrobe"
 
 
 @dataclass(frozen=True)
@@ -68,6 +93,7 @@ class CaseResult:
     predicted_band: str
     predicted_is_deal: bool
     reasons: tuple[str, ...]
+    predicted_attrs: dict[str, str] = field(default_factory=dict)
 
     @property
     def band_ok(self) -> bool:
@@ -76,6 +102,26 @@ class CaseResult:
     @property
     def deal_ok(self) -> bool:
         return self.predicted_is_deal == self.case.expected_is_deal
+
+    @property
+    def attr_misses(self) -> tuple[str, ...]:
+        """Attributes the case pinned that the engine read differently."""
+        return tuple(
+            f"{name}={self.predicted_attrs.get(name) or '(unstated)'}, wanted {wanted}"
+            for name, wanted in sorted(self.case.expected_attrs.items())
+            if self.predicted_attrs.get(name) != wanted
+        )
+
+    @property
+    def attr_ok(self) -> bool | None:
+        """True/False when the case pinned attributes, None when it pinned none.
+
+        None rather than True: a case that asserts nothing has not been checked, and
+        counting it as a pass would inflate the metric with cases that measure nothing.
+        """
+        if not self.case.expected_attrs:
+            return None
+        return not self.attr_misses
 
 
 def _safe_ratio(numerator: int, denominator: int) -> float | None:
@@ -152,6 +198,35 @@ class EvalResult:
         """Cases where the predicted band differs from the expected band."""
         return [r for r in self.results if not r.band_ok]
 
+    @property
+    def attr_checked(self) -> int:
+        """How many cases pinned attributes at all."""
+        return sum(r.attr_ok is not None for r in self.results)
+
+    @property
+    def attr_accuracy(self) -> float | None:
+        """Share of attribute-pinning cases whose attributes all matched.
+
+        None when no case pins any attribute — undefined, not zero, and not 100%.
+        """
+        return _safe_ratio(sum(r.attr_ok is True for r in self.results), self.attr_checked)
+
+    def attr_misses(self) -> list[CaseResult]:
+        """Cases whose pinned attributes did not match what the engine read."""
+        return [r for r in self.results if r.attr_ok is False]
+
+    def by_kind(self) -> dict[str, dict[str, Any]]:
+        """Per-judge counts and band accuracy, so a blend can't hide which judge moved."""
+        stats: dict[str, dict[str, Any]] = {}
+        for kind in ("wardrobe", "hunt"):
+            group = [r for r in self.results if r.case.kind == kind]
+            stats[kind] = {
+                "cases": len(group),
+                "correct": sum(r.band_ok for r in group),
+                "accuracy": _safe_ratio(sum(r.band_ok for r in group), len(group)),
+            }
+        return stats
+
 
 def _build_product(raw: dict[str, Any], case_id: str) -> Product:
     """Construct a Product from a golden-case mapping, coercing container types."""
@@ -164,6 +239,15 @@ def _build_product(raw: dict[str, Any], case_id: str) -> Product:
         return Product(**data)
     except TypeError as exc:
         raise ValueError(f"golden case {case_id!r}: invalid product ({exc})") from exc
+
+
+def _expected_attrs(raw: object, case_id: str) -> dict[str, str]:
+    """Coerce an ``expected.attrs`` mapping into plain strings."""
+    if raw is None:
+        return {}
+    if not isinstance(raw, dict):
+        raise ValueError(f"golden case {case_id!r}: expected.attrs must be a mapping")
+    return {str(k): str(v) for k, v in raw.items()}
 
 
 def load_golden(path: Path = DEFAULT_GOLDEN) -> list[GoldenCase]:
@@ -185,6 +269,8 @@ def load_golden(path: Path = DEFAULT_GOLDEN) -> list[GoldenCase]:
                 product=product,
                 expected_band=band,
                 note=str(entry.get("note", "")),
+                hunt_id=str(entry.get("hunt") or "").strip(),
+                expected_attrs=_expected_attrs(expected.get("attrs"), case_id),
             )
         )
     if not cases:
@@ -192,17 +278,43 @@ def load_golden(path: Path = DEFAULT_GOLDEN) -> list[GoldenCase]:
     return cases
 
 
+def load_hunts(config: dict[str, Any]) -> dict[str, Hunt]:
+    """Every hunt in the scoring config, by id — including disabled ones.
+
+    ``enabled`` governs whether a cron runs a hunt, not whether it can be scored: a
+    disabled hunt still has rules worth protecting from regression.
+    """
+    hunts = (Hunt.from_dict(h) for h in (config.get("hunts") or []) if h.get("id"))
+    return {hunt.id: hunt for hunt in hunts}
+
+
 def evaluate(cases: list[GoldenCase], config: dict[str, Any]) -> EvalResult:
-    """Run the judge over every case and collect the results."""
-    results = [
-        CaseResult(
-            case=case,
-            predicted_band=(verdict := judge(case.product, config)).band,
-            predicted_is_deal=verdict.is_deal,
-            reasons=verdict.reasons,
+    """Run the right judge over every case and collect the results."""
+    hunts = load_hunts(config)
+    vocab = merge_vocab(config.get("vocab"))
+    results: list[CaseResult] = []
+    for case in cases:
+        if case.hunt_id:
+            hunt = hunts.get(case.hunt_id)
+            if hunt is None:
+                raise ValueError(
+                    f"golden case {case.id!r}: no hunt {case.hunt_id!r} in the scoring config "
+                    f"(have: {', '.join(sorted(hunts)) or 'none'})"
+                )
+            verdict = judge_hunt(case.product, hunt, vocab)
+            attrs = resolve_attrs(case.product, hunt, vocab)
+        else:
+            verdict = judge(case.product, config)
+            attrs = extract_attrs(case.product.title, case.product.category, vocab)
+        results.append(
+            CaseResult(
+                case=case,
+                predicted_band=verdict.band,
+                predicted_is_deal=verdict.is_deal,
+                reasons=verdict.reasons,
+                predicted_attrs=attrs,
+            )
         )
-        for case in cases
-    ]
     return EvalResult(results)
 
 
@@ -221,6 +333,22 @@ def format_scorecard(result: EvalResult) -> str:
         f"**Deal recall:** {_pct(result.deal_recall)}  ·  "
         f"**Deal F1:** {_pct(result.deal_f1)}",
         "",
+        f"**Attributes pinned:** {result.attr_checked}/{result.total} case(s)  ·  "
+        f"**Attribute accuracy:** {_pct(result.attr_accuracy)}",
+        "",
+        "## By judge",
+        "| judge | cases | correct | band accuracy |",
+        "|-------|------:|--------:|--------------:|",
+    ]
+    kinds = result.by_kind()
+    for kind, label in (("wardrobe", "wardrobe (`judge`)"), ("hunt", "hunt (`judge_hunt`)")):
+        s = kinds[kind]
+        lines.append(
+            f"| {label} | {s['cases']} | {s['correct']} | {_pct(s['accuracy'])} |"
+        )
+
+    lines += [
+        "",
         "## Per band",
         "| band | expected | predicted | correct | precision | recall |",
         "|------|---------:|----------:|--------:|----------:|-------:|",
@@ -234,24 +362,38 @@ def format_scorecard(result: EvalResult) -> str:
         )
 
     misses = result.misses()
-    lines += ["", f"## Misses ({len(misses)})"]
+    lines += ["", f"## Band misses ({len(misses)})"]
     if misses:
         lines += [
-            "| id | expected | predicted | reasons |",
-            "|----|----------|-----------|---------|",
+            "| id | judge | expected | predicted | reasons |",
+            "|----|-------|----------|-----------|---------|",
         ]
         lines += [
-            f"| {m.case.id} | {m.case.expected_band} | {m.predicted_band} | "
+            f"| {m.case.id} | {m.case.kind} | {m.case.expected_band} | {m.predicted_band} | "
             f"{'; '.join(m.reasons)} |"
             for m in misses
         ]
     else:
         lines.append("None — every case matched its expected band.")
 
+    attr_misses = result.attr_misses()
+    lines += ["", f"## Attribute misses ({len(attr_misses)})"]
+    if attr_misses:
+        lines += [
+            "| id | judge | read |",
+            "|----|-------|------|",
+        ]
+        lines += [
+            f"| {m.case.id} | {m.case.kind} | {'; '.join(m.attr_misses)} |" for m in attr_misses
+        ]
+    else:
+        lines.append("None — every pinned attribute matched.")
+
     lines += [
         "",
         "_Scored against config.example.yaml. Grow evals/golden.yaml from real sale "
-        "emails — especially cases the judge gets wrong._",
+        "emails — especially cases the judge gets wrong. Pin `expected.attrs` on any case "
+        "that could reach the right band for the wrong reason._",
         "",
     ]
     return "\n".join(lines)
@@ -266,6 +408,19 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--min-accuracy", type=float, default=None, help="fail if band accuracy is below this")
     parser.add_argument("--min-deal-precision", type=float, default=None, help="fail if deal precision is below this")
     parser.add_argument("--min-deal-recall", type=float, default=None, help="fail if deal recall is below this")
+    parser.add_argument(
+        "--min-attr-accuracy",
+        type=float,
+        default=None,
+        help="fail if pinned-attribute accuracy is below this (also fails when no case pins any)",
+    )
+    parser.add_argument(
+        "--min-kind-accuracy",
+        type=float,
+        default=None,
+        help="fail if EITHER judge's band accuracy is below this, so the smaller set of "
+        "cases cannot hide a regression behind the larger one",
+    )
     args = parser.parse_args(argv)
 
     cases = load_golden(args.golden)
@@ -277,9 +432,11 @@ def main(argv: list[str] | None = None) -> int:
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(scorecard, encoding="utf-8")
     logger.info(
-        "eval: %d cases, accuracy=%s, deal precision=%s, recall=%s, misses=%d",
-        result.total, _pct(result.accuracy), _pct(result.deal_precision),
-        _pct(result.deal_recall), len(result.misses()),
+        "eval: %d cases (%d hunt), accuracy=%s, deal precision=%s, recall=%s, "
+        "attrs=%s over %d, misses=%d",
+        result.total, result.by_kind()["hunt"]["cases"], _pct(result.accuracy),
+        _pct(result.deal_precision), _pct(result.deal_recall),
+        _pct(result.attr_accuracy), result.attr_checked, len(result.misses()),
     )
 
     step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
@@ -291,7 +448,15 @@ def main(argv: list[str] | None = None) -> int:
         ("band accuracy", result.accuracy, args.min_accuracy),
         ("deal precision", result.deal_precision, args.min_deal_precision),
         ("deal recall", result.deal_recall, args.min_deal_recall),
+        ("attribute accuracy", result.attr_accuracy, args.min_attr_accuracy),
     ]
+    # Overall accuracy is a weighted average, so a judge with few cases can regress badly
+    # while the blend stays above the floor: with 15 wardrobe and 7 hunt cases, losing two
+    # hunt cases outright still scores 91%. Each judge therefore gets the same floor
+    # applied to it alone.
+    for kind, stats in result.by_kind().items():
+        if stats["cases"]:
+            gates.append((f"{kind} band accuracy", stats["accuracy"], args.min_kind_accuracy))
     failed = False
     for label, actual, minimum in gates:
         if minimum is not None and (actual is None or actual < minimum):
