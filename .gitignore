@@ -9,6 +9,7 @@ venv/
 
 # dealScout — never commit secrets or personal config
 .env
+config.yaml
 config.local.yaml
 out/
 

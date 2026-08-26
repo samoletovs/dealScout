@@ -19,7 +19,7 @@ from .hunt import resolve_attrs
 from .models import Change, Feedback, Hunt, Product, Verdict
 from .monitor import canonical_url
 from .pricehistory import PriceMemory
-from .shortlist import Delivery, delivery_for, landed_cost, matched_sizes
+from .shortlist import Delivery, SourceCoverage, delivery_for, landed_cost, matched_sizes
 
 try:
     import markdown as _markdown
@@ -46,10 +46,14 @@ def markdown_to_html(body: str) -> str | None:
 
     Attached as an alternative so 👍/👎 feedback links render as clickable buttons —
     plain-text ``mailto:`` links aren't reliably clickable outside Gmail.
+
+    ``tables`` is not on by default in Python-Markdown, and without it a pipe table
+    reaches the reader as a paragraph of literal ``|`` characters — which is how the
+    shortlist's per-source breakdown would arrive on a phone.
     """
     if _markdown is None:
         return None
-    rendered = _markdown.markdown(body)
+    rendered = _markdown.markdown(body, extensions=["tables"])
     return (
         "<!DOCTYPE html><html><body style=\"font-family:system-ui,-apple-system,"
         "'Segoe UI',Roboto,sans-serif;line-height:1.5;max-width:640px;margin:0 auto;"
@@ -294,6 +298,51 @@ def _shortlist_row(
     return line
 
 
+def _coverage_block(coverage: list[SourceCoverage]) -> list[str]:
+    """The per-source breakdown: who contributed how much, out of how much, and who didn't.
+
+    Diversity nobody can see is indistinguishable from none, so the spread is stated rather
+    than left to be counted off the rows. The "found" column is what makes it answer the
+    real question: six rows from one shop reads as a ranking bug until you can see that
+    shop had fifteen candidates and the next two had two each.
+
+    The silent-source line matters more than the table, but only when it means something.
+    A source that was read fine and simply had nothing suitable is normal and gets a quiet
+    note; a source that yielded nothing at all is the one whose reader has probably broken.
+    Firing the alarm for both would make it fire most weeks, and an alarm that always fires
+    is ignored by the week it matters.
+    """
+    contributed = [c for c in coverage if c.count]
+    silent = [c for c in coverage if not c.count]
+    if not contributed and not silent:
+        return []
+
+    lines = ["### Where these came from\n"]
+    if contributed:
+        lines.append("| Source | Rows | Cheapest | Found |")
+        lines.append("|---|---:|---:|---:|")
+        for row in contributed:
+            price = f"€{row.cheapest:.0f}" if row.cheapest is not None else "—"
+            lines.append(f"| {row.label} | {row.count} | {price} | {row.found} |")
+        lines.append("")
+
+    # Read but unsuitable: worth stating, not worth worrying about.
+    quiet = [c for c in silent if c.scouted]
+    # Nothing came back at all — the reader is the likely cause.
+    broken = [c for c in silent if not c.scouted]
+    if quiet:
+        detail = ", ".join(f"{c.label} ({c.scouted} seen)" for c in quiet)
+        lines.append(f"_Read but nothing matched: {detail}._\n")
+    if broken:
+        names = ", ".join(c.label for c in broken)
+        lines.append(
+            f"_⚠️ Nothing at all from {names} this run — not even a candidate to reject. "
+            f"That is usually a broken reader rather than an empty shelf, so it is worth "
+            f"a look._\n"
+        )
+    return lines
+
+
 def render_shortlist(
     hunt: Hunt,
     confirmed: list[Product],
@@ -304,6 +353,7 @@ def render_shortlist(
     checked: int = 0,
     sources: int = 0,
     memory: dict[str, PriceMemory] | None = None,
+    coverage: list[SourceCoverage] | None = None,
 ) -> str:
     """The buy-now shortlist: what to buy, ranked by what it actually costs to receive."""
     remembered = memory or {}
@@ -366,6 +416,9 @@ def render_shortlist(
     else:
         lines.append("_Nothing to verify this run._")
     lines.append("")
+
+    if coverage:
+        lines.extend(_coverage_block(coverage))
 
     if checked:
         lines.append(

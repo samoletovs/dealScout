@@ -9,7 +9,14 @@ so everything here sorts on what actually leaves the account.
 
 **Source diversity.** One retailer holds most of the discounted stock, so a plain
 cheapest-first list is ten rows from the same shop — which reads like a shortlist but
-offers no real choice, and no fallback if that shop's stock is stale.
+offers no real choice, and no fallback if that shop's stock is stale. Filling the list
+round-robin rather than cheapest-first gives every shop its cheapest row before any shop
+gets its second, so breadth survives a retailer with a deep sale.
+
+**A stated count per source.** Diversity nobody can see is indistinguishable from none,
+and a source that contributed *nothing* is the most useful row of all: a retailer goes
+silent when its parser breaks far more often than when its shelves empty, and a list that
+merely lacks the row cannot tell the reader which happened.
 
 **An honest split on size.** A boot confirmed in EU 37 and a boot that merely might be are
 not comparable, and averaging them into one list hides which is which. They get separate
@@ -21,6 +28,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, replace
+from urllib.parse import urlsplit
 
 from .models import Hunt, Product
 from .spec import normalise_sizes
@@ -58,6 +66,34 @@ class Delivery:
             note=str(data.get("note") or "").strip(),
             house_brand=str(data.get("house_brand") or "").strip(),
         )
+
+
+@dataclass(frozen=True)
+class SourceCoverage:
+    """One source's contribution to a shortlist: how many rows, from what price, of how many.
+
+    ``found`` is what makes the table answer the question the reader actually asks. Six
+    rows from one shop looks like a ranking bug until you can see that shop offered fifteen
+    candidates and the next two offered two each — at which point it is the catalogue
+    talking, not the ranker.
+
+    ``count == 0`` is a real row, not an omission: it is how a configured retailer says it
+    went quiet this run.
+
+    ``scouted`` is what separates the two ways of contributing nothing, and the difference
+    decides whether the reader should worry. A shop whose pages were read fine but whose
+    stock simply does not fit has ``scouted > 0``; a shop whose reader broke has
+    ``scouted == 0``. Only the second deserves an alarm — a warning that fires every week
+    for a shop that is working teaches the reader to ignore it, and then it is worth
+    nothing on the week a parser really does die.
+    """
+
+    source: str
+    label: str
+    count: int
+    cheapest: float | None = None
+    found: int = 0
+    scouted: int = 0
 
 
 def stamp_house_brands(products: list[Product], table: dict[str, Delivery]) -> list[Product]:
@@ -113,35 +149,133 @@ def pick_diverse(
     limit: int = DEFAULT_LIMIT,
     per_source: int = DEFAULT_PER_SOURCE,
 ) -> list[Product]:
-    """Cheapest by landed cost, but no more than ``per_source`` rows from one shop.
+    """Cheapest by landed cost, filled round-robin so no one shop takes the list.
 
-    The cap is relaxed rather than enforced: if honouring it would return fewer than
-    ``limit`` rows, the remainder is filled cheapest-first regardless of source. A short
-    list is worse than a repetitive one — the reader wants ten options, and being handed
-    six because the rule could not be satisfied helps nobody.
+    Each pass takes one product from every source — its cheapest unused one — so a shop
+    with a single bargain is on the list before the deepest sale gets its second row.
+    Sources are visited in the order of their cheapest row, which keeps each pass itself
+    price-ordered.
+
+    The ``per_source`` cap is relaxed rather than enforced: if honouring it would return
+    fewer than ``limit`` rows, the passes continue past it. A short list is worse than a
+    repetitive one — the reader wants ten options, and being handed six because the rule
+    could not be satisfied helps nobody. The relaxed passes stay round-robin, so the extra
+    rows still come off the top of each shop in turn instead of all off the deepest one.
     """
     ranked = sorted(products, key=lambda p: (landed_cost(p, delivery_for(p.source, table)), p.price))
-    chosen: list[Product] = []
-    counts: dict[str, int] = {}
+    by_source: dict[str, list[Product]] = {}
     for product in ranked:
-        if len(chosen) >= limit:
-            break
-        used = counts.get(product.source, 0)
-        if used >= max(1, per_source):
-            continue
-        counts[product.source] = used + 1
-        chosen.append(product)
+        by_source.setdefault(product.source, []).append(product)
 
+    cap = max(1, per_source)
+    chosen = _round_robin(by_source, limit, cap)
     if len(chosen) < limit:
-        already = {id(p) for p in chosen}
-        for product in ranked:
-            if len(chosen) >= limit:
-                break
-            if id(product) not in already:
-                chosen.append(product)
-    # Re-sort: the fallback appends in catalogue order, so without this the list can show
+        logger.debug(
+            "relaxing the %d-per-source cap: %d of %d row(s) from %d source(s)",
+            cap,
+            len(chosen),
+            limit,
+            len(by_source),
+        )
+        chosen = _round_robin(by_source, limit, depth_cap=None)
+    # Re-sort: the passes append by depth, not by price, so without this the list can show
     # a €108 boot above a €62 one, which makes a "cheapest first" list actively misleading.
     return sorted(chosen, key=lambda p: landed_cost(p, delivery_for(p.source, table)))
+
+
+def _round_robin(
+    by_source: dict[str, list[Product]], limit: int, depth_cap: int | None
+) -> list[Product]:
+    """One product from each source in turn, up to ``limit`` and ``depth_cap`` per source.
+
+    Each source's list must already be cheapest-first; ``depth_cap`` of ``None`` runs until
+    every source is exhausted.
+    """
+    chosen: list[Product] = []
+    depth = 0
+    while len(chosen) < limit and (depth_cap is None or depth < depth_cap):
+        exhausted = True
+        for queue in by_source.values():
+            if len(chosen) >= limit:
+                break
+            if depth < len(queue):
+                chosen.append(queue[depth])
+                exhausted = False
+        if exhausted:
+            break
+        depth += 1
+    return chosen
+
+
+def expected_sources(hunt: Hunt, table: dict[str, Delivery]) -> list[str]:
+    """The sources this hunt polls *and* config states delivery terms for, in config order.
+
+    Derived from the hunt rather than hard-coded, so a running-shoe hunt reports
+    running-shoe shops. Intersected with the delivery table on purpose: a watch list keeps
+    URLs for shops that have since been blocked or written off, and reporting those as
+    having gone quiet on every single run would train the reader to ignore the one line
+    that matters. A shop the owner has written delivery terms for is one they consider live.
+    """
+    urls = list(hunt.watch)
+    for catalog in hunt.catalogs:
+        urls.append(
+            str(catalog.get("origin") or catalog.get("graphql") or catalog.get("sitemap") or "")
+        )
+
+    hosts: list[str] = []
+    for url in urls:
+        host = urlsplit(url).netloc.lower().removeprefix("www.")
+        if host and host in table and host not in hosts:
+            hosts.append(host)
+    return hosts
+
+
+def source_coverage(
+    picked: list[Product],
+    table: dict[str, Delivery],
+    expected: list[str] | tuple[str, ...] = (),
+    pool: list[Product] | tuple[Product, ...] = (),
+    scouted: list[Product] | tuple[Product, ...] = (),
+) -> list[SourceCoverage]:
+    """How much of the shortlist each source contributed, biggest contributor first.
+
+    ``pool`` is everything that survived judging, so the report can distinguish a shop that
+    was beaten on price from one that only ever had two boots to offer. ``scouted`` is
+    everything read from the shop *before* judging, which is what tells a broken reader
+    apart from a shop that simply stocks nothing suitable.
+
+    A configured source that contributed nothing is reported with ``count == 0`` rather
+    than left out. A list that merely lacks the row cannot say which of the two happened.
+    """
+    counts: dict[str, int] = {}
+    cheapest: dict[str, float] = {}
+    for product in picked:
+        source = product.source
+        total = landed_cost(product, delivery_for(source, table))
+        counts[source] = counts.get(source, 0) + 1
+        cheapest[source] = min(cheapest.get(source, total), total)
+
+    found: dict[str, int] = {}
+    for product in pool:
+        found[product.source] = found.get(product.source, 0) + 1
+
+    seen: dict[str, int] = {}
+    for product in scouted:
+        seen[product.source] = seen.get(product.source, 0) + 1
+
+    silent = [s for s in expected if s not in counts]
+    rows = [
+        SourceCoverage(
+            source=source,
+            label=delivery_for(source, table).label or source,
+            count=counts.get(source, 0),
+            cheapest=cheapest.get(source),
+            found=found.get(source, counts.get(source, 0)),
+            scouted=seen.get(source, 0),
+        )
+        for source in [*counts, *silent]
+    ]
+    return sorted(rows, key=lambda r: (-r.count, r.cheapest if r.cheapest is not None else 0.0))
 
 
 def split_by_size_confidence(
