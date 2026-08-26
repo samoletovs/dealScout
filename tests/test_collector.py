@@ -16,6 +16,7 @@ from dealscout.collector import (
     parse_ldjson_product,
     parse_ldjson_products,
     parse_materials,
+    parse_product_tiles,
     parse_shopify_products,
     robots_allows,
     title_from_slug,
@@ -537,4 +538,81 @@ def test_should_not_report_stock_when_every_size_variant_is_out_of_stock():
     html = _size_variant_page(("37", "OutOfStock"), ("38", "OutOfStock"))
     [boot] = parse_ldjson_products(html, "https://www.11teamsports.com/de-de/p/x", "football_boots")
     assert boot.sizes_known is True
+    assert boot.sizes == frozenset()
+
+
+def _tile(name: str, href: str, price: str, old: str = "") -> str:
+    """One Magento product tile: the name and the price are separate elements."""
+    was = (
+        f'<span data-price-amount="{old}" data-price-type="oldPrice"></span>' if old else ""
+    )
+    return (
+        f'<div class="product-item-info">'
+        f'<strong class="product-item-name">'
+        f'<a class="product-item-link" href="{href}"> {name} </a></strong>'
+        f'<div class="price-box">{was}'
+        f'<span data-price-amount="{price}" data-price-type="finalPrice"></span></div>'
+        f"</div>"
+    )
+
+
+def test_should_read_magento_tiles_when_a_listing_has_no_structured_data():
+    # teamsport.lv publishes no ld+json and loads the *detail* page price over AJAX, so
+    # the listing tiles are the only readable statement of price the site offers.
+    html = (
+        _tile("ZM VAPOR 16 ELITE KM FG", "https://www.teamsport.lv/lv_lv/a-1", "120.00", "350.00")
+        + _tile("LEGEND 10 ELITE AG-PRO", "https://www.teamsport.lv/lv_lv/b-2", "120.00")
+    )
+    boots = parse_product_tiles(html, "https://www.teamsport.lv/lv_lv/futbols/", "football_boots")
+    assert [b.title for b in boots] == ["ZM VAPOR 16 ELITE KM FG", "LEGEND 10 ELITE AG-PRO"]
+    assert boots[0].price == 120.00
+    assert boots[0].reference_price == 350.00
+    assert boots[1].reference_price is None
+    assert boots[0].source == "teamsport.lv"
+
+
+def test_should_not_pair_a_tile_name_with_a_neighbouring_tiles_price():
+    # The whole safety of this reader. A product page carries several related-item
+    # carousels built from identical markup, so a scan that ignored tile boundaries would
+    # confidently attach the wrong boot's price — a wrong answer, not a missing one.
+    html = (
+        _tile("CHEAP TAKEDOWN FG", "https://shop.example/cheap", "55.00")
+        + _tile("SUPERFLY ELITE FG", "https://shop.example/elite", "289.00")
+    )
+    boots = parse_product_tiles(html, "https://shop.example/list", "football_boots")
+    prices = {b.title: b.price for b in boots}
+    assert prices == {"CHEAP TAKEDOWN FG": 55.00, "SUPERFLY ELITE FG": 289.00}
+
+
+def test_should_skip_a_tile_that_states_no_price():
+    html = (
+        '<div class="product-item-info">'
+        '<a class="product-item-link" href="/x">NO PRICE BOOT</a></div>'
+    ) + _tile("PRICED BOOT", "https://shop.example/p", "99.00")
+    boots = parse_product_tiles(html, "https://shop.example/list", "football_boots")
+    assert [b.title for b in boots] == ["PRICED BOOT"]
+
+
+def test_should_read_a_tile_that_carries_its_name_in_a_title_attribute():
+    # The carousel variant of the same markup puts the name in `title=` before `href=`.
+    html = (
+        '<div class="product-item-info">'
+        '<a class="product-item-link" title="VAPOR 17 ELITE AG-PRO" '
+        'href="https://shop.example/v17">x</a>'
+        '<span data-price-amount="349.99" data-price-type="finalPrice"></span></div>'
+    )
+    [boot] = parse_product_tiles(html, "https://shop.example/list", "football_boots")
+    assert boot.title == "VAPOR 17 ELITE AG-PRO"
+    assert boot.price == 349.99
+
+
+def test_should_report_tile_sizes_as_unknown():
+    # A listing tile states no sizes. `sizes_known=False` keeps the judge honest: it caps
+    # the find at "verify on click" rather than implying the size is available.
+    [boot] = parse_product_tiles(
+        _tile("SUPERFLY ELITE FG", "https://shop.example/e", "289.00"),
+        "https://shop.example/list",
+        "football_boots",
+    )
+    assert boot.sizes_known is False
     assert boot.sizes == frozenset()
