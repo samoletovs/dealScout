@@ -1,0 +1,340 @@
+# dealScout — football boot tier catalogue.
+#
+# WHY THIS EXISTS
+# The engine used to decide "is this the flagship?" by looking for the word "elite" in the
+# title. That is wrong in both directions. `Diadora Maximus Elite Academy FG` (RRP €70) is
+# an Academy boot whose *range* is called "Maximus Elite". `Mizuno Morelia II Elite` is
+# Mizuno's SECOND tier — their flagship is "Made in Japan". Puma's flagship is "Ultimate";
+# a Puma boot saying "Elite" is not the top line. And a junior Elite (€120–140) is a
+# genuinely different boot from an adult Elite (€250–295) — different upper, softer plate,
+# wider last — not the same boot in small sizes.
+#
+# WHAT IT IS FOR
+# Classification, NOT filtering. The owner is buying for a child, so a junior flagship is
+# exactly what he might want. The catalogue's job is to let the email say *which* of these
+# he is being offered, so a €130 junior boot can never be mistaken for a €280 adult one.
+# "unknown" is a real answer here and must stay one.
+#
+# STALENESS
+# `generation.status` is a snapshot: it says which boots were current in the season named
+# by `last_verified`. It WILL rot — a "current" generation becomes "superseded" the moment
+# its successor ships, with no code change and no error. When a status looks wrong, check
+# this date before suspecting the parser. Refresh the statuses, bump the date.
+last_verified: "2026-08"
+category: football_boots
+source: >-
+  Nike & adidas football boot taxonomy research (Aug 2026): Footy Headlines naming-system
+  articles, Pro:Direct boot-tier guides, Unisport, Fútbol Emotion and brand product pages.
+
+# --- Title normalisation, applied before anything is matched -------------------------
+#
+# Junior markers. These decide adult-flagship vs junior-flagship and nothing else: a
+# junior boot is not a lesser tier, it is a different construction at the top of its own
+# range.
+junior_markers:
+  [kids, kid, junior, jr, j, youth, "(gs)", "(ps)", "(td)", children, child, boys, girls]
+
+# Soleplate suffixes are stripped BEFORE tier keywords are read, or "SG-Pro" and "AG-Pro"
+# are read as the Pro tier and every soft-ground flagship is demoted. Longest first, so
+# "sg-pro" is consumed before a bare "sg" can take half of it.
+#
+# NOTE the absence of "in" (indoor). Stripping it protected nothing — no tier word hides
+# inside it — and it silently ate the middle of Mizuno's "Made in Japan", turning their
+# actual flagship into a takedown. Soleplates are read by the vocabulary, not here; this
+# list exists only to stop them being mistaken for tier words.
+soleplate_suffixes:
+  [sg-pro, sg pro, ag-pro, ag pro, fg, sg, ag, mg, tf, ic, hg]
+
+# Words that look like tier signals and are not: colourways, packs, technology badges and
+# construction variants. Stripped before tier keywords are read. `nn` (Next Nature) and
+# `se` (Special Edition) are the dangerous ones — both sit at the same tier.
+noise:
+  [se, nn, zm, air zoom, ft, ll, laceless, knitted, tongue, made in italy,
+   blueprint, pure victory, chaos vs control, attack pack, break em]
+
+# Retailers write the same generation in Roman or Arabic. Folded to Arabic before any
+# generation is matched, so "Superfly XI" and "Superfly 11" are one boot.
+roman_numerals:
+  {i: 1, ii: 2, iii: 3, iv: 4, v: 5, vi: 6, vii: 7, viii: 8, ix: 9, x: 10,
+   xi: 11, xii: 12, xiii: 13, xiv: 14, xv: 15, xvi: 16, xvii: 17}
+
+# --- Brands ---------------------------------------------------------------------------
+#
+# `flagship` and `takedown` are the tier words THIS brand uses. When both appear, the one
+# that appears LATER in the title is the real tier: for Nike and adidas "Elite" occupies
+# the tier position, but Diadora embeds it in the range name ("Maximus Elite Academy") and
+# Mizuno qualifies it upward ("Morelia II Elite Made in Japan"). Order settles both without
+# a brand-specific branch.
+#
+# `rrp_bands` are corroboration only, never a gate — a discounted flagship is precisely
+# what this tool exists to find, so price must not decide tier.
+brands:
+  nike:
+    flagship: [elite]
+    takedown: [pro, academy, club, league, match, play, essential]
+    rrp_bands:
+      adult-flagship: [250, 320]
+      junior-flagship: [110, 150]
+      takedown: [40, 190]
+    lines:
+      mercurial superfly:
+        patterns: [mercurial superfly, superfly]
+        generations:
+          - gen: 11
+            patterns: [superfly 11]
+            year: 2026
+            launch_rrp_eur: 295
+            status: current
+          - gen: 10
+            patterns: [superfly 10]
+            year: 2024
+            launch_rrp_eur: 310
+            status: superseded
+            note: "Highest-ever Nike Elite RRP; a genuine one at €150-180 is ~50% off"
+          - gen: 9
+            patterns: [superfly 9]
+            year: 2022
+            launch_rrp_eur: 290
+            status: discontinued
+      mercurial vapor:
+        patterns: [mercurial vapor, vapor]
+        generations:
+          - gen: 17
+            patterns: [vapor 17]
+            year: 2026
+            launch_rrp_eur: 260
+            status: current
+          - gen: 16
+            patterns: [vapor 16]
+            year: 2024
+            launch_rrp_eur: 310
+            status: superseded
+          - gen: 15
+            patterns: [vapor 15]
+            year: 2022
+            launch_rrp_eur: 275
+            status: discontinued
+      phantom:
+        patterns: [phantom]
+        generations:
+          - gen: 6
+            patterns: [phantom 6]
+            year: 2025
+            launch_rrp_eur: 265
+            status: current
+          - gen: 2
+            patterns: [phantom gx 2, phantom gx2]
+            year: 2024
+            launch_rrp_eur: 290
+            status: superseded
+          - gen: 1
+            patterns: [phantom gx]
+            year: 2023
+            launch_rrp_eur: 290
+            status: discontinued
+          - patterns: [phantom gt2, phantom gt 2]
+            year: 2022
+            launch_rrp_eur: 280
+            status: discontinued
+          - patterns: [phantom gt]
+            year: 2021
+            launch_rrp_eur: 280
+            status: discontinued
+      tiempo:
+        patterns: [tiempo maestro, tiempo legend, tiempo]
+        generations:
+          - patterns: [tiempo maestro, maestro]
+            year: 2026
+            launch_rrp_eur: 240
+            status: current
+            note: "'Maestro' replaces the 'Legend' name from 2026"
+          - gen: 10
+            patterns: [legend 10]
+            year: 2023
+            launch_rrp_eur: 240
+            status: superseded
+          - gen: 9
+            patterns: [legend 9]
+            year: 2021
+            launch_rrp_eur: 225
+            status: discontinued
+          - gen: 8
+            patterns: [legend 8]
+            year: 2019
+            launch_rrp_eur: 210
+            status: discontinued
+          - gen: 7
+            patterns: [legend 7]
+            year: 2018
+            launch_rrp_eur: 230
+            status: discontinued
+            note: "Still listed by clearance retailers; eight years old"
+
+  adidas:
+    flagship: [elite]
+    # Pre-July-2024 adidas marked the top tier with "+" rather than "Elite":
+    # Predator+, Copa Pure+, X Crazyfast+. Still on clearance shelves.
+    flagship_patterns: ['predator\s*\+', 'copa\s+pure\s*\+', 'x\s+crazyfast\s*\+',
+                        'x\s+speedportal\s*\+', 'crazyfast\s*\+']
+    takedown: [pro, league, club, academy, match, play, essential]
+    rrp_bands:
+      adult-flagship: [250, 350]
+      junior-flagship: [120, 140]
+      takedown: [40, 180]
+    lines:
+      predator:
+        patterns: [predator]
+        generations:
+          - gen: 26
+            patterns: [predator 26, wales bonner]
+            year: 2026
+            launch_rrp_eur: 280
+            status: current
+            note: "Wales Bonner collab lists at €320-350 — a genuine Elite, priced up"
+          - gen: 25
+            patterns: [predator 25]
+            year: 2025
+            launch_rrp_eur: 280
+            status: superseded
+          - gen: 24
+            patterns: [predator 24]
+            year: 2024
+            launch_rrp_eur: 280
+            status: superseded
+          - patterns: [predator accuracy]
+            year: 2023
+            launch_rrp_eur: 270
+            status: discontinued
+          - patterns: [predator edge]
+            year: 2022
+            launch_rrp_eur: 265
+            status: discontinued
+      f50:
+        patterns: [f50, x crazyfast, x speedportal]
+        generations:
+          - patterns: [f50]
+            year: 2024
+            launch_rrp_eur: 270
+            status: current
+            note: "Relaunch of the F50 name after a nine-year gap"
+          - patterns: [x crazyfast, crazyfast]
+            year: 2023
+            launch_rrp_eur: 265
+            status: discontinued
+          - patterns: [x speedportal, speedportal]
+            year: 2022
+            launch_rrp_eur: 260
+            status: discontinued
+      # Deliberately outside the Elite/Pro/League/Club ladder: kangaroo leather, made in
+      # Germany, ~€140, perennial. Listed BEFORE `copa` so the more specific name wins —
+      # `copa`'s own patterns would otherwise claim it.
+      copa mundial:
+        patterns: [copa mundial]
+        generations:
+          - patterns: [copa mundial]
+            year: 1979
+            launch_rrp_eur: 140
+            status: evergreen
+      copa:
+        patterns: [copa pure, copa]
+        generations:
+          - gen: 3
+            patterns: [copa pure 3]
+            year: 2024
+            launch_rrp_eur: 250
+            status: current
+          - gen: 2
+            patterns: [copa pure 2]
+            year: 2024
+            launch_rrp_eur: 255
+            status: superseded
+          - patterns: [copa pure]
+            year: 2022
+            launch_rrp_eur: 250
+            status: discontinued
+
+  puma:
+    # Puma's top line is "Ultimate". "Elite" is not a Puma tier word at all, so a Puma
+    # boot advertising Elite tells us nothing and must classify as unknown.
+    flagship: [ultimate]
+    takedown: [match, play, pro]
+    rrp_bands:
+      adult-flagship: [200, 240]
+      junior-flagship: [90, 130]
+      takedown: [40, 150]
+    lines:
+      future:
+        patterns: [future]
+        generations: []
+      ultra:
+        patterns: [ultra]
+        generations: []
+      king:
+        patterns: [king]
+        generations: []
+
+  mizuno:
+    # "Made in Japan" sits ABOVE "Elite" for Mizuno. Morelia II Elite is their second
+    # tier at roughly €150-180, so `elite` belongs in `takedown` here — the same word
+    # meaning a different thing is exactly what a per-brand table is for.
+    flagship: [made in japan, japan kl, mij]
+    takedown: [elite, pro, club]
+    rrp_bands:
+      adult-flagship: [290, 350]
+      junior-flagship: [90, 140]
+      takedown: [80, 200]
+    lines:
+      morelia:
+        patterns: [morelia neo, morelia]
+        generations: []
+      alpha:
+        patterns: [alpha]
+        generations: []
+
+  diadora:
+    # Diadora embeds "Elite" in the RANGE name — "Maximus Elite", "B-Elite" — and puts the
+    # real tier word after it. Handled by the later-word-wins rule, not by a special case.
+    flagship: [elite]
+    takedown: [academy, pro, league, club, play]
+    rrp_bands:
+      adult-flagship: [200, 280]
+      junior-flagship: [90, 150]
+      takedown: [50, 100]
+    lines:
+      maximus:
+        patterns: [maximus]
+        generations: []
+      brasil:
+        patterns: [brasil, b-elite]
+        generations: []
+
+  new balance:
+    flagship: [elite]
+    takedown: [pro, dispatch, magia, magnia]
+    rrp_bands:
+      adult-flagship: [200, 250]
+      junior-flagship: [80, 130]
+      takedown: [50, 160]
+    lines:
+      furon:
+        patterns: [furon]
+        generations: []
+      tekela:
+        patterns: [tekela]
+        generations: []
+
+  # Brands whose naming is model-based rather than tier-based. Listing them with NO
+  # flagship word is deliberate: "Umbro Medusae Elite" must come back `unknown` rather
+  # than borrow Nike's meaning of the word. Silence beats a confident guess.
+  lotto:
+    flagship: []
+    takedown: []
+    lines: {}
+  umbro:
+    flagship: []
+    takedown: []
+    lines: {}
+  joma:
+    flagship: []
+    takedown: []
+    lines: {}

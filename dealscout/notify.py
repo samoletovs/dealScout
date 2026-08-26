@@ -125,6 +125,40 @@ _CHANGE_BADGE = {
 
 _ATTR_ORDER = ("tier", "soleplate", "silo", "plate", "fit")
 
+# What each tier means in words the owner can act on. The junior gloss is the reason this
+# exists: a €130 junior Elite and a €280 adult Elite are both truthfully "Elite", and
+# printing that word alone lets the cheaper one read as the bargain of the year.
+_TIER_LABEL = {
+    "adult-flagship": "**adult flagship**",
+    "junior-flagship": "**junior flagship** — top of the junior range, comfort-tuned "
+    "plate, not adult construction",
+    "takedown": "takedown — not the flagship",
+}
+
+_STATUS_LABEL = {
+    "current": "current generation",
+    "superseded": "superseded generation",
+    "discontinued": "discontinued generation",
+    "evergreen": "evergreen model — outside the tier ladder",
+}
+
+
+def tier_phrase(attrs: dict) -> str:
+    """Say which flagship this is, and how old — or say nothing.
+
+    Silent for an unknown tier: the row already carries a "verify on click" caveat in
+    that case, and inventing a label would be the confident-wrong answer the catalogue
+    exists to prevent.
+    """
+    label = _TIER_LABEL.get(str(attrs.get("tier") or ""))
+    if not label:
+        return ""
+    status = _STATUS_LABEL.get(str(attrs.get("generation_status") or ""))
+    if not status:
+        return label
+    year = attrs.get("generation_year")
+    return f"{label} · {status}{f' ({year})' if year else ''}"
+
 
 def price_memory_phrase(memory: PriceMemory | None) -> str:
     """Where this price sits against what the product has actually sold for — or nothing.
@@ -148,6 +182,14 @@ def price_memory_phrase(memory: PriceMemory | None) -> str:
     if gap >= 1:
         return f"€{gap:.0f} above its {days}-day low"
     return ""
+
+
+def _spec_bits(attrs: dict, tier_said: bool) -> list[str]:
+    """The short spec list. `tier` is dropped when the tier phrase already carried it,
+    so a boot does not read "adult flagship · adult-flagship". Categories with no
+    catalogue (running shoes) keep showing their vocabulary tier as before."""
+    order = [a for a in _ATTR_ORDER if not (tier_said and a == "tier")]
+    return [attrs[a] for a in order if a in attrs]
 
 
 def _deal_line(
@@ -175,7 +217,10 @@ def _deal_line(
     if remembered:
         bits.append(remembered)
 
-    spec = [attrs[a] for a in _ATTR_ORDER if a in attrs]
+    said = tier_phrase(attrs)
+    if said:
+        bits.append(said)
+    spec = _spec_bits(attrs, bool(said))
     if spec:
         bits.append(" · ".join(spec))
     if product.source:
@@ -290,7 +335,10 @@ def _shortlist_row(
     remembered = price_memory_phrase(memory)
     if remembered:
         facts.append(remembered)
-    spec = [attrs[a] for a in _ATTR_ORDER if a in attrs]
+    said = tier_phrase(attrs)
+    if said:
+        facts.append(said)
+    spec = _spec_bits(attrs, bool(said))
     if spec:
         facts.append(" · ".join(spec))
 
