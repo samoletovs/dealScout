@@ -44,6 +44,16 @@ pytest -q
 
 See [`config.example.yaml`](config.example.yaml) — encodes target sizes, fit-by-context, the logo rule, natural-fibre threshold, per-category "can't-say-no" prices, the brand shortlist, and the watch-list. Email is configured via env (see [`.env.example`](.env.example)); never commit real addresses or secrets.
 
+## Sources
+
+See [`SOURCES.md`](SOURCES.md) — which retailers are monitored, which cannot be, and the
+evidence for each. A source qualifies only if it is reachable, stocks the tier being
+hunted, and publishes readable per-size stock. Check a candidate before adding it:
+
+```bash
+python -m dealscout.qualify www.example.com /collections/boots-sale
+```
+
 ## Roadmap
 
 - **v1 (now):** cron → page-watch/feeds → deal judge → email + report. Detect-and-notify only.

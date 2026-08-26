@@ -8,8 +8,52 @@ from dealscout.variants import (
     find_variant_arrays,
     in_stock,
     read_select_options,
+    read_size_boxes,
     read_variants,
 )
+
+# The shape futbola-apavi.lv (OpenCart, vs-design theme) renders: a radio "box" per size,
+# with the quantity on the input and the size as the label's own text.
+SIZE_BOX_HTML = """
+<div class="dimensions">
+  <label class="size-box " for="o-1"><input class="size-radio" data-qty="50"><p>37</p></label>
+  <label class="size-box " for="o-2"><input class="size-radio" data-qty="3"><p>37,5</p></label>
+  <label class="size-box " for="o-3"><input class="size-radio" data-qty="1"><p>41 1/3</p></label>
+  <label class="size-box " for="o-4"><input class="size-radio" data-qty="0"><p>44</p></label>
+</div>
+"""
+
+
+def test_should_read_sizes_from_radio_size_boxes():
+    stock = read_size_boxes(SIZE_BOX_HTML)
+    assert stock.known is True
+    # 44 has data-qty="0" and is not buyable; 41 1/3 is a third size and must survive.
+    assert stock.sizes == frozenset({"37", "37.5", "41.33"})
+
+
+def test_should_treat_a_zero_quantity_size_box_as_unavailable():
+    stock = read_size_boxes(
+        '<label class="size-box"><input data-qty="0"><p>37</p></label>'
+        '<label class="size-box"><input data-qty="0"><p>38</p></label>'
+    )
+    # Stated, and none buyable — which is not the same as "we could not read the sizes".
+    assert stock.known is True
+    assert stock.sizes == frozenset()
+
+
+def test_should_ignore_size_boxes_that_are_not_eu_sizes():
+    # A colour or quantity picker reusing the class must not be read as a size table.
+    assert read_size_boxes(
+        '<label class="size-box"><input data-qty="5"><p>Red</p></label>'
+    ).known is False
+
+
+def test_extract_size_stock_should_fall_back_to_size_boxes():
+    # No JSON payload and no <select> — the boxes are the only statement of stock.
+    stock = extract_size_stock(SIZE_BOX_HTML)
+    assert stock.known is True
+    assert "37" in stock.sizes
+
 
 # The shape unisportstore.com embeds, escaped, in its product pages.
 UNISPORT_ROWS = [
