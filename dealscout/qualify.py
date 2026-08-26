@@ -33,6 +33,7 @@ from .collector import (
     fetch,
     parse_html_product,
     parse_ldjson_products,
+    parse_product_tiles,
     parse_shopify_products,
     robots_allows,
 )
@@ -182,6 +183,20 @@ async def _listing(host: str, path: str, verdict: Verdict) -> bool:
         verdict.stock_quality = rate_stock(products)
         verdict.elite = elite_evidence(products)
         verdict.notes.append(f"{len(products)} product(s) on the listing")
+        if verdict.elite:
+            return True
+
+    # A shop with no structured data anywhere still usually renders its listing tiles
+    # server-side, and those carry the name, the price and sometimes the per-size stock.
+    # Checking them here matters because this is the reader such a shop will actually be
+    # monitored through: without it the qualifier reports "unreadable" for a source the
+    # scout can in fact read completely.
+    tiled = parse_product_tiles(html, url, "football_boots")
+    if tiled:
+        verdict.reader = f"listing tiles {path}"
+        verdict.stock_quality = rate_stock(tiled)
+        verdict.elite = elite_evidence(tiled)
+        verdict.notes.append(f"{len(tiled)} tile(s) on the listing")
         if verdict.elite:
             return True
 

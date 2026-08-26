@@ -616,3 +616,153 @@ def test_should_report_tile_sizes_as_unknown():
     )
     assert boot.sizes_known is False
     assert boot.sizes == frozenset()
+
+
+def _swatch(in_stock: tuple[str, ...] = (), sold_out: tuple[str, ...] = ()) -> str:
+    """A size swatch: a purchasable size is a link, an unavailable one is plain text."""
+    links = "".join(f'<a data-size="{s}" href="/b#size={s}">{s}</a>' for s in in_stock)
+    muted = "".join(f'<span class="mute">{s}</span>' for s in sold_out)
+    return f'<div class="swatch-opt">{links}{muted}</div>'
+
+
+def _wrapper_tile(name: str, href: str, price: str, rrp: str = "", swatch: str = "") -> str:
+    """One tile in the theme that hangs its data off the element *wrapping* the tile div.
+
+    voetbalshop.nl's shape, and the reason a marker-string split is unsafe: the `<li>`
+    carries the catalogue data, `product-item-info` holds only the link and the rendered
+    price, and the size swatch is a *sibling* of that div. The tile's own facts therefore
+    sit both above and after the element such a split would cut on.
+    """
+    was = f'<p class="old-price">€ {rrp}</p>' if rrp else ""
+    return (
+        f'<li data-rrp="{rrp}" data-price="{price}" data-brand="adidas" data-sku="s-{price}">'
+        f'<div class="product-item-info">'
+        f'<a href="{href}" class="product-item-photo"><img alt="{name}"></a>'
+        f'<div class="product-item-details">'
+        f'<a class="product-item-link" title="{name}" href="{href}">{name}</a>'
+        f'<div class="price-wrapper"><span class="price">€ {price}</span>{was}</div>'
+        f"</div></div>{swatch}</li>"
+    )
+
+
+def test_should_read_a_tile_theme_that_keeps_its_price_on_the_wrapping_element():
+    # voetbalshop.nl publishes no ld+json at all and uses none of the `data-price-amount`
+    # markup teamsport.lv does, so the listing tiles are the only readable statement of
+    # price — and the reader has to recognise this theme's conventions to see them.
+    html = _wrapper_tile(
+        "adidas F50 Hyperfast Elite Laceless FG", "/en/f50-hyperfast-elite.html", "223.99", "279.99"
+    )
+    [boot] = parse_product_tiles(html, "https://www.voetbalshop.nl/en/football-boots.html", "football_boots")
+    assert boot.title == "adidas F50 Hyperfast Elite Laceless FG"
+    assert boot.price == 223.99
+    assert boot.reference_price == 279.99
+    assert boot.url == "https://www.voetbalshop.nl/en/f50-hyperfast-elite.html"
+    assert boot.source == "voetbalshop.nl"
+
+
+def test_should_not_pair_a_wrapping_tiles_name_with_the_next_tiles_price():
+    # The boundary test for the wrapper theme. Here the danger is sharper than for a flat
+    # tile: this tile's swatch sits *after* the element a marker split would cut on, so
+    # the neighbouring tile's price falls inside the same span of markup.
+    html = _wrapper_tile(
+        "CHEAP TAKEDOWN FG", "/cheap.html", "55.00", swatch=_swatch(("40",), ("41",))
+    ) + _wrapper_tile(
+        "SUPERFLY ELITE FG", "/elite.html", "289.00", swatch=_swatch(("42",), ("43",))
+    )
+    boots = parse_product_tiles(html, "https://shop.example/list", "football_boots")
+    assert {b.title: b.price for b in boots} == {
+        "CHEAP TAKEDOWN FG": 55.00,
+        "SUPERFLY ELITE FG": 289.00,
+    }
+
+
+def test_should_read_in_stock_sizes_from_a_tile_swatch():
+    # The swatch links only what can actually be bought, so this is the retailer's own
+    # statement of stock — which promotes the whole source from "verify on click" to a
+    # find that can be confirmed in the size before the human clicks.
+    html = _wrapper_tile(
+        "PREDATOR ELITE FG", "/p.html", "223.99", swatch=_swatch(("40", "41⅓"), ("36", "37⅓"))
+    )
+    [boot] = parse_product_tiles(html, "https://shop.example/list", "football_boots")
+    assert boot.sizes_known is True
+    assert boot.sizes == frozenset({"40", "41.33"})
+
+
+def test_should_not_claim_sizes_when_every_swatch_option_is_purchasable():
+    # Nothing distinguishes "in stock in all sizes" from "this theme renders no stock" —
+    # so report unknown. Measured on the live listing: exactly the 14 of 48 tiles whose
+    # own counter says every size is available, and no others.
+    html = _wrapper_tile("F50 ELITE FG", "/f.html", "215.99", swatch=_swatch(("40", "41", "42")))
+    [boot] = parse_product_tiles(html, "https://shop.example/list", "football_boots")
+    assert boot.sizes_known is False
+    assert boot.sizes == frozenset()
+
+
+def test_should_report_no_stock_when_a_swatch_labels_its_sold_out_sizes():
+    # A theme that tags both states lets "sold out in every size" be *known*, which is
+    # real knowledge — quite different from the unknown above.
+    swatch = '<div class="swatch-opt">' + "".join(
+        f'<span data-size="{s}">{s}</span>' for s in ("40", "41")
+    ) + "</div>"
+    html = _wrapper_tile("SOLD OUT ELITE FG", "/s.html", "199.00", swatch=swatch)
+    [boot] = parse_product_tiles(html, "https://shop.example/list", "football_boots")
+    assert boot.sizes_known is True
+    assert boot.sizes == frozenset()
+
+
+def test_should_read_the_brand_a_tile_states_in_an_attribute():
+    # Single-word product names like "Copa Mundial" never mention adidas. The tile does,
+    # and without it `brands_only` would reject the boot as an unknown brand.
+    html = _wrapper_tile("Copa Mundial", "/copa.html", "109.99", "140.00")
+    [boot] = parse_product_tiles(html, "https://shop.example/list", "football_boots")
+    assert boot.brand == "adidas"
+
+
+def test_should_not_read_a_product_grid_wrapper_as_a_tile():
+    # `product-items` is the wrapper around the tiles and is one character from
+    # `product-item`. Matched as a substring it would swallow the whole grid into a
+    # single product carrying the first name and the first price it happened to meet.
+    html = (
+        '<ol class="products list items product-items">'
+        + _wrapper_tile("FIRST BOOT FG", "/a.html", "55.00")
+        + _wrapper_tile("SECOND BOOT FG", "/b.html", "289.00")
+        + "</ol>"
+    )
+    boots = parse_product_tiles(html, "https://shop.example/list", "football_boots")
+    assert [b.title for b in boots] == ["FIRST BOOT FG", "SECOND BOOT FG"]
+
+
+def _ldjson(node: dict) -> str:
+    """A page publishing one schema.org node."""
+    return f'<script type="application/ld+json">{json.dumps(node)}</script>'
+
+
+def test_should_recover_a_brand_from_a_deep_product_url_when_the_page_states_none():    # futbolemotion.com names a boot "F50 Elite FG L-Tech Football Boots" and publishes no
+    # `brand` on its listing, but files it under /adidas/. Without this the hunt's
+    # `brands_only` gate rejects the entire shop for naming no brand it recognises.
+    html = _ldjson(
+        {
+            "@type": "Product",
+            "name": "F50 Elite FG L-Tech Football Boots",
+            "url": "https://www.futbolemotion.com/en/buy/football-boot/adidas/f50-elite-fg-l-tech",
+            "offers": {"@type": "Offer", "price": "279.99", "priceCurrency": "EUR"},
+        }
+    )
+    [boot] = parse_ldjson_products(html, "https://www.futbolemotion.com/en/football-boots", "football_boots")
+    assert boot.brand == "adidas"
+
+
+def test_should_not_invent_a_brand_from_a_shop_root_path():
+    # `/products/<handle>` is Shopify's root, not a brand directory. Reading "products" as
+    # a brand would put a meaningless word in front of every Shopify product name.
+    html = _ldjson(
+        {
+            "@type": "Product",
+            "name": "Superfly Elite FG",
+            "url": "https://komanda.lv/products/superfly-elite-fg",
+            "offers": {"@type": "Offer", "price": "280.00", "priceCurrency": "EUR"},
+        }
+    )
+    [boot] = parse_ldjson_products(html, "https://komanda.lv/collections/futbola-apavi", "football_boots")
+    assert boot.brand == ""
+
