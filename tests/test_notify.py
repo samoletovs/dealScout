@@ -203,3 +203,32 @@ def test_render_shortlist_omits_the_breakdown_when_there_is_no_coverage():
     body = render_shortlist(SHORTLIST_HUNT, [], [], SHORTLIST_TABLE)
 
     assert "Where these came from" not in body
+
+
+def test_short_note_should_leave_a_normal_note_alone():
+    from dealscout.notify import short_note
+
+    assert short_note("adidas official · Duntes iela 7") == "adidas official · Duntes iela 7"
+
+
+def test_short_note_should_trim_a_note_long_enough_to_bury_the_row():
+    # This is not hypothetical: a delivery note explaining how a shipping rate had been
+    # established was printed beside every one of that source's rows, turning each into a
+    # paragraph. Reasoning belongs in a config comment; the row gets the fact.
+    from dealscout.notify import NOTE_LIMIT, short_note
+
+    essay = (
+        "Latvia falls under 'Other - Europe' in their own rate table, read off "
+        "/en/customer-service/ordering on 2026-08-26, and it is the dearest postage here."
+    )
+    trimmed = short_note(essay)
+
+    assert len(trimmed) <= NOTE_LIMIT
+    assert trimmed.endswith("…")
+    assert trimmed.startswith("Latvia falls under")
+
+
+def test_short_note_should_collapse_whitespace_from_a_folded_yaml_note():
+    from dealscout.notify import short_note
+
+    assert short_note("ships to LV,\n   cost at checkout") == "ships to LV, cost at checkout"
