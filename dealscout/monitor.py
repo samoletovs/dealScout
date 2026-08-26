@@ -75,7 +75,7 @@ def save_state(state: dict[str, dict], path: Path = DEFAULT_STATE_PATH) -> Path:
     return path
 
 
-def _in_stock(product: Product, wanted_sizes: tuple[str, ...]) -> bool | None:
+def in_stock(product: Product, wanted_sizes: tuple[str, ...]) -> bool | None:
     """Tri-state stock for the sizes we care about (None = the page didn't say)."""
     if not wanted_sizes or not product.sizes_known:
         return None
@@ -106,7 +106,7 @@ def classify(
         if drop >= min_drop_pct:
             return Change(product, "price-drop", prior_price)
 
-    now_stocked = _in_stock(product, wanted_sizes)
+    now_stocked = in_stock(product, wanted_sizes)
     if now_stocked is True and previous.get("in_stock") is False:
         return Change(product, "back-in-stock", prior_price)
 
@@ -138,7 +138,7 @@ def record(
                 "currency": product.currency,
                 "source": product.source,
                 "best_price": best,
-                "in_stock": _in_stock(product, wanted_sizes),
+                "in_stock": in_stock(product, wanted_sizes),
                 "last_seen": stamp,
             }
         )

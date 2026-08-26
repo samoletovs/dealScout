@@ -29,6 +29,18 @@ jobs:
           python-version: "3.11"
       - run: pip install -r requirements.txt
 
+      # The price memory is the only thing that lets a row say "cheapest seen in 45 days"
+      # instead of repeating the retailer's own "was" price. It is built one observation
+      # per run, so without carrying state between runs it would never reach the minimum
+      # history the claim requires, and every shortlist would stay silent forever.
+      - name: Restore price history
+        uses: actions/cache/restore@v4
+        with:
+          path: state
+          key: dealscout-shortlist-state-${{ github.run_id }}
+          restore-keys: |
+            dealscout-shortlist-state-
+
       - name: Build the shortlist
         run: |
           python -m dealscout.run_shortlist ${{ github.event.inputs.hunt }} \
@@ -38,6 +50,13 @@ jobs:
           COURIER_KEY: ${{ secrets.COURIER_KEY }}
           DEALSCOUT_EMAIL_TO: ${{ secrets.DEALSCOUT_EMAIL_TO }}
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+
+      - name: Save price history
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: state
+          key: dealscout-shortlist-state-${{ github.run_id }}
 
       # Uploaded unconditionally: if the courier secrets are not set the run still
       # produces the shortlist, and downloading it beats re-running the scan.

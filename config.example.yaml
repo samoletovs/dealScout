@@ -344,6 +344,16 @@ monitor:
   state_path: state/hunts.json
   min_drop_pct: 5              # re-alert on a product already seen once it drops this much
   forget_after_days: 90        # a product gone this long is genuinely news if it returns
+  # Price memory — what each product has *actually* sold for, so the email can say
+  # "cheapest seen in 45 days" instead of trusting the retailer's own "was" price.
+  price_history_path: state/prices.jsonl
+  price_history_days: 180      # observations older than this are pruned
+  price_history_max_points: 200 # ...and no more than this many per product, newest kept
+  # The floor below which the honest answer is "not enough history yet" and the email
+  # says nothing at all. Two sightings an hour apart cannot tell a real low from the only
+  # two numbers we happen to have, and claiming otherwise is worse than staying quiet.
+  price_min_observations: 3
+  price_min_span_days: 7
 
 # Politeness when reading watch pages (respect robots/ToS; prefer feeds).
 scrape:

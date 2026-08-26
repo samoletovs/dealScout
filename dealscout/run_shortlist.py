@@ -27,6 +27,9 @@ from .config import load_config
 from .hunt import judge_hunt
 from .models import Hunt, Product
 from .notify import feedback_base_url, render_shortlist, send_email
+from .pricehistory import HistoryConfig, append, extend, load_history, observe, prune
+from .pricehistory import rewrite as rewrite_history
+from .pricehistory import summarise_all
 from .run_hunt import load_hunts
 from .scout import scout
 from .shortlist import (
@@ -108,10 +111,23 @@ async def shortlist_for(
     )
 
 
+def config_path() -> Path:
+    """The owner's config if present, else the shipped example.
+
+    Mirrors ``run_hunt.main``. The previous hardcoded ``config.yaml`` exists in neither a
+    fresh clone nor CI, so this entrypoint raised FileNotFoundError before reading a page.
+    """
+    local = Path("config.local.yaml")
+    if local.exists():
+        return local
+    logger.info("config.local.yaml not found — using config.example.yaml")
+    return Path("config.example.yaml")
+
+
 async def main(argv: list[str]) -> int:
     args = [a for a in argv if not a.startswith("-")]
     send = "--no-email" not in argv
-    config = load_config(Path("config.yaml"))
+    config = load_config(config_path())
     hunts = load_hunts(config, args[0] if args else "")
     if not hunts:
         logger.error("no hunt to run")
@@ -119,12 +135,25 @@ async def main(argv: list[str]) -> int:
 
     table = delivery_table(config)
     vocab = merge_vocab(config.get("vocabulary"))
+    limits = HistoryConfig.from_config(config)
+    history = load_history(limits.path)
+    logged: set[str] = set()  # config ships several hunts; a shared product logs once
     sent = 0
     for hunt in hunts:
         confirmed, unconfirmed, checked = await shortlist_for(
             hunt, config, DEFAULT_LIMIT, DEFAULT_PER_SOURCE
         )
-        sources = len({p.source for p in [*confirmed, *unconfirmed]})
+        shown = [*confirmed, *unconfirmed]
+        sources = len({p.source for p in shown})
+
+        # Log this run's prices before rendering, so a row can say where today's price
+        # sits rather than where the previous run's did.
+        fresh = [o for o in observe(shown, hunt.sizes) if o.url not in logged]
+        logged.update(o.url for o in fresh)
+        append(fresh, limits.path)
+        history = extend(history, fresh)
+        memory = summarise_all(shown, history, limits=limits)
+
         body = render_shortlist(
             hunt,
             confirmed,
@@ -134,6 +163,7 @@ async def main(argv: list[str]) -> int:
             vocab,
             checked=checked,
             sources=sources,
+            memory=memory,
         )
         path = Path("out") / f"shortlist-{hunt.id}.md"
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -147,6 +177,7 @@ async def main(argv: list[str]) -> int:
             )
             if await send_email(subject, body):
                 sent += 1
+    rewrite_history(prune(history, limits.keep_days, limits.max_points), limits.path)
     logger.info("shortlist complete; %d email(s) sent", sent)
     return 0
 

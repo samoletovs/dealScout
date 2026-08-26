@@ -17,6 +17,8 @@ import aiohttp
 from .feedback import feedback_link, latest_by_url, parse_feedback_jsonl
 from .hunt import resolve_attrs
 from .models import Change, Feedback, Hunt, Product, Verdict
+from .monitor import canonical_url
+from .pricehistory import PriceMemory
 from .shortlist import Delivery, delivery_for, landed_cost, matched_sizes
 
 try:
@@ -120,8 +122,37 @@ _CHANGE_BADGE = {
 _ATTR_ORDER = ("tier", "soleplate", "silo", "plate", "fit")
 
 
+def price_memory_phrase(memory: PriceMemory | None) -> str:
+    """Where this price sits against what the product has actually sold for — or nothing.
+
+    The retailer's "-70%" is its own claim about its own RRP; this is the sentence that
+    can be checked. It is deliberately silent when the history cannot carry a claim: a row
+    reading "no price history" spends the reader's attention to tell them nothing, and a
+    row reading "lowest in 90 days" after two runs would be worse than useless.
+
+    The window quoted is the history we actually hold, floored to whole days, so the
+    sentence never claims to have watched for longer than it has.
+    """
+    if memory is None or not memory.enough_history:
+        return ""
+    days = int(memory.span_days)
+    if days < 1:
+        return ""
+    if memory.is_lowest:
+        return f"**cheapest seen in {days} days**"
+    gap = round(memory.above_low or 0.0)
+    if gap >= 1:
+        return f"€{gap:.0f} above its {days}-day low"
+    return ""
+
+
 def _deal_line(
-    product: Product, verdict: Verdict, change: Change | None, attrs: dict, base_url: str
+    product: Product,
+    verdict: Verdict,
+    change: Change | None,
+    attrs: dict,
+    base_url: str,
+    memory: PriceMemory | None = None,
 ) -> str:
     """One deal as a markdown bullet: what it is, what it costs, why it's news."""
     bits: list[str] = []
@@ -136,6 +167,9 @@ def _deal_line(
         bits.append(f"was €{ref:.0f} (-{round(100 * (1 - product.price / ref))}%)")
     if change is not None and change.kind == "price-drop" and change.previous_price:
         bits.append(f"was €{change.previous_price:.0f} last run")
+    remembered = price_memory_phrase(memory)
+    if remembered:
+        bits.append(remembered)
 
     spec = [attrs[a] for a in _ATTR_ORDER if a in attrs]
     if spec:
@@ -159,6 +193,7 @@ def render_hunt_report(
     results: list[tuple[Product, Verdict, Change | None]],
     feedback_base_url: str = "",
     vocab: dict | None = None,
+    memory: dict[str, PriceMemory] | None = None,
 ) -> str:
     """Render one hunt's findings, best first, grouped by band."""
     title = hunt.label or hunt.id
@@ -170,6 +205,7 @@ def render_hunt_report(
         lines.append("No new matches this run. The hunt stays armed and will report on change.\n")
         return "\n".join(lines)
 
+    remembered = memory or {}
     ranked = sorted(results, key=lambda r: -r[1].score)
     for band, heading in (("must-buy", "🟢 Buy now"), ("good", "🟡 Worth it")):
         group = [r for r in ranked if r[1].band == band]
@@ -178,7 +214,16 @@ def render_hunt_report(
         lines.append(f"## {heading} — {len(group)}")
         for product, verdict, change in group:
             attrs = resolve_attrs(product, hunt, vocab)
-            lines.append(_deal_line(product, verdict, change, attrs, feedback_base_url))
+            lines.append(
+                _deal_line(
+                    product,
+                    verdict,
+                    change,
+                    attrs,
+                    feedback_base_url,
+                    remembered.get(canonical_url(product.url)),
+                )
+            )
         lines.append("")
 
     lines.append(
@@ -201,6 +246,7 @@ def _shortlist_row(
     attrs: dict,
     rank: int,
     base_url: str = "",
+    memory: PriceMemory | None = None,
 ) -> str:
     """One shortlist entry: landed cost first, because that is the number being compared."""
     delivery = delivery_for(product.source, table)
@@ -217,6 +263,11 @@ def _shortlist_row(
     ref = product.reference_price
     if ref and ref > product.price:
         facts.append(f"RRP €{ref:.0f}, **-{round(100 * (1 - product.price / ref))}%**")
+    # Straight after the retailer's own discount claim, because this is the line that
+    # says whether that claim means anything.
+    remembered = price_memory_phrase(memory)
+    if remembered:
+        facts.append(remembered)
     spec = [attrs[a] for a in _ATTR_ORDER if a in attrs]
     if spec:
         facts.append(" · ".join(spec))
@@ -252,8 +303,10 @@ def render_shortlist(
     vocab: dict | None = None,
     checked: int = 0,
     sources: int = 0,
+    memory: dict[str, PriceMemory] | None = None,
 ) -> str:
     """The buy-now shortlist: what to buy, ranked by what it actually costs to receive."""
+    remembered = memory or {}
     lines = [f"# dealScout — {hunt.label or hunt.id}\n"]
     if hunt.sizes_by_brand:
         # Naming the fallback list here would misdescribe the search: adidas is only ever
@@ -274,7 +327,17 @@ def render_shortlist(
         lines.append("_The shop states these are in stock in a size you want._\n")
         for i, product in enumerate(confirmed, 1):
             attrs = resolve_attrs(product, hunt, vocab)
-            lines.append(_shortlist_row(product, hunt, table, attrs, i, feedback_base_url))
+            lines.append(
+                _shortlist_row(
+                    product,
+                    hunt,
+                    table,
+                    attrs,
+                    i,
+                    feedback_base_url,
+                    remembered.get(canonical_url(product.url)),
+                )
+            )
     else:
         lines.append("_Nothing in your size right now from a shop that publishes sizes._")
     lines.append("")
@@ -289,7 +352,17 @@ def render_shortlist(
         )
         for i, product in enumerate(unconfirmed, 1):
             attrs = resolve_attrs(product, hunt, vocab)
-            lines.append(_shortlist_row(product, hunt, table, attrs, i, feedback_base_url))
+            lines.append(
+                _shortlist_row(
+                    product,
+                    hunt,
+                    table,
+                    attrs,
+                    i,
+                    feedback_base_url,
+                    remembered.get(canonical_url(product.url)),
+                )
+            )
     else:
         lines.append("_Nothing to verify this run._")
     lines.append("")
