@@ -22,6 +22,8 @@ Personal bargain-hunting wardrobe assistant. A **co-pilot, not an autopilot**: d
 - `dealscout/inbox.py` — read recent newsletters from the dedicated Gmail via IMAP (App Password).
 - `dealscout/digest.py` — compose the periodic 🟢/🟡 digest.
 - `dealscout/feedback.py` — 👍/👎 act-on loop: emit rating links in emails, read replies back from the inbox (the mailbox is the ledger), tally them. A 👎 on a surfaced deal is a golden-set candidate.
+- `dealscout/monitor.py` — the seen-products ledger: classifies a sighting as new / price-drop / back-in-stock / seen, so a cron reports news rather than repeating itself.
+- `dealscout/pricehistory.py` — price memory: an append-only log of one observation per product per run, read back as an honest `PriceMemory` ("cheapest seen in 45 days" / "not enough history yet"). The retailer's RRP is its own claim; this is the one that can be checked.
 - `dealscout/run.py` — watch-list entrypoint: load → collect → judge → notify.
 - `dealscout/run_digest.py` — digest entrypoint: read inbox → parse → judge → email digest.
 - `dealscout/serpsearch.py` — opt-in Google Shopping scan via SerpApi → candidate Products (dormant unless `SERPAPI_KEY` + `serpapi.enabled`).

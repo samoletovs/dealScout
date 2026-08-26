@@ -32,6 +32,9 @@ from .monitor import (
     save_state,
 )
 from .notify import feedback_base_url, read_feedback, render_hunt_report, send_email
+from .pricehistory import HistoryConfig, append, extend, load_history, observe, prune
+from .pricehistory import rewrite as rewrite_history
+from .pricehistory import summarise_all
 from .scout import scout
 from .spec import merge_vocab
 
@@ -115,6 +118,8 @@ async def run(config_path: Path, only: str = "") -> dict[str, list[Result]]:
     monitor_conf = config.get("monitor") or {}
     state_path = Path(monitor_conf.get("state_path") or DEFAULT_STATE_PATH)
     state = load_state(state_path)
+    limits = HistoryConfig.from_config(config)
+    history = load_history(limits.path)
 
     entries = await read_feedback()
     rejected = downvoted_urls(entries)  # never re-surface a deal you 👎'd
@@ -122,11 +127,20 @@ async def run(config_path: Path, only: str = "") -> dict[str, list[Result]]:
 
     findings: dict[str, list[Result]] = {}
     sections: list[str] = []
+    logged: set[str] = set()  # config ships several hunts; a shared product logs once
     for hunt in hunts:
         results, candidates = await run_hunt(hunt, config, state, vocab, rejected)
         findings[hunt.id] = results
 
-        body = render_hunt_report(hunt, results, base, vocab)
+        # Log this run's prices before rendering, so "cheapest seen" is a claim about the
+        # price in front of the reader rather than about the previous run's.
+        fresh = [o for o in observe(candidates, hunt.sizes) if o.url not in logged]
+        logged.update(o.url for o in fresh)
+        append(fresh, limits.path)
+        history = extend(history, fresh)
+        memory = summarise_all([p for p, _, _ in results], history, limits=limits)
+
+        body = render_hunt_report(hunt, results, base, vocab, memory)
         out = Path("out") / f"hunt-{hunt.id}.md"
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(body, encoding="utf-8")
@@ -138,6 +152,7 @@ async def run(config_path: Path, only: str = "") -> dict[str, list[Result]]:
 
     state = forget_stale(state, int(monitor_conf.get("forget_after_days", DEFAULT_FORGET_AFTER_DAYS)))
     save_state(state, state_path)
+    rewrite_history(prune(history, limits.keep_days, limits.max_points), limits.path)
 
     total = sum(len(v) for v in findings.values())
     if total:
