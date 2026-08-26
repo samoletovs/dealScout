@@ -207,7 +207,46 @@ def extract_size_stock(html: str) -> SizeStock:
             best = found
     if best.known:
         return best
-    return read_select_options(html)
+    found = read_select_options(html)
+    return found if found.known else read_size_boxes(html)
+
+
+# A size picker rendered as radio "boxes" rather than a <select>. The OpenCart vs-design
+# theme (futbola-apavi.lv and its sibling storefronts) is the case in hand:
+#   <label class="size-box"><input ... data-qty="50" ...><p>39</p></label>
+# The size is the label's own text, and the quantity rides on the input.
+_SIZE_BOX_RE = re.compile(
+    r'<label\b([^>]*\bclass="[^"]*size-box[^"]*"[^>]*)>(.*?)</label>',
+    re.IGNORECASE | re.DOTALL,
+)
+_QTY_RE = re.compile(r'data-qty\s*=\s*"(\d+)"', re.IGNORECASE)
+
+
+def read_size_boxes(html: str) -> SizeStock:
+    """Per-size stock from a size picker rendered as labelled radio boxes.
+
+    Measured on futbola-apavi.lv (2026-08-26): the storefront renders a box **only** for a
+    size it can actually sell — a boot down to its last pair shows a single box carrying
+    ``data-qty="1"`` — so a rendered box means buyable unless it says otherwise. Both
+    ``data-qty="0"`` and the usual disabled markers are still honoured, because relying on
+    omission alone would turn a theme change into a silent false positive.
+    """
+    available: set[str] = set()
+    labelled: list[str] = []
+    for attrs, inner in _SIZE_BOX_RE.findall(html):
+        text = unescape(_TAG_RE.sub(" ", inner)).strip()
+        size = normalise_size(text)
+        if not is_eu_size(size):
+            continue
+        labelled.append(size)
+        quantity = _QTY_RE.search(inner) or _QTY_RE.search(attrs)
+        if quantity and int(quantity.group(1)) == 0:
+            continue
+        if _option_available(attrs, text):
+            available.add(size)
+    if not labelled or not looks_like_eu(labelled):
+        return SizeStock()
+    return SizeStock(frozenset(available), True, None)
 
 
 _SELECT_RE = re.compile(r"<select\b[^>]*>(.*?)</select>", re.IGNORECASE | re.DOTALL)
