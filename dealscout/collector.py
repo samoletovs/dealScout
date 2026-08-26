@@ -936,6 +936,57 @@ async def collect(item: WatchItem, title_hint: str = "") -> Product | None:
     return product
 
 
+def read_listing(html: str, url: str, category: str) -> list[Product]:
+    """Every Product a listing page declares (pure).
+
+    A Shopify collection endpoint hands over structured data directly; no parsing of
+    rendered markup, and one request covers a whole collection. Rendered tiles are the
+    last resort, for a storefront that publishes no structured data anywhere.
+    """
+    return (
+        parse_shopify_products(html, url, category)
+        or parse_ldjson_products(html, url, category)
+        or parse_product_tiles(html, url, category)
+    )
+
+
+def read_links(html: str, url: str) -> list[tuple[str, str]]:
+    """Every ``(name, URL)`` a listing page links to (pure)."""
+    return parse_ldjson_links(html, url) or parse_html_links(html, url)
+
+
+async def collect_page(
+    url: str, category: str, delay: float = 1.0
+) -> tuple[list[Product], list[tuple[str, str]]]:
+    """Fetch a listing page **once** and read it both ways.
+
+    Callers that fall back from products to links previously called ``collect_listing``
+    and then ``collect_links``, each of which fetches — so every page that declared no
+    products was downloaded twice, once per run, per watch URL. That is wasted time and,
+    more importantly, twice the load on a retailer we are a guest of.
+
+    Links are only parsed when there are no products, since that is the only case a
+    caller needs them for and the parse is not free on a megabyte of markup.
+    """
+    if not await robots_allows(url):
+        return [], []
+    html = await fetch(url)
+    if html is None:
+        return [], []
+
+    products = read_listing(html, url, category)
+    links: list[tuple[str, str]] = [] if products else read_links(html, url)
+    if products:
+        logger.info("collected %d product(s) from %s", len(products), url)
+    elif links:
+        logger.info("collected %d link(s) from %s", len(links), url)
+    else:
+        logger.info("no product found at %s", url)
+    if delay > 0:
+        await asyncio.sleep(delay)
+    return products, links
+
+
 async def collect_listing(url: str, category: str, delay: float = 1.0) -> list[Product]:
     """Fetch one listing (or product) page and return every Product it declares.
 
@@ -947,14 +998,7 @@ async def collect_listing(url: str, category: str, delay: float = 1.0) -> list[P
     html = await fetch(url)
     if html is None:
         return []
-    # A Shopify collection endpoint hands over structured data directly; no parsing of
-    # rendered markup, and one request covers a whole collection. Rendered Magento tiles
-    # are the last resort, for a storefront that publishes no structured data anywhere.
-    products = (
-        parse_shopify_products(html, url, category)
-        or parse_ldjson_products(html, url, category)
-        or parse_product_tiles(html, url, category)
-    )
+    products = read_listing(html, url, category)
     if not products:
         logger.info("no product found at %s", url)
     else:

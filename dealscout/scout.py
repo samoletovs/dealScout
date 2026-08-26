@@ -20,7 +20,7 @@ import os
 import re
 from urllib.parse import urlsplit
 
-from .collector import collect, collect_links, collect_listing, fetch, robots_allows, title_from_slug
+from .collector import collect, collect_page, fetch, robots_allows, title_from_slug
 from .magento import (
     DEFAULT_BATCH,
     batched,
@@ -137,7 +137,9 @@ async def _from_watch(
 ) -> list[Product]:
     found: list[Product] = []
     for url in hunt.watch:
-        products = await collect_listing(url, hunt.category, delay=delay)
+        # One fetch, read both ways. Asking for products and then falling back to links
+        # used to download the same page twice for every listing that declared none.
+        products, links = await collect_page(url, hunt.category, delay=delay)
         if products:
             found.extend(products)
             continue
@@ -145,7 +147,6 @@ async def _from_watch(
         # The page published links rather than products (a schema.org ItemList). Discard
         # the titles that already contradict the hunt, then read the survivors' own pages
         # — a listing of 50 usually leaves a handful worth a request.
-        links = await collect_links(url, delay=delay)
         if not links:
             continue
         plausible = [(n, u) for n, u in links if title_plausible(n, hunt, vocab)]

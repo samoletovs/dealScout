@@ -90,6 +90,12 @@ def _patch_sources(monkeypatch, listing: list[Product], results: list[dict]) -> 
     async def fake_links(url, delay=1.0):
         return []
 
+    # The scout reads a listing page once and takes both products and links from it, so
+    # this is the seam that must be stubbed. Leaving it real makes the suite hang on the
+    # network — which is how this stub came to exist.
+    async def fake_page(url, category, delay=1.0):
+        return await fake_listing(url, category, delay), await fake_links(url, delay)
+
     async def fake_collect(item, title_hint=""):
         return None
 
@@ -97,8 +103,7 @@ def _patch_sources(monkeypatch, listing: list[Product], results: list[dict]) -> 
         queried.append(query)
         return list(results)
 
-    monkeypatch.setattr("dealscout.scout.collect_listing", fake_listing)
-    monkeypatch.setattr("dealscout.scout.collect_links", fake_links)
+    monkeypatch.setattr("dealscout.scout.collect_page", fake_page)
     monkeypatch.setattr("dealscout.scout.collect", fake_collect)
     monkeypatch.setattr("dealscout.scout._search", fake_search)
     return queried
@@ -299,8 +304,10 @@ def test_scout_should_follow_listing_links_when_a_page_lists_no_products(monkeyp
     async def fake_search(query, api_key, gl):
         return []
 
-    monkeypatch.setattr("dealscout.scout.collect_listing", fake_listing)
-    monkeypatch.setattr("dealscout.scout.collect_links", fake_links)
+    async def fake_page(url, category, delay=1.0):
+        return await fake_listing(url, category, delay), await fake_links(url, delay)
+
+    monkeypatch.setattr("dealscout.scout.collect_page", fake_page)
     monkeypatch.setattr("dealscout.scout.collect", fake_collect)
     monkeypatch.setattr("dealscout.scout._search", fake_search)
 
@@ -326,8 +333,10 @@ def test_scout_should_cap_how_many_product_pages_one_listing_costs(monkeypatch):
     async def fake_search(query, api_key, gl):
         return []
 
-    monkeypatch.setattr("dealscout.scout.collect_listing", fake_listing)
-    monkeypatch.setattr("dealscout.scout.collect_links", fake_links)
+    async def fake_page(url, category, delay=1.0):
+        return await fake_listing(url, category, delay), await fake_links(url, delay)
+
+    monkeypatch.setattr("dealscout.scout.collect_page", fake_page)
     monkeypatch.setattr("dealscout.scout.collect", fake_collect)
     monkeypatch.setattr("dealscout.scout._search", fake_search)
 
@@ -366,8 +375,10 @@ def test_scout_should_spend_its_budget_on_the_titles_that_already_look_right(mon
     async def fake_search(query, api_key, gl):
         return []
 
-    monkeypatch.setattr("dealscout.scout.collect_listing", fake_listing)
-    monkeypatch.setattr("dealscout.scout.collect_links", fake_links)
+    async def fake_page(url, category, delay=1.0):
+        return await fake_listing(url, category, delay), await fake_links(url, delay)
+
+    monkeypatch.setattr("dealscout.scout.collect_page", fake_page)
     monkeypatch.setattr("dealscout.scout.collect", fake_collect)
     monkeypatch.setattr("dealscout.scout._search", fake_search)
 
