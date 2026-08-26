@@ -307,10 +307,17 @@ def _coverage_block(coverage: list[SourceCoverage]) -> list[str]:
     shop had fifteen candidates and the next two had two each.
 
     The silent-source line matters more than the table, but only when it means something.
-    A source that was read fine and simply had nothing suitable is normal and gets a quiet
-    note; a source that yielded nothing at all is the one whose reader has probably broken.
-    Firing the alarm for both would make it fire most weeks, and an alarm that always fires
-    is ignored by the week it matters.
+    There are three ways to contribute no rows and they are not interchangeable:
+
+    * nothing was read at all — the reader has probably broken, and this is the one that
+      earns an alarm;
+    * products were read but none suited the hunt — normal, and worth stating plainly so
+      the reader knows the shop was checked;
+    * products qualified but were beaten off a limited list — saying "nothing matched"
+      there would simply be false.
+
+    Firing the alarm for all three would make it fire most weeks, and an alarm that always
+    fires is ignored by the week it matters.
     """
     contributed = [c for c in coverage if c.count]
     silent = [c for c in coverage if not c.count]
@@ -326,13 +333,19 @@ def _coverage_block(coverage: list[SourceCoverage]) -> list[str]:
             lines.append(f"| {row.label} | {row.count} | {price} | {row.found} |")
         lines.append("")
 
-    # Read but unsuitable: worth stating, not worth worrying about.
-    quiet = [c for c in silent if c.scouted]
+    # Qualified but lost a place on a limited list. Unreachable while sources are fewer
+    # than the row limit, but the list is growing and "nothing matched" would be a lie.
+    beaten = [c for c in silent if c.found]
+    # Read fine, nothing suitable: worth stating, not worth worrying about.
+    quiet = [c for c in silent if c.scouted and not c.found]
     # Nothing came back at all — the reader is the likely cause.
     broken = [c for c in silent if not c.scouted]
+    if beaten:
+        detail = ", ".join(f"{c.label} ({c.found} qualified)" for c in beaten)
+        lines.append(f"_Qualified but did not make the list: {detail}._\n")
     if quiet:
-        detail = ", ".join(f"{c.label} ({c.scouted} seen)" for c in quiet)
-        lines.append(f"_Read but nothing matched: {detail}._\n")
+        detail = ", ".join(f"{c.label} ({c.scouted} read)" for c in quiet)
+        lines.append(f"_Checked, nothing matching this hunt: {detail}._\n")
     if broken:
         names = ", ".join(c.label for c in broken)
         lines.append(
