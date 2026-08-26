@@ -163,6 +163,20 @@ delivery:
   futbola-apavi.lv:
     label: "futbola-apavi.lv"
     shipping: 4
+  voetbalshop.nl:
+    label: "Voetbalshop (NL)"
+    shipping: 24.99
+    note: "Latvia falls under 'Other - Europe' in their own rate table — read off
+           /en/customer-service/ordering on 2026-08-26. The dearest postage of any
+           source here, so a find must be ~€25 better than a Baltic one to be worth it;
+           the shortlist ranks on landed cost, so it will say so."
+  futbolemotion.com:
+    label: "Fútbol Emotion (ES)"
+    # Deliberately no `shipping:` figure. Latvia is in their destination list, but the
+    # cost is quoted per order ("according to the order's volume") and never published as
+    # a rate, and an invented number would silently reorder the shortlist. Absent means
+    # "unknown", which is the truth.
+    note: "ships to LV, cost quoted at checkout by order volume"
 
 hunts:
   - id: boots-junior
@@ -285,6 +299,30 @@ hunts:
       # paging parameters are ignored, so asking for page 2 just re-fetches page 1).
       # Tiles state no sizes, so everything here is capped at 🟡 "verify on click".
       - "https://www.teamsport.lv/lv_lv/futbols/futbola-apavi.html"
+      # voetbalshop.nl (NL) — a large Dutch specialist carrying the full flagship range.
+      # Magento, like teamsport.lv, but a different theme: no ld+json anywhere, and none
+      # of teamsport's `data-price-amount` markup, so the generalised tile reader is what
+      # sees it. Unusually for a listing, each tile also renders a size swatch that links
+      # only the sizes actually purchasable — so this is one of the few sources giving
+      # exact per-size stock *without* a request per product. Measured 2026-08-26: 48
+      # products per page, 34 with exact stock, adidas F50 Hyperfast Elite €223.99 (RRP
+      # €279.99). Paging parameters are ignored exactly as on teamsport.lv, so breadth
+      # comes from separate category URLs rather than page numbers.
+      # Postage to LV is €24.99 — by far the dearest here, hence the delivery entry above.
+      - "https://www.voetbalshop.nl/en/outlet/football-boots.html"
+      - "https://www.voetbalshop.nl/en/kids/football-boots.html"
+      - "https://www.voetbalshop.nl/en/adidas/football-boots.html"
+      - "https://www.voetbalshop.nl/en/nike/football-boots.html"
+      # futbolemotion.com (ES) — Spain's largest football specialist, ~30k products, and
+      # the best source of colourways that never reach the Baltics. Its listing publishes
+      # ld+json for every product, so price needs no scraping; per-size stock does not
+      # appear in the HTML at all (the size table is filled in by a separate API call),
+      # so everything here is capped at 🟡 "verify on click" — which is honest.
+      # Like komanda.lv it publishes no "was" price, so judge it on absolute price rather
+      # than discount. Brand-specific URLs, because the hunt is brands_only.
+      - "https://www.futbolemotion.com/en/outlet/football-boots"
+      - "https://www.futbolemotion.com/en/category/soccer-boots/nike"
+      - "https://www.futbolemotion.com/en/category/soccer-boots/adidas"
     catalogs:
       # sportland.lv — Baltic's largest sports chain (~80 stores, official Nike Baltic
       # distributor), so a find here can be tried on before buying. The site is a
