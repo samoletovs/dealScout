@@ -174,7 +174,29 @@ def test_render_shortlist_does_not_warn_when_a_source_was_read_but_had_nothing_s
     )
 
     assert "⚠️" not in body
-    assert "Read but nothing matched: futbola-apavi.lv (5 seen)" in body
+    assert "Checked, nothing matching this hunt: futbola-apavi.lv (5 read)" in body
+
+
+def test_render_shortlist_does_not_say_nothing_matched_when_a_source_was_merely_beaten():
+    # A shop whose boots qualified but lost a place on a limited list has not "matched
+    # nothing" — saying so would be false. Unreachable while there are fewer sources than
+    # rows, but the source list is growing.
+    coverage = [
+        SourceCoverage("prodirectsport.ie", "Pro:Direct (IE)", count=6, cheapest=62.0, found=15),
+        SourceCoverage("komanda.lv", "komanda.lv", count=0, found=3, scouted=9),
+    ]
+
+    body = render_shortlist(
+        SHORTLIST_HUNT,
+        [_boot("A Elite", 40.0, "prodirectsport.ie")],
+        [],
+        SHORTLIST_TABLE,
+        coverage=coverage,
+    )
+
+    assert "⚠️" not in body
+    assert "Qualified but did not make the list: komanda.lv (3 qualified)" in body
+    assert "nothing matching this hunt" not in body
 
 
 def test_render_shortlist_omits_the_breakdown_when_there_is_no_coverage():
