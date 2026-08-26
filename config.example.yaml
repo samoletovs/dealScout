@@ -234,6 +234,15 @@ hunts:
       # can be asked for the tier directly instead of filtering 700 boots client-side.
       - "https://www.11teamsports.com/de-de/sale/fussballschuhe/?serie=Elite"
       - "https://www.11teamsports.com/de-de/fussballschuhe/kinder-fussballschuhe/"
+      # teamsport.lv — SIA VIVA SPORT, the official Nike distributor for Latvia since
+      # 1998. Free shipping over €50 and Rīga pickup, so a find here can be collected in
+      # person. Runs Magento and publishes no ld+json; its *product* pages load the price
+      # over AJAX, so a product page states no price at all — but the category renders
+      # every tile server-side with name, link and price, which is what the scout reads.
+      # One request covers the whole boots category (48 products, 34 of them Elite;
+      # paging parameters are ignored, so asking for page 2 just re-fetches page 1).
+      # Tiles state no sizes, so everything here is capped at 🟡 "verify on click".
+      - "https://www.teamsport.lv/lv_lv/futbols/futbola-apavi.html"
     queries:                     # SerpApi (dormant without SERPAPI_KEY) — costs 1 search each
       - "Nike Mercurial Superfly 10 Elite junior AG"
       - "Nike Mercurial Vapor 16 Elite junior football boots"
