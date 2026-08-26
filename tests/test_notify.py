@@ -137,12 +137,11 @@ def test_render_shortlist_states_how_many_rows_each_source_contributed():
     assert "| komanda.lv (Rīga) | 2 | €212 | 2 |" in body
 
 
-def test_render_shortlist_names_a_source_that_contributed_nothing():
-    # A retailer goes quiet because its parser broke far more often than because it sold
-    # out, and a list that merely lacks the row cannot say which happened.
+def test_render_shortlist_warns_when_a_source_yielded_nothing_at_all():
+    # Nothing scouted means the reader probably broke — this is the case worth an alarm.
     coverage = [
         SourceCoverage("prodirectsport.ie", "Pro:Direct (IE)", count=6, cheapest=62.0, found=15),
-        SourceCoverage("futbola-apavi.lv", "futbola-apavi.lv", count=0),
+        SourceCoverage("futbola-apavi.lv", "futbola-apavi.lv", count=0, scouted=0),
     ]
 
     body = render_shortlist(
@@ -153,8 +152,29 @@ def test_render_shortlist_names_a_source_that_contributed_nothing():
         coverage=coverage,
     )
 
-    assert "Nothing from futbola-apavi.lv this run" in body
+    assert "Nothing at all from futbola-apavi.lv" in body
     assert "| futbola-apavi.lv | 0 |" not in body  # a silent shop is a sentence, not a table row
+
+
+def test_render_shortlist_does_not_warn_when_a_source_was_read_but_had_nothing_suitable():
+    # Measured on futbola-apavi.lv: its Elite stock is adult-only, so it is read correctly
+    # every run and matches nothing. Alarming about that weekly would train the reader to
+    # ignore the warning, and it would then be worth nothing when a parser really dies.
+    coverage = [
+        SourceCoverage("prodirectsport.ie", "Pro:Direct (IE)", count=6, cheapest=62.0, found=15),
+        SourceCoverage("futbola-apavi.lv", "futbola-apavi.lv", count=0, scouted=5),
+    ]
+
+    body = render_shortlist(
+        SHORTLIST_HUNT,
+        [_boot("A Elite", 40.0, "prodirectsport.ie")],
+        [],
+        SHORTLIST_TABLE,
+        coverage=coverage,
+    )
+
+    assert "⚠️" not in body
+    assert "Read but nothing matched: futbola-apavi.lv (5 seen)" in body
 
 
 def test_render_shortlist_omits_the_breakdown_when_there_is_no_coverage():

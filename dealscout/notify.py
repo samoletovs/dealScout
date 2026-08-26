@@ -306,9 +306,11 @@ def _coverage_block(coverage: list[SourceCoverage]) -> list[str]:
     real question: six rows from one shop reads as a ranking bug until you can see that
     shop had fifteen candidates and the next two had two each.
 
-    The silent-source line matters more than the table. A retailer drops out because its
-    reader broke far more often than because it sold out, and only naming it makes that
-    visible — a list that merely lacks the row cannot say which happened.
+    The silent-source line matters more than the table, but only when it means something.
+    A source that was read fine and simply had nothing suitable is normal and gets a quiet
+    note; a source that yielded nothing at all is the one whose reader has probably broken.
+    Firing the alarm for both would make it fire most weeks, and an alarm that always fires
+    is ignored by the week it matters.
     """
     contributed = [c for c in coverage if c.count]
     silent = [c for c in coverage if not c.count]
@@ -323,12 +325,20 @@ def _coverage_block(coverage: list[SourceCoverage]) -> list[str]:
             price = f"€{row.cheapest:.0f}" if row.cheapest is not None else "—"
             lines.append(f"| {row.label} | {row.count} | {price} | {row.found} |")
         lines.append("")
-    if silent:
-        names = ", ".join(c.label for c in silent)
+
+    # Read but unsuitable: worth stating, not worth worrying about.
+    quiet = [c for c in silent if c.scouted]
+    # Nothing came back at all — the reader is the likely cause.
+    broken = [c for c in silent if not c.scouted]
+    if quiet:
+        detail = ", ".join(f"{c.label} ({c.scouted} seen)" for c in quiet)
+        lines.append(f"_Read but nothing matched: {detail}._\n")
+    if broken:
+        names = ", ".join(c.label for c in broken)
         lines.append(
-            f"_Nothing from {names} this run. A source goes quiet because its reader broke "
-            f"or its pages stopped stating what the hunt requires far more often than "
-            f"because its shelves emptied, so it is worth a look._\n"
+            f"_⚠️ Nothing at all from {names} this run — not even a candidate to reject. "
+            f"That is usually a broken reader rather than an empty shelf, so it is worth "
+            f"a look._\n"
         )
     return lines
 

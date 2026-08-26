@@ -79,6 +79,13 @@ class SourceCoverage:
 
     ``count == 0`` is a real row, not an omission: it is how a configured retailer says it
     went quiet this run.
+
+    ``scouted`` is what separates the two ways of contributing nothing, and the difference
+    decides whether the reader should worry. A shop whose pages were read fine but whose
+    stock simply does not fit has ``scouted > 0``; a shop whose reader broke has
+    ``scouted == 0``. Only the second deserves an alarm — a warning that fires every week
+    for a shop that is working teaches the reader to ignore it, and then it is worth
+    nothing on the week a parser really does die.
     """
 
     source: str
@@ -86,6 +93,7 @@ class SourceCoverage:
     count: int
     cheapest: float | None = None
     found: int = 0
+    scouted: int = 0
 
 
 def stamp_house_brands(products: list[Product], table: dict[str, Delivery]) -> list[Product]:
@@ -227,15 +235,17 @@ def source_coverage(
     table: dict[str, Delivery],
     expected: list[str] | tuple[str, ...] = (),
     pool: list[Product] | tuple[Product, ...] = (),
+    scouted: list[Product] | tuple[Product, ...] = (),
 ) -> list[SourceCoverage]:
     """How much of the shortlist each source contributed, biggest contributor first.
 
     ``pool`` is everything that survived judging, so the report can distinguish a shop that
-    was beaten on price from one that only ever had two boots to offer.
+    was beaten on price from one that only ever had two boots to offer. ``scouted`` is
+    everything read from the shop *before* judging, which is what tells a broken reader
+    apart from a shop that simply stocks nothing suitable.
 
     A configured source that contributed nothing is reported with ``count == 0`` rather
-    than left out. A retailer usually goes quiet because its parser broke, not because its
-    shelves emptied, and a list that merely lacks the row cannot say which happened.
+    than left out. A list that merely lacks the row cannot say which of the two happened.
     """
     counts: dict[str, int] = {}
     cheapest: dict[str, float] = {}
@@ -249,6 +259,10 @@ def source_coverage(
     for product in pool:
         found[product.source] = found.get(product.source, 0) + 1
 
+    seen: dict[str, int] = {}
+    for product in scouted:
+        seen[product.source] = seen.get(product.source, 0) + 1
+
     silent = [s for s in expected if s not in counts]
     rows = [
         SourceCoverage(
@@ -257,6 +271,7 @@ def source_coverage(
             count=counts.get(source, 0),
             cheapest=cheapest.get(source),
             found=found.get(source, counts.get(source, 0)),
+            scouted=seen.get(source, 0),
         )
         for source in [*counts, *silent]
     ]

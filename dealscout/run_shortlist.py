@@ -115,6 +115,7 @@ async def shortlist_for(
         table,
         expected_sources(hunt, table),
         pool=kept,
+        scouted=candidates,
     )
     return picked_confirmed, picked_unconfirmed, len(candidates), coverage
 

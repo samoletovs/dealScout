@@ -52,7 +52,7 @@ def test_should_drop_a_product_the_owner_has_thumbed_down(monkeypatch):
     # rejected boot returns on every run and the feedback loop is decorative.
     keep = _boot("adidas Predator Elite FG", "https://shop.example/keep")
     drop = _boot("adidas F50 Elite FG", "https://shop.example/drop")
-    confirmed, _, checked = _run(HUNT, [keep, drop], frozenset({drop.url}), monkeypatch)
+    confirmed, _, checked, _coverage = _run(HUNT, [keep, drop], frozenset({drop.url}), monkeypatch)
     assert [p.url for p in confirmed] == [keep.url]
     assert checked == 1
 
@@ -62,7 +62,7 @@ def test_should_keep_everything_when_nothing_has_been_rejected(monkeypatch):
         _boot("adidas Predator Elite FG", "https://shop.example/a"),
         _boot("adidas F50 Elite FG", "https://shop.example/b"),
     ]
-    confirmed, _, checked = _run(HUNT, boots, frozenset(), monkeypatch)
+    confirmed, _, checked, _coverage = _run(HUNT, boots, frozenset(), monkeypatch)
     assert len(confirmed) == 2
     assert checked == 2
 
