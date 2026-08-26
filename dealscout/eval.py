@@ -32,7 +32,7 @@ import argparse
 import logging
 import os
 import sys
-from dataclasses import dataclass, field, fields
+from dataclasses import dataclass, field, fields, replace
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -228,6 +228,45 @@ class EvalResult:
         return stats
 
 
+WANTED_SIZE = "@wanted"  # "a size this hunt is looking for, whatever it currently is"
+UNWANTED_SIZE = "@unwanted"  # "a size it is not"
+
+
+def resolve_sizes(product: Product, hunt: Hunt) -> Product:
+    """Replace size sentinels with sizes derived from the hunt (pure).
+
+    A golden case that restates a value tests a symptom; one that relates two things tests
+    an invariant. Most of these cases exist to pin *tier* behaviour and need a stocked size
+    only so the size gate does not reject them first — but they pinned the literal ``37.5``,
+    so the owner's son growing out of that size would have broken CI on a config edit that
+    was entirely correct. ``@wanted`` says what the case actually means.
+
+    ``@unwanted`` is its opposite, for the one case that exists to prove a stated size we
+    do not want is an answer rather than an uncertainty.
+    """
+    wanted = hunt.sizes_for(product.brand, product.title)
+    if not wanted:
+        return product
+    resolved: set[str] = set()
+    for size in product.sizes:
+        if size == WANTED_SIZE:
+            resolved.update(wanted)
+        elif size == UNWANTED_SIZE:
+            # Two whole sizes clear of anything wanted, so it cannot collide by accident.
+            resolved.update(str(float(s) + 2) for s in wanted if _numeric(s))
+        else:
+            resolved.add(size)
+    return replace(product, sizes=frozenset(resolved))
+
+
+def _numeric(size: str) -> bool:
+    try:
+        float(size)
+    except (TypeError, ValueError):
+        return False
+    return True
+
+
 def _build_product(raw: dict[str, Any], case_id: str) -> Product:
     """Construct a Product from a golden-case mapping, coercing container types."""
     data = {k: v for k, v in raw.items() if k in _PRODUCT_FIELDS}
@@ -301,8 +340,9 @@ def evaluate(cases: list[GoldenCase], config: dict[str, Any]) -> EvalResult:
                     f"golden case {case.id!r}: no hunt {case.hunt_id!r} in the scoring config "
                     f"(have: {', '.join(sorted(hunts)) or 'none'})"
                 )
-            verdict = judge_hunt(case.product, hunt, vocab)
-            attrs = resolve_attrs(case.product, hunt, vocab)
+            product = resolve_sizes(case.product, hunt)
+            verdict = judge_hunt(product, hunt, vocab)
+            attrs = resolve_attrs(product, hunt, vocab)
         else:
             verdict = judge(case.product, config)
             attrs = extract_attrs(case.product.title, case.product.category, vocab)
