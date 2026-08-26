@@ -36,6 +36,7 @@ actually purchasable.
 | **komanda.lv** | 🇱🇻 LV — shop at Duntes iela 7, Rīga | Shopify | `/products.json` | official adidas Baltic dealer | adidas Predator Elite FT FG €280; Copa Pure IV Elite €240 |
 | **futbola-apavi.lv** | 🇱🇻 LV | OpenCart | rendered size boxes (`read_size_boxes`) | small specialist, unrated | Nike Tiempo Maestro Elite FG €250 (RRP €270) |
 | **teamsport.lv** | 🇱🇻 LV — **official Nike distributor since 1998**, free shipping >€50, Rīga pickup | Magento 2 | rendered listing tiles (`parse_product_tiles`) — no sizes, so 🟡 only | authorised channel, zero authenticity risk | Legend 10 Elite SG-Pro €120 (was €330); ZM Vapor 16 Elite KM FG €120 (was €350) |
+| **sportland.lv** | 🇱🇻 LV — ~80 Baltic stores, official Nike Baltic distributor, **try-on before buying** | Magento 2 / ScandiPWA | its own **GraphQL API**, discovery via sitemap (`magento.py`) — no sizes, so 🟡 only | Frasers Group backing | Nike Phantom GX 2 Elite €99 (was €330); adidas Predator Elite FG €104 (was €260) |
 
 **11teamsports** is the best-trusted retailer in the whole segment — eleven teamsports
 GmbH (JCK Holding), 66+ stores across 19 countries, and the highest Trustpilot score here
@@ -84,7 +85,6 @@ Worth the work, not yet done. Listed so effort is spent where it pays.
 | Source | Trust / note | Symptom |
 |---|---|---|
 | **unisportstore.com** 🇩🇰 | Unisport A/S, ~€155M revenue, top-3 European pure-play, €7 flat to LV. 3.7/5. **Now an R-GOL subsidiary.** | HTTP 405 on every request including the homepage. Previously the best source of all — per-size stock *and* RRP — so worth re-testing from another network before writing it off. |
-| **sportland.lv** 🇱🇻 | Baltic's largest chain, ~80 stores, official Nike Baltic distributor, 60% Frasers Group. Superfly 11 Elite €295.99. **Best option for trying boots on in Latvia.** | A genuine JavaScript SPA — and the one case here where nothing cheap works. Its sitemap (named in robots.txt as `/media/sitemap_LV.xml`) does yield **22,537 URLs, 18,617 of them products**, so discovery is solved; but the product page is a 134 KB webpack shell with no ld+json, no price and no sizes, and the listing renders no tiles either. Reaching it means finding the XHR endpoint the bundle calls, or driving a browser. |
 | **sportisimo.com** 🇨🇿 | 220+ stores, authorised — but **2.5/5, returns from abroad are the core complaint** | 403 on every category page |
 | kickz.com 🇩🇪 | 3.7/5; subsidiary of 11teamsports, so the parent covers it | 403 (Cloudflare + PerimeterX) |
 | keller-sports.com 🇩🇪 | 2.9–3.4/5, refund delays | no catalogue recovered |
@@ -121,10 +121,11 @@ python -m dealscout.qualify www.example.com
 Then add the listing URL to `watch:` in the hunt. Prefer, in order:
 
 1. a Shopify `/collections/<name>/products.json?limit=250` endpoint,
-2. a page whose ld+json states per-size availability,
-3. a rendered size picker (`<select>` or radio boxes),
-4. rendered listing tiles — name, link and price, but no sizes,
-5. a price with no sizes — still useful, but always 🟡 *verify on click*.
+2. a storefront's own GraphQL API (`catalogs:` in the hunt — see `magento.py`),
+3. a page whose ld+json states per-size availability,
+4. a rendered size picker (`<select>` or radio boxes),
+5. rendered listing tiles — name, link and price, but no sizes,
+6. a price with no sizes — still useful, but always 🟡 *verify on click*.
 
 ### When a shop looks like it needs a browser
 
@@ -134,15 +135,23 @@ in this order. teamsport.lv was written off here as Cloudflare-blocked and turne
 need none of it:
 
 1. **Read `robots.txt` for `Sitemap:` lines.** Sitemaps are static XML, served to anyone,
-   and they list every product URL. sportland.lv gives 18,617 products this way; the
+   and they list every product URL. sportland.lv gives 18,616 products this way; the
    default `/sitemap.xml` may be another storefront's, so take the URL robots names.
 2. **Try the listing page, not the product page.** They fail independently. teamsport
    withholds the price on a *product* page and renders it on the *category* page.
-3. **Look for the platform's API.** Shopify `/products.json` is open by design; Magento's
-   `/rest/V1/products` usually is not — teamsport returns 401 — but it costs one request
-   to find out.
+3. **Identify the front end, then ask what it talks to.** A shell is not a dead end, it is
+   a client — and the API it calls is usually open, because its own browser has no
+   credentials either. sportland.lv loads `Scandiweb/pwa`; ScandiPWA is a React storefront
+   *for Magento 2*, so its data comes from Magento's GraphQL at `/graphql`, which is
+   public by design. (Magento's REST API at `/rest/V1/...` is not — teamsport returns 401
+   — so the failure of one says nothing about the other.)
 4. **Check whether an SPA embeds its state** (`__NUXT__`, `__NEXT_DATA__`, an inline JSON
-   blob). sportland.lv does not; it is a webpack bundle that fetches over XHR.
+   blob) before assuming it fetches everything.
 
-Only when all four fail is a browser actually warranted.
+Only when all four fail is a browser actually warranted. So far none of them has been.
+
+**On GraphQL specifically:** introspection is the fastest way to learn a schema you have
+no documentation for — `{__type(name:"ProductAttributeFilterInput"){inputFields{name}}}`
+revealed that sportland accepts only `category_id`, `category_uid` and `url_key`, and no
+free-text search, which is exactly why discovery has to come from the sitemap.
 

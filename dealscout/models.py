@@ -150,6 +150,9 @@ class Hunt:
     brands_only: bool = False  # when True, `brands` is a hard filter, not just a ranking
     queries: tuple[str, ...] = ()  # search strings for the scout
     watch: tuple[str, ...] = ()  # listing/product URLs to poll directly
+    # Magento storefronts read through their own GraphQL API, for shops that render
+    # nothing server-side. Each entry: {sitemap, graphql, origin, match}. See magento.py.
+    catalogs: tuple[dict, ...] = ()
     notes: str = ""
 
     @classmethod
@@ -183,5 +186,6 @@ class Hunt:
             brands_only=bool(data.get("brands_only", False)),
             queries=_tuple(data.get("queries")),
             watch=_tuple(data.get("watch")),
+            catalogs=tuple(c for c in (data.get("catalogs") or []) if isinstance(c, dict)),
             notes=str(data.get("notes") or "").strip(),
         )

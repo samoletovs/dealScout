@@ -243,6 +243,26 @@ hunts:
       # paging parameters are ignored, so asking for page 2 just re-fetches page 1).
       # Tiles state no sizes, so everything here is capped at 🟡 "verify on click".
       - "https://www.teamsport.lv/lv_lv/futbols/futbola-apavi.html"
+    catalogs:
+      # sportland.lv — Baltic's largest sports chain (~80 stores, official Nike Baltic
+      # distributor), so a find here can be tried on before buying. The site is a
+      # ScandiPWA shell: no ld+json, no price, no tiles, nothing a parser can read, which
+      # looked like it needed a headless browser. It does not. ScandiPWA is a React front
+      # end *for Magento 2*, so the same data arrives over Magento's GraphQL endpoint —
+      # public by design, unlike the REST API that guards the same catalogue behind a
+      # token. This reads the shop exactly the way its own front end does.
+      #
+      # GraphQL here accepts only url_key/category filters and no free-text search, so the
+      # sitemap does discovery: 18,616 products, filtered to a few dozen on the slug
+      # before any request is spent. Take the sitemap named in robots.txt — the default
+      # /sitemap.xml belongs to a different storefront of the same group.
+      #
+      # Sizes are NOT read: a variant carries a stock flag but no attributes, so which
+      # size is in stock cannot be established, and everything here stays 🟡 verify-on-click.
+      - sitemap: "https://sportland.lv/media/sitemap_LV.xml"
+        graphql: "https://sportland.lv/graphql"
+        origin: "https://sportland.lv"
+        match: "boots|cleats"
     queries:                     # SerpApi (dormant without SERPAPI_KEY) — costs 1 search each
       - "Nike Mercurial Superfly 10 Elite junior AG"
       - "Nike Mercurial Vapor 16 Elite junior football boots"
