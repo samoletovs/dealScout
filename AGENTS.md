@@ -16,6 +16,8 @@ Personal bargain-hunting wardrobe assistant. A **co-pilot, not an autopilot**: d
 - `dealscout/models.py` — `WatchItem`, `Product`, `Verdict` dataclasses.
 - `dealscout/collector.py` — turn a watch item into a `Product` snapshot (stub → implement via ld+json / feeds).
 - `dealscout/judge.py` — the deal judge (pure, well-tested): price vs target + quality/logo/fabric rules. **This is the heart.**
+- `dealscout/hunt.py` — the *hunt* judge: evaluates a declarative `Hunt` (tier/soleplate/size/brand/price) three-state, so an unstated attribute is *unknown* rather than failed. Also validates a hunt's `require:` against the values the engine can actually assign, so stale config fails loudly.
+- `dealscout/catalogue.py` + `data/<category>.yaml` — the tier catalogue. Reads a title against a brand's real ladder and returns `adult-flagship` / `junior-flagship` / `takedown` / `unknown`, plus model line, generation and whether that generation is current. Replaces `"elite" in title`, which called a €70 Diadora *Academy* boot a flagship and a €130 junior Elite the same thing as a €280 adult one. It **classifies, never filters** — the owner buys for a child, so a junior flagship is a legitimate find; the job is to make sure he can tell which he is being offered. Consulted *before* the vocabulary, because `extract_attrs` matches in declaration order and `elite` shadows `academy` permanently. `data/*.yaml` carries `last_verified`: generation status is a season snapshot and rots silently.
 - `dealscout/notify.py` — buy-signals report (markdown) + email via the shared `courier` service (ACS).
 - `dealscout/newsletters.py` — parse brand newsletters → SaleEvents, judge by tier + discount (P3 signal source).
 - `dealscout/senders.py` — summarize inbox senders (subscription-health signal).
@@ -28,7 +30,7 @@ Personal bargain-hunting wardrobe assistant. A **co-pilot, not an autopilot**: d
 - `dealscout/run_digest.py` — digest entrypoint: read inbox → parse → judge → email digest.
 - `dealscout/serpsearch.py` — opt-in Google Shopping scan via SerpApi → candidate Products (dormant unless `SERPAPI_KEY` + `serpapi.enabled`).
 - `dealscout/run_serpapi.py` — scan entrypoint: SerpApi scan → judge (fibre off, fabric verified on click) → notify.
-- `dealscout/eval.py` — golden-set scorer for the judge (drift scorecard: band accuracy + deal precision/recall). Cases live in `evals/golden.yaml`; run `python -m dealscout.eval`.
+- `dealscout/eval.py` — golden-set scorer (drift scorecard). Cases in `evals/golden.yaml` are scored by the wardrobe judge, or — when they name a `hunt:` — by `judge_hunt`. `expected.attrs` pins the attributes behind a verdict so a case cannot pass for the wrong reason. Run `python -m dealscout.eval`.
 
 ## Where the owner's real profile lives
 

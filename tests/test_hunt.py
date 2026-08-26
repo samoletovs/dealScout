@@ -17,7 +17,7 @@ BOOTS = {
     "for": "junior",
     "sizes": ["37", "37.5"],
     "brands": ["Nike", "adidas", "Puma"],
-    "require": {"tier": ["elite"], "soleplate": ["AG", "FG"]},
+    "require": {"tier": ["adult-flagship", "junior-flagship"], "soleplate": ["AG", "FG"]},
     "prefer": {"soleplate": ["AG", "FG"], "fit": ["junior"]},
     "exclude": {
         "models": ["Legend 10 Elite"],
@@ -59,7 +59,7 @@ def test_hunt_from_dict_should_map_the_yaml_shape():
     assert hunt.for_whom == "junior"
     assert hunt.sizes == ("37", "37.5")
     assert hunt.brands == ("Nike", "adidas", "Puma")
-    assert hunt.require["tier"] == ("elite",)
+    assert hunt.require["tier"] == ("adult-flagship", "junior-flagship")
     assert (hunt.must_buy, hunt.good_offer, hunt.never_above) == (70, 100, 100)
     assert hunt.min_reference_price == 200
     assert hunt.exclude_models == ("Legend 10 Elite",)
@@ -95,7 +95,7 @@ def test_should_penalise_each_unknown_so_a_verified_boot_ranks_higher():
 def test_should_reject_a_takedown_model_that_is_not_the_elite_tier():
     verdict = judge_hunt(_product(title="Nike Jr. Mercurial Superfly 10 Academy AG"), _hunt())
     assert verdict.is_deal is False
-    assert "tier=mid" in verdict.reasons[0]
+    assert "tier=takedown" in verdict.reasons[0]
 
 
 def test_should_reject_a_soleplate_we_do_not_want():
@@ -135,16 +135,40 @@ def test_should_reject_a_boot_over_the_hard_ceiling():
 
 
 def test_should_reject_a_lookalike_whose_rrp_proves_it_is_not_a_flagship():
-    verdict = judge_hunt(_product(reference_price=120.0), _hunt())
+    # The RRP proxy still fires when the tier is NOT established. `Predator Accuracy.2`
+    # names no tier, so "is this the flagship?" is unanswered and price stands in for it.
+    verdict = judge_hunt(
+        _product(title="adidas Predator Accuracy.2 FG", reference_price=120.0), _hunt()
+    )
     assert verdict.is_deal is False
     assert "not a flagship" in verdict.reasons[0]
 
 
-def test_should_flag_a_missing_rrp_instead_of_rejecting_the_boot():
+def test_should_not_apply_the_rrp_proxy_once_the_tier_is_actually_known():
+    # The junior Copa Pure Elite lists at RRP €90: genuinely the top of the junior range,
+    # and rejected by any gate written for adult boots. Once the catalogue has named the
+    # tier, the price proxy for that same question is not just redundant but wrong.
+    verdict = judge_hunt(
+        _product(title="adidas Kids Copa Pure III Elite FG", reference_price=90.0), _hunt()
+    )
+    assert verdict.is_deal is True
+    assert not any("not a flagship" in r for r in verdict.reasons)
+
+
+def test_should_not_flag_a_missing_rrp_once_the_tier_is_known():
+    # RRP was only ever a stand-in for tier here, so with the tier established a missing
+    # one is no longer something the human needs to verify on click.
     verdict = judge_hunt(_product(reference_price=None), _hunt())
     assert verdict.is_deal is True
-    assert verdict.band == "good"
-    assert any("verify on click: RRP" in r for r in verdict.reasons)
+    assert not any("verify on click: RRP" in r for r in verdict.reasons)
+
+
+def test_should_flag_a_missing_rrp_when_the_tier_is_not_established():
+    verdict = judge_hunt(
+        _product(title="adidas Predator Accuracy.2 FG", reference_price=None), _hunt()
+    )
+    assert verdict.is_deal is True
+    assert any("verify on click" in r and "RRP" in r for r in verdict.reasons)
 
 
 def test_should_reject_a_boot_that_is_not_discounted_enough():
