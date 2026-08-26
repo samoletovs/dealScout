@@ -9,10 +9,15 @@ was built from.
 from __future__ import annotations
 
 import textwrap
+from dataclasses import replace
 
 import pytest
 
 from dealscout.eval import (
+    UNWANTED_SIZE,
+    WANTED_SIZE,
+    load_golden,
+    resolve_sizes,
     DEFAULT_CONFIG,
     DEFAULT_GOLDEN,
     GoldenCase,
@@ -377,3 +382,59 @@ def test_gating_attribute_accuracy_should_fail_when_no_case_pins_anything(tmp_pa
     )
 
     assert exit_code == 1
+
+def _grown_out_config():
+    """The real config with every size replaced — the edit made when a child outgrows a size."""
+    import copy
+
+    from dealscout.config import load_config
+
+    config = copy.deepcopy(load_config(DEFAULT_CONFIG))
+    for hunt in config.get("hunts", []):
+        hunt["sizes"] = ["40", "40.5", "40.67"]
+        for brand in hunt.get("sizes_by_brand", {}):
+            hunt["sizes_by_brand"][brand] = ["40.67" if brand == "adidas" else "40.5"]
+    return config
+
+
+def test_the_golden_set_should_survive_the_owner_s_son_growing():
+    """A size change is a legitimate config edit, not a regression. It must not fail the gate.
+
+    The golden set scores against the live config on purpose, so a config regression surfaces.
+    But sizes are the one part of that config expected to change on its own schedule, and
+    cases pinning a literal size were failing for a reason that had nothing to do with them.
+    """
+    cases = load_golden()
+
+    result = evaluate(cases, _grown_out_config())
+
+    assert result.accuracy == 1.0
+    assert result.by_kind()["hunt"]["accuracy"] == 1.0
+
+
+def test_a_wanted_size_should_mean_whatever_this_hunt_currently_wants():
+    hunt = load_hunts(HUNT_CONFIG)["boots-test"]
+    product = replace(_boot(), sizes=frozenset({WANTED_SIZE}), sizes_known=True)
+
+    resolved = resolve_sizes(product, hunt)
+
+    assert resolved.sizes == frozenset(hunt.sizes_for(product.brand, product.title))
+    assert WANTED_SIZE not in resolved.sizes
+
+
+def test_an_unwanted_size_should_never_collide_with_a_wanted_one():
+    """The 'shop stated its sizes and ours is not among them' case has to stay a no."""
+    hunt = load_hunts(HUNT_CONFIG)["boots-test"]
+    product = replace(_boot(), sizes=frozenset({UNWANTED_SIZE}), sizes_known=True)
+
+    resolved = resolve_sizes(product, hunt)
+
+    assert resolved.sizes.isdisjoint(hunt.sizes_for(product.brand, product.title))
+
+
+def test_a_literal_size_should_be_left_exactly_as_written():
+    """Regression guard: resolution must only touch the sentinels, never a real size."""
+    hunt = load_hunts(HUNT_CONFIG)["boots-test"]
+    product = replace(_boot(), sizes=frozenset({"42"}), sizes_known=True)
+
+    assert resolve_sizes(product, hunt).sizes == frozenset({"42"})
