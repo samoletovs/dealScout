@@ -45,6 +45,9 @@ from .shortlist import (
     stamp_house_brands,
 )
 from .spec import merge_vocab
+from .yields import drops, record
+from .yields import load as load_yields
+from .yields import save as save_yields
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger("dealscout.shortlist")
@@ -153,6 +156,7 @@ async def main(argv: list[str]) -> int:
     rejected = downvoted_urls(await read_feedback())
     if rejected:
         logger.info("%d product(s) previously rejected by 👎 — excluded", len(rejected))
+    yield_history = load_yields()
     sent = 0
     for hunt in hunts:
         confirmed, unconfirmed, checked, coverage = await shortlist_for(
@@ -173,6 +177,19 @@ async def main(argv: list[str]) -> int:
         history = extend(history, fresh)
         memory = summarise_all(shown, history, limits=limits)
 
+        # Compare this run's per-source yield against that source's own recent history,
+        # *before* recording today's number — otherwise the baseline already contains the
+        # collapse and halves it into invisibility.
+        seen_now = {c.source: c.scouted for c in coverage}
+        fallen = drops(
+            yield_history,
+            seen_now,
+            labels={c.source: c.label for c in coverage},
+        )
+        for drop in fallen:
+            logger.warning("hunt %s: %s", hunt.id, drop.describe())
+        yield_history = record(yield_history, seen_now)
+
         body = render_shortlist(
             hunt,
             confirmed,
@@ -184,6 +201,7 @@ async def main(argv: list[str]) -> int:
             sources=len({p.source for p in shown}),
             memory=memory,
             coverage=coverage,
+            fallen=fallen,
         )
         path = Path("out") / f"shortlist-{hunt.id}.md"
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -198,6 +216,7 @@ async def main(argv: list[str]) -> int:
             if await send_email(subject, body):
                 sent += 1
     rewrite_history(prune(history, limits.keep_days, limits.max_points), limits.path)
+    save_yields(yield_history)
     logger.info("shortlist complete; %d email(s) sent", sent)
     return 0
 

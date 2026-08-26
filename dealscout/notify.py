@@ -20,6 +20,7 @@ from .models import Change, Feedback, Hunt, Product, Verdict
 from .monitor import canonical_url
 from .pricehistory import PriceMemory
 from .shortlist import Delivery, SourceCoverage, delivery_for, landed_cost, matched_sizes
+from .yields import Drop
 
 try:
     import markdown as _markdown
@@ -364,7 +365,9 @@ def _shortlist_row(
     return line
 
 
-def _coverage_block(coverage: list[SourceCoverage]) -> list[str]:
+def _coverage_block(
+    coverage: list[SourceCoverage], fallen: list[Drop] | None = None
+) -> list[str]:
     """The per-source breakdown: who contributed how much, out of how much, and who didn't.
 
     Diversity nobody can see is indistinguishable from none, so the spread is stated rather
@@ -385,9 +388,10 @@ def _coverage_block(coverage: list[SourceCoverage]) -> list[str]:
     Firing the alarm for all three would make it fire most weeks, and an alarm that always
     fires is ignored by the week it matters.
     """
+    fallen = fallen or []
     contributed = [c for c in coverage if c.count]
     silent = [c for c in coverage if not c.count]
-    if not contributed and not silent:
+    if not contributed and not silent and not fallen:
         return []
 
     lines = ["### Where these came from\n"]
@@ -419,6 +423,12 @@ def _coverage_block(coverage: list[SourceCoverage]) -> list[str]:
             f"That is usually a broken reader rather than an empty shelf, so it is worth "
             f"a look._\n"
         )
+    if fallen:
+        detail = "; ".join(d.describe() for d in fallen)
+        lines.append(
+            f"_⚠️ Yield fell sharply: {detail}. A source usually thins out long before it "
+            f"reaches zero, so this is the earlier warning._\n"
+        )
     return lines
 
 
@@ -433,6 +443,7 @@ def render_shortlist(
     sources: int = 0,
     memory: dict[str, PriceMemory] | None = None,
     coverage: list[SourceCoverage] | None = None,
+    fallen: list[Drop] | None = None,
 ) -> str:
     """The buy-now shortlist: what to buy, ranked by what it actually costs to receive."""
     remembered = memory or {}
@@ -497,7 +508,7 @@ def render_shortlist(
     lines.append("")
 
     if coverage:
-        lines.extend(_coverage_block(coverage))
+        lines.extend(_coverage_block(coverage, fallen))
 
     if checked:
         lines.append(
