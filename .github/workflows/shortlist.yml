@@ -1,0 +1,51 @@
+name: dealScout shortlist
+
+# The buy-now shortlist: "what should I buy?", as opposed to `hunt.yml`'s "what changed?".
+# Manual by default, because a shortlist is for the moment a decision is being made, and
+# a weekly copy is there so the answer is never more than a few days stale.
+
+on:
+  workflow_dispatch:
+    inputs:
+      hunt:
+        description: "Hunt id (blank = every enabled hunt)"
+        required: false
+        default: ""
+      email:
+        description: "Send the email as well as writing the report"
+        type: boolean
+        required: false
+        default: true
+  schedule:
+    - cron: "0 8 * * 6" # Saturdays 08:00 UTC
+
+jobs:
+  shortlist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+
+      - name: Build the shortlist
+        run: |
+          python -m dealscout.run_shortlist ${{ github.event.inputs.hunt }} \
+            ${{ github.event.inputs.email == 'false' && '--no-email' || '' }}
+        env:
+          COURIER_URL: ${{ secrets.COURIER_URL }}
+          COURIER_KEY: ${{ secrets.COURIER_KEY }}
+          DEALSCOUT_EMAIL_TO: ${{ secrets.DEALSCOUT_EMAIL_TO }}
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+
+      # Uploaded unconditionally: if the courier secrets are not set the run still
+      # produces the shortlist, and downloading it beats re-running the scan.
+      - name: Upload the shortlist
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shortlist
+          path: out/
+          if-no-files-found: ignore
+          retention-days: 30

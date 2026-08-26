@@ -126,6 +126,44 @@ serpapi:
 # ranked best-first. An attribute the page never stated is *unknown*, not failed: the
 # find is still surfaced, flagged "verify on click", and capped below 🟢 must-buy.
 # ---------------------------------------------------------------------------
+# What each source costs to actually receive from. The shortlist ranks on price + delivery,
+# not shelf price: a €45 boot from Ireland at €7 postage costs more than a €50 boot
+# collected in Rīga, and sorting on the shelf price quietly recommends the wrong shop.
+# A source missing from this table contributes no shipping rather than a guessed figure —
+# an invented postage number would silently reorder the list.
+delivery:
+  prodirectsport.ie:
+    label: "Pro:Direct (IE)"
+    shipping: 7
+    note: "ships from CZ"
+  11teamsports.com:
+    label: "11teamsports (DE)"
+    shipping: 10
+    note: "DHL 2-5 days · best-rated returns"
+  komanda.lv:
+    label: "komanda.lv (Rīga)"
+    shipping: 0
+    pickup: true
+    note: "adidas official · Duntes iela 7"
+  teamsport.lv:
+    label: "teamsport.lv (Rīga)"
+    shipping: 5
+    free_over: 50
+    pickup: true
+    house_brand: Nike        # Nike's LV distributor: its own listings say "ZM SUPERFLY
+                             # 10 ELITE SG-PRO", never "Nike", so brands_only would
+                             # otherwise reject the entire shop.
+    note: "Nike official LV since 1998"
+  sportland.lv:
+    label: "Sportland (Rīga)"
+    shipping: 3
+    free_over: 50
+    pickup: true
+    note: "~80 Baltic stores"
+  futbola-apavi.lv:
+    label: "futbola-apavi.lv"
+    shipping: 4
+
 hunts:
   - id: boots-junior
     enabled: true
