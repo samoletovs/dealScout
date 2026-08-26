@@ -17,8 +17,17 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import re
+from urllib.parse import urlsplit
 
-from .collector import collect, collect_links, collect_listing
+from .collector import collect, collect_links, collect_listing, fetch, robots_allows, title_from_slug
+from .magento import (
+    DEFAULT_BATCH,
+    batched,
+    parse_graphql_products,
+    query_url,
+    sitemap_product_keys,
+)
 from .models import Hunt, Product, WatchItem
 from .serpsearch import _allowed_source, _condition, _old_price, _search
 from .spec import extract_attrs
@@ -159,6 +168,56 @@ async def _from_watch(
     return found
 
 
+async def _from_catalogs(
+    hunt: Hunt, delay: float, vocab: dict | None = None, batch: int = DEFAULT_BATCH
+) -> list[Product]:
+    """Read Magento storefronts that render nothing, via sitemap + their own GraphQL.
+
+    The sitemap is the only complete product list such a shop offers to a non-browser, and
+    the slug is enough to discard the overwhelming majority before spending a request:
+    sportland.lv publishes 18,616 products, of which a boots hunt wants under a hundred.
+    """
+    found: list[Product] = []
+    for catalog in hunt.catalogs:
+        sitemap = str(catalog.get("sitemap") or "").strip()
+        endpoint = str(catalog.get("graphql") or "").strip()
+        if not sitemap or not endpoint:
+            continue
+        origin = str(catalog.get("origin") or "").strip() or (
+            f"{urlsplit(endpoint).scheme}://{urlsplit(endpoint).netloc}"
+        )
+        if not await robots_allows(sitemap):
+            logger.info("hunt %s: robots.txt disallows %s", hunt.id, sitemap)
+            continue
+
+        xml = await fetch(sitemap)
+        if not xml:
+            continue
+        keys = sitemap_product_keys(xml, str(catalog.get("marker") or "/product/"))
+
+        # The slug is the only thing known before a request, so filter on it. `match`
+        # narrows to the right department; the hunt's own rules then reject anything whose
+        # name already contradicts them, exactly as for a listing of nameless links.
+        needle = str(catalog.get("match") or "").strip().lower()
+        if needle:
+            wanted = tuple(part for part in re.split(r"[|,]", needle) if part)
+            keys = [k for k in keys if any(part in k.lower() for part in wanted)]
+        keys = [k for k in keys if title_plausible(title_from_slug(k), hunt, vocab)]
+        logger.info("hunt %s: %s -> %d candidate key(s)", hunt.id, sitemap, len(keys))
+
+        for chunk in batched(keys, batch):
+            payload = await fetch(query_url(endpoint, chunk))
+            if payload:
+                found.extend(parse_graphql_products(payload, origin, hunt.category))
+            await asyncio.sleep(delay)
+
+    if hunt.catalogs:
+        logger.info(
+            "hunt %s: %d candidate(s) from %d catalog(s)", hunt.id, len(found), len(hunt.catalogs)
+        )
+    return found
+
+
 async def scout(
     hunt: Hunt, config: dict, api_key: str | None = None, vocab: dict | None = None
 ) -> list[Product]:
@@ -167,15 +226,17 @@ async def scout(
     scrape = config.get("scrape") or {}
     delay = float(scrape.get("delay_seconds", 1.0))
     budget = int(scrape.get("link_budget", DEFAULT_LINK_BUDGET))
+    batch = int(scrape.get("graphql_batch", DEFAULT_BATCH))
 
-    watched, searched = await asyncio.gather(
+    watched, searched, catalogued = await asyncio.gather(
         _from_watch(hunt, delay, vocab, budget),
         _from_queries(hunt, config, api_key),
+        _from_catalogs(hunt, delay, vocab, batch),
     )
 
     seen: set[str] = set()
     unique: list[Product] = []
-    for product in [*watched, *searched]:
+    for product in [*watched, *searched, *catalogued]:
         if not product.url or product.url in seen:
             continue
         seen.add(product.url)

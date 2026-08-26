@@ -17,6 +17,7 @@ import aiohttp
 from .feedback import feedback_link, latest_by_url, parse_feedback_jsonl
 from .hunt import resolve_attrs
 from .models import Change, Feedback, Hunt, Product, Verdict
+from .shortlist import Delivery, delivery_for, landed_cost, matched_sizes
 
 try:
     import markdown as _markdown
@@ -184,6 +185,122 @@ def render_hunt_report(
         "_You check out — dealScout never buys. Confirm size, soleplate and the "
         "retailer's delivery to your country on click._"
     )
+    return "\n".join(lines)
+
+
+_SHORTLIST_FOOTER = (
+    "_You check out — dealScout never buys. Prices and stock move fast; confirm size, "
+    "soleplate and delivery on the retailer's page before paying._"
+)
+
+
+def _shortlist_row(
+    product: Product,
+    hunt: Hunt,
+    table: dict[str, Delivery],
+    attrs: dict,
+    rank: int,
+    base_url: str = "",
+) -> str:
+    """One shortlist entry: landed cost first, because that is the number being compared."""
+    delivery = delivery_for(product.source, table)
+    total = landed_cost(product, delivery)
+    postage = total - product.price
+
+    head = f"**{rank}. [{product.title}]({product.url}) — €{total:.0f}**"
+    if postage > 0:
+        head += f" _(€{product.price:.0f} + €{postage:.0f} delivery)_"
+    elif delivery.pickup:
+        head += " _(collect in Rīga)_"
+
+    facts: list[str] = []
+    ref = product.reference_price
+    if ref and ref > product.price:
+        facts.append(f"RRP €{ref:.0f}, **-{round(100 * (1 - product.price / ref))}%**")
+    spec = [attrs[a] for a in _ATTR_ORDER if a in attrs]
+    if spec:
+        facts.append(" · ".join(spec))
+
+    sizes = matched_sizes(product, hunt)
+    if sizes:
+        facts.append(f"in stock: **EU {', '.join(sizes)}**")
+    elif product.sizes:
+        # The unconfirmed list: show what the shop does publish, so the reader can judge.
+        offered = sorted(product.sizes)[:10]
+        facts.append(f"sizes listed: {', '.join(offered)}")
+
+    facts.append(delivery.label or product.source)
+    if delivery.pickup:
+        facts.append("🏬 try on before buying")
+    if delivery.note:
+        facts.append(delivery.note)
+
+    line = f"- {head}\n  - " + " · ".join(facts)
+    if base_url:
+        up = feedback_link(base_url, product.url, "up")
+        down = feedback_link(base_url, product.url, "down")
+        line += f" · [👍]({up}) [👎]({down})"
+    return line
+
+
+def render_shortlist(
+    hunt: Hunt,
+    confirmed: list[Product],
+    unconfirmed: list[Product],
+    table: dict[str, Delivery],
+    feedback_base_url: str = "",
+    vocab: dict | None = None,
+    checked: int = 0,
+    sources: int = 0,
+) -> str:
+    """The buy-now shortlist: what to buy, ranked by what it actually costs to receive."""
+    lines = [f"# dealScout — {hunt.label or hunt.id}\n"]
+    if hunt.sizes_by_brand:
+        # Naming the fallback list here would misdescribe the search: adidas is only ever
+        # matched on 37⅓ and Nike only on 37.5, so say that rather than their union.
+        per_brand = " · ".join(
+            f"{brand} EU {', '.join(sizes)}" for brand, sizes in hunt.sizes_by_brand.items()
+        )
+        wanted_label = per_brand
+    else:
+        wanted_label = f"EU {', '.join(hunt.sizes)}"
+    lines.append(
+        f"_Top-tier only · {wanted_label} · ranked by **landed cost** "
+        f"(price + delivery to Latvia), not shelf price._\n"
+    )
+
+    lines.append(f"## ✅ Confirmed in your size — {len(confirmed)}")
+    if confirmed:
+        lines.append("_The shop states these are in stock in a size you want._\n")
+        for i, product in enumerate(confirmed, 1):
+            attrs = resolve_attrs(product, hunt, vocab)
+            lines.append(_shortlist_row(product, hunt, table, attrs, i, feedback_base_url))
+    else:
+        lines.append("_Nothing in your size right now from a shop that publishes sizes._")
+    lines.append("")
+
+    lines.append(f"## ❔ Size not published — {len(unconfirmed)}")
+    if unconfirmed:
+        lines.append(
+            "_These shops publish a price but not per-size stock, so the size has to be "
+            "checked on the page. Both are in Rīga, so they can also be phoned or "
+            "visited — which is the point of listing them separately rather than "
+            "pretending they are confirmed._\n"
+        )
+        for i, product in enumerate(unconfirmed, 1):
+            attrs = resolve_attrs(product, hunt, vocab)
+            lines.append(_shortlist_row(product, hunt, table, attrs, i, feedback_base_url))
+    else:
+        lines.append("_Nothing to verify this run._")
+    lines.append("")
+
+    if checked:
+        lines.append(
+            f"---\n\n_Checked {checked} products across {sources} sources. "
+            f"Excluded: boots already owned, and anything the shop states is out of "
+            f"stock in your size ({wanted_label})._\n"
+        )
+    lines.append(_SHORTLIST_FOOTER)
     return "\n".join(lines)
 
 
