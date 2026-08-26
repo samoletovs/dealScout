@@ -130,6 +130,12 @@ class Hunt:
     currency: str = "EUR"
     deliver_to: str = ""
     sizes: tuple[str, ...] = ()  # acceptable sizes, normalised (e.g. ("37", "37.5"))
+    # Per-brand overrides, because a size is a brand's opinion rather than a measurement.
+    # adidas sizes in thirds and its EU 37 is 37⅓; Nike's equivalent for the same foot is
+    # 37.5 and it makes no thirds at all. Searching both lists against both brands surfaces
+    # boots that will not fit and hides ones that will, so the brand picks the list.
+    # Falls back to `sizes` for a brand not named here.
+    sizes_by_brand: dict[str, tuple[str, ...]] = field(default_factory=dict)
     brands: tuple[str, ...] = ()  # ranked, most-wanted first — drives preference scoring
     require: dict[str, tuple[str, ...]] = field(default_factory=dict)  # attr -> allowed values
     prefer: dict[str, tuple[str, ...]] = field(default_factory=dict)  # attr -> ranked values
@@ -155,6 +161,25 @@ class Hunt:
     catalogs: tuple[dict, ...] = ()
     notes: str = ""
 
+    def sizes_for(self, product_brand: str, product_title: str = "") -> tuple[str, ...]:
+        """The sizes wanted *for this brand* — falling back to the hunt's default list.
+
+        A shoe size is a brand's opinion, not a measurement: adidas EU 37 is printed 37⅓,
+        while Nike's equivalent for the same foot is 37.5 and Nike makes no thirds at all.
+        Matching both lists against both brands both surfaces boots that will not fit and,
+        worse, buries the ones that will.
+
+        The brand is read from the product's brand field first and its title second, since
+        a single-brand retailer often names neither in the title but does set the brand.
+        """
+        if not self.sizes_by_brand:
+            return self.sizes
+        haystack = f"{product_brand} {product_title}".lower()
+        for brand, sizes in self.sizes_by_brand.items():
+            if brand and brand in haystack:
+                return sizes or self.sizes
+        return self.sizes
+
     @classmethod
     def from_dict(cls, data: dict) -> Hunt:
         """Build a Hunt from a YAML mapping, tolerating scalars where lists are allowed."""
@@ -169,6 +194,10 @@ class Hunt:
             currency=str(data.get("currency") or "EUR").strip(),
             deliver_to=str(data.get("deliver_to") or "").strip(),
             sizes=_tuple(data.get("sizes")),
+            sizes_by_brand={
+                str(k).strip().lower(): _tuple(v)
+                for k, v in (data.get("sizes_by_brand") or {}).items()
+            },
             brands=_tuple(data.get("brands")),
             require={k: _tuple(v) for k, v in (data.get("require") or {}).items()},
             require_stated=_tuple(data.get("require_stated")),

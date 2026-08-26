@@ -141,3 +141,39 @@ def test_should_not_overwrite_a_brand_the_product_already_states():
 def test_should_not_stamp_a_shop_with_no_declared_house_brand():
     [boot] = stamp_house_brands([_boot("Some Elite", 60.0, "prodirectsport.ie")], TABLE)
     assert boot.brand == ""
+
+
+BRAND_HUNT = Hunt(
+    id="boots",
+    sizes=("37", "37.5"),
+    sizes_by_brand={"adidas": ("37.33",), "nike": ("37.5",)},
+)
+
+
+def test_should_use_the_brand_specific_size_list():
+    # adidas EU 37 is printed 37 1/3; Nike's equivalent for the same foot is 37.5 and Nike
+    # makes no thirds. One flat list is wrong for both brands.
+    adi = _boot("adidas Predator Elite FG", 90.0, "x", sizes=("37.33", "37.5"),
+                sizes_known=True, brand="adidas")
+    nik = _boot("Nike Phantom Elite FG", 90.0, "x", sizes=("37.33", "37.5"),
+                sizes_known=True, brand="Nike")
+    assert matched_sizes(adi, BRAND_HUNT) == ["37.33"]
+    assert matched_sizes(nik, BRAND_HUNT) == ["37.5"]
+
+
+def test_should_reject_a_boot_only_in_the_other_brands_size():
+    # An adidas boot in 37.5 is not the owner's size, however close the number looks.
+    adi = _boot("adidas F50 Elite", 90.0, "x", sizes=("37.5",), sizes_known=True,
+                brand="adidas")
+    assert matched_sizes(adi, BRAND_HUNT) == []
+
+
+def test_should_read_the_brand_from_the_title_when_the_field_is_empty():
+    boot = _boot("adidas Predator Elite FG", 90.0, "x", sizes=("37.33",), sizes_known=True)
+    assert matched_sizes(boot, BRAND_HUNT) == ["37.33"]
+
+
+def test_should_fall_back_to_the_default_sizes_for_an_unlisted_brand():
+    boot = _boot("Mizuno Morelia Neo", 90.0, "x", sizes=("37", "37.33"), sizes_known=True,
+                 brand="Mizuno")
+    assert matched_sizes(boot, BRAND_HUNT) == ["37"]
