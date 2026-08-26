@@ -13,6 +13,7 @@ import pytest
 from dealscout.hunt import judge_hunt, known_values, resolve_attrs, validate_hunt
 from dealscout.models import Change, Hunt, Product, Verdict
 from dealscout.notify import render_hunt_report, render_shortlist, tier_phrase
+from dealscout.scout import title_confirms, title_plausible
 
 BOOTS = {
     "id": "boots-junior",
@@ -210,3 +211,53 @@ def test_the_raw_tier_value_should_not_be_printed_beside_its_own_label():
     body = render_shortlist(_hunt(), [_product()], [], {})
 
     assert "junior-flagship" not in body
+
+
+# ------------------------------------------------------- the scout's cheap pre-filter
+#
+# `title_plausible` runs BEFORE a request is spent, on nothing but a name. When it read
+# tier by an older rule than the judge, every candidate from a source that pre-filters on
+# a name — link-following and sitemap slugs — was discarded with no exception, no empty
+# parse and nothing in the log. Two whole retailers silently contributed zero, and the
+# coverage note then blamed them for being broken.
+
+
+@pytest.mark.parametrize(
+    "title",
+    [
+        "adidas f50 hyperfast elite fg chaos vs control kids weiss",
+        "adidas predator elite fg chaos vs control kids weiss",
+        "adidas_f50_messi_elite_firm_ground_football_boots_jq0930",
+        "adidas Kids F50 Elite FG",
+        "Nike Jr. Mercurial Superfly 10 Elite AG",
+    ],
+)
+def test_a_flagship_title_should_survive_the_pre_filter_under_the_new_tier_labels(title):
+    assert title_plausible(title, _hunt()) is True
+
+
+def test_the_pre_filter_should_still_discard_a_title_that_contradicts_the_tier():
+    # It must stay a real filter — this is what saves the request budget.
+    assert title_plausible("Nike Jr. Mercurial Vapor 16 Academy FG", _hunt()) is False
+
+
+def test_the_pre_filter_should_keep_a_title_the_catalogue_cannot_read():
+    # Unknown is not a contradiction. This is why the bug only bit titles the vocabulary
+    # was confident about — silence always survived.
+    assert title_plausible("adidas Kids Copa 19.4 FG", _hunt()) is True
+
+
+def test_the_pre_filter_and_the_judge_should_agree_about_tier():
+    # The root cause was two resolvers, not one wrong one. Pin the agreement.
+    title = "adidas Kids F50 Elite FG"
+    product = _product(title, brand="adidas", reference_price=130.0)
+
+    assert title_plausible(title, _hunt()) is True
+    assert resolve_attrs(product, _hunt())["tier"] in _hunt().require["tier"]
+
+
+def test_budget_ordering_should_still_recognise_a_title_that_states_everything():
+    # `title_confirms` orders a limited request budget; reading tier by the old rule made
+    # it answer False for every boot, quietly degrading which pages got fetched first.
+    assert title_confirms("adidas Kids F50 Elite FG", _hunt()) is True
+    assert title_confirms("adidas Kids Copa 19.4 FG", _hunt()) is False

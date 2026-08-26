@@ -56,25 +56,46 @@ def _check(actual: str | None, allowed: tuple[str, ...]) -> str:
     return PASS if any(str(a).strip().lower() == low for a in allowed) else FAIL
 
 
-def resolve_attrs(product: Product, hunt: Hunt, vocab: dict | None = None) -> dict[str, str]:
-    """Attributes for a product: catalogue first, then the vocabulary, then the collector.
+def attrs_from_title(
+    title: str,
+    category: str,
+    vocab: dict | None = None,
+    brand: str = "",
+    reference_price: float | None = None,
+) -> dict[str, str]:
+    """Read a title's attributes: catalogue first, vocabulary as fallback.
 
-    Order matters and is the whole point. ``extract_attrs`` returns the first match in
-    *declaration order*, so ``elite`` shadows ``academy`` and no token list can ever reach
-    the second — `Diadora Maximus Elite Academy` is unfixable in the vocabulary. Where a
-    catalogue exists for the category it therefore **owns** its attributes outright,
+    The single place tier is resolved from a name. It exists because it was once resolved
+    in two places by two different rules: the judge learned to consult the catalogue while
+    the scout's pre-filter kept reading the vocabulary, so `elite` — a value the catalogue
+    no longer assigns — silently contradicted `require: tier: [adult-flagship, ...]` and
+    two whole retailers were discarded before a request was ever spent. Anything that
+    needs attributes from a title must call this, so the two can never disagree again.
+
+    Order matters. ``extract_attrs`` returns the first match in *declaration order*, so
+    ``elite`` shadows ``academy`` and `Diadora Maximus Elite Academy` is unfixable in the
+    vocabulary. Where a catalogue exists it therefore **owns** its attributes outright,
     including the right to supply none: a catalogue that declines to name a tier must not
     have the vocabulary's guess quietly restored underneath it.
     """
-    category = hunt.category or product.category
-    derived = extract_attrs(product.title, category, vocab)
+    derived = extract_attrs(title, category, vocab)
     known = catalogue.load(category)
     if known is not None:
         for name in catalogue.MANAGED_ATTRS:
             derived.pop(name, None)
-        derived.update(
-            known.classify(product.title, product.brand, product.reference_price).as_attrs()
-        )
+        derived.update(known.classify(title, brand, reference_price).as_attrs())
+    return derived
+
+
+def resolve_attrs(product: Product, hunt: Hunt, vocab: dict | None = None) -> dict[str, str]:
+    """Attributes for a product: catalogue first, then the vocabulary, then the collector."""
+    derived = attrs_from_title(
+        product.title,
+        hunt.category or product.category,
+        vocab,
+        product.brand,
+        product.reference_price,
+    )
     return {**derived, **product.attrs}  # collector wins over both
 
 
