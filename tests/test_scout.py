@@ -29,7 +29,7 @@ HUNT_REQ = Hunt.from_dict(
     {
         "id": "boots-junior",
         "category": "football_boots",
-        "require": {"tier": ["elite"]},
+        "require": {"tier": ["adult-flagship", "junior-flagship"]},
         "exclude": {"models": ["Legend 10 Elite"]},
     }
 )
@@ -37,7 +37,7 @@ HUNT_REQ_WATCH = Hunt.from_dict(
     {
         "id": "boots-junior",
         "category": "football_boots",
-        "require": {"tier": ["elite"]},
+        "require": {"tier": ["adult-flagship", "junior-flagship"]},
         "watch": ["https://shop.eu/kids-sale"],
     }
 )
@@ -47,14 +47,14 @@ HUNT_REQ_SOLE = Hunt.from_dict(
     {
         "id": "boots-junior",
         "category": "football_boots",
-        "require": {"tier": ["elite"], "soleplate": ["AG", "FG"]},
+        "require": {"tier": ["adult-flagship", "junior-flagship"], "soleplate": ["AG", "FG"]},
     }
 )
 HUNT_SOLE_WATCH = Hunt.from_dict(
     {
         "id": "boots-junior",
         "category": "football_boots",
-        "require": {"tier": ["elite"], "soleplate": ["AG", "FG"]},
+        "require": {"tier": ["adult-flagship", "junior-flagship"], "soleplate": ["AG", "FG"]},
         "watch": ["https://shop.eu/kids-sale"],
     }
 )
@@ -275,7 +275,7 @@ def test_title_plausible_should_reject_an_off_brand_title_when_brands_are_a_gate
         {
             "id": "b",
             "category": "football_boots",
-            "require": {"tier": ["elite"]},
+            "require": {"tier": ["adult-flagship", "junior-flagship"]},
             "brands": ["Nike", "adidas", "Puma"],
             "brands_only": True,
         }
@@ -385,3 +385,50 @@ def test_scout_should_spend_its_budget_on_the_titles_that_already_look_right(mon
     config = {"scrape": {"delay_seconds": 0, "link_budget": 1}}
     asyncio.run(scout(HUNT_SOLE_WATCH, config, api_key=None))
     assert fetched == ["https://shop.eu/elite"]
+
+
+def test_title_plausible_should_resolve_tier_the_way_the_judge_does():
+    # The pre-filter and the judge gate the same hunt, so they have to agree about what a
+    # tier *is*. When the catalogue began reporting "junior-flagship" and this function
+    # still reported the vocabulary's "elite", every candidate looked like it contradicted
+    # the hunt and was discarded before a request was spent — two whole sources went
+    # silent, with no exception and nothing in the logs to show for it.
+    hunt = Hunt.from_dict(
+        {
+            "id": "b",
+            "category": "football_boots",
+            "require": {"tier": ["adult-flagship", "junior-flagship"]},
+        }
+    )
+
+    assert title_plausible("adidas Kids F50 Elite FG", hunt) is True
+    assert title_plausible("Nike Mercurial Superfly 10 Elite AG-Pro", hunt) is True
+
+
+def test_title_plausible_should_reject_a_takedown_the_catalogue_can_name():
+    # `Maximus Elite Academy` is an Academy boot. The vocabulary cannot see that — it
+    # matches "elite" first and never reaches "academy" — so this is only reachable
+    # because the catalogue is consulted before the vocabulary.
+    hunt = Hunt.from_dict(
+        {
+            "id": "b",
+            "category": "football_boots",
+            "require": {"tier": ["adult-flagship", "junior-flagship"]},
+        }
+    )
+
+    assert title_plausible("Diadora Maximus Elite Academy FG", hunt) is False
+
+
+def test_title_plausible_should_keep_a_title_the_catalogue_cannot_read():
+    # Unknown is not a contradiction. A title the catalogue declines to classify must stay
+    # a candidate, or the filter starts making judgements instead of saving requests.
+    hunt = Hunt.from_dict(
+        {
+            "id": "b",
+            "category": "football_boots",
+            "require": {"tier": ["adult-flagship", "junior-flagship"]},
+        }
+    )
+
+    assert title_plausible("Some Unlisted Brand Boot FG", hunt) is True

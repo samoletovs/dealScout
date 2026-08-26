@@ -206,14 +206,30 @@ hunts:
     # again. Mizuno / New Balance can be appended if the shortlist should widen instead.
     brands_only: true            # and nothing else: a 79%-off Skechers is not a cheap Nike
     require:
-      tier: [elite]              # the athlete boot only; rejects Academy/Club/League/Pro
-      soleplate: [AG, FG]        # artificial or firm ground; rejects TF/IC/SG
-    require_stated: [tier]       # tier is read from the title, so an unstated tier can
-                                 # never be confirmed by clicking — reject, don't flag,
-                                 # or the same takedown resurfaces on every run.
+      # Tier now comes from the catalogue in data/football_boots.yaml, not from looking
+      # for the word "elite" in the title. BOTH flagships are accepted: the boots are for
+      # a child, so the top of the junior range is exactly what he might buy — the point
+      # of classifying is that the email can say WHICH, not that one gets filtered away.
+      # A junior Elite is a different boot from an adult one (softer plate, thicker upper,
+      # wider last), not the same boot in small sizes.
+      #
+      # NOTE: `elite` is no longer a valid value here and is not silently accepted — the
+      # engine raises on an unknown require value rather than quietly matching nothing.
+      tier: [adult-flagship, junior-flagship]
+      soleplate: [AG, FG]              # artificial or firm ground; rejects TF/IC/SG
+    require_stated: [tier]             # tier is read from the title, so an unstated tier
+                                       # can never be confirmed by clicking — reject,
+                                       # don't flag, or the same takedown resurfaces on
+                                       # every run.
     prefer:
-      soleplate: [AG, FG]        # AG scores above FG
+      soleplate: [AG, FG]              # AG scores above FG
       fit: [junior]
+      # The catalogue also publishes `generation_status` (current / superseded /
+      # discontinued / evergreen). Left unranked deliberately: a superseded ADULT
+      # flagship at 60% off is the best find this tool can make, while an eight-year-old
+      # junior boot at the same discount usually is not, so it is surfaced and labelled
+      # rather than scored. Add `generation_status: [current, superseded]` to `require`
+      # above to hide clearance-era stock entirely — one line, no code.
     exclude:
       models:                    # already owned — don't buy the same boot twice
         - "Legend 10 Elite"
@@ -365,6 +381,9 @@ hunts:
     sizes: ["42", "42.5"]
     brands: [Nike, adidas, Saucony, Hoka, Asics, Puma]
     require:
+      # No catalogue file exists for running_shoes, so tier here still comes from the
+      # vocabulary (elite | mid | entry). Proof the catalogue is category-scoped: adding
+      # data/running_shoes.yaml would change this line, and nothing in the engine.
       tier: [elite]
     prefer:
       plate: [carbon]

@@ -20,6 +20,7 @@ import os
 import re
 from urllib.parse import urlsplit
 
+from . import catalogue
 from .collector import collect, collect_page, fetch, robots_allows, title_from_slug
 from .magento import (
     DEFAULT_BATCH,
@@ -43,6 +44,26 @@ def _match_brand(title: str, brands: tuple[str, ...]) -> str:
     return next((b for b in brands if str(b).strip().lower() in low), "")
 
 
+def title_attrs(title: str, hunt: Hunt, vocab: dict | None = None) -> dict[str, str]:
+    """Attributes readable from a bare title, resolved the way the judge resolves them.
+
+    A link or a sitemap slug gives a name and nothing else — no brand, no RRP — so this is
+    the poorest input the engine sees. It still has to agree with `hunt.resolve_attrs`
+    about what a tier *is*, because the two filters gate the same hunt: when the catalogue
+    began reporting ``junior-flagship`` and this function still reported ``elite``, every
+    candidate looked like it contradicted the hunt and was discarded before a request was
+    spent. Two whole sources went silent with no error to show for it.
+    """
+    category = hunt.category
+    derived = extract_attrs(title, category, vocab)
+    known = catalogue.load(category)
+    if known is not None:
+        for name in catalogue.MANAGED_ATTRS:
+            derived.pop(name, None)
+        derived.update(known.classify(title).as_attrs())
+    return derived
+
+
 def title_plausible(title: str, hunt: Hunt, vocab: dict | None = None) -> bool:
     """Cheap pre-filter for a link we have nothing but a name for.
 
@@ -50,7 +71,7 @@ def title_plausible(title: str, hunt: Hunt, vocab: dict | None = None) -> bool:
     nothing stays a candidate — unknown is not the same as absent, and this filter exists
     to save requests, not to make judgements.
     """
-    attrs = extract_attrs(title, hunt.category, vocab)
+    attrs = title_attrs(title, hunt, vocab)
     for attr, allowed in hunt.require.items():
         value = attrs.get(attr)
         if value and not any(str(a).strip().lower() == value.strip().lower() for a in allowed):
@@ -71,7 +92,7 @@ def title_confirms(title: str, hunt: Hunt, vocab: dict | None = None) -> bool:
     """
     if not hunt.require:
         return False
-    attrs = extract_attrs(title, hunt.category, vocab)
+    attrs = title_attrs(title, hunt, vocab)
     return all(
         (attrs.get(attr) or "").strip().lower()
         in {str(a).strip().lower() for a in allowed}

@@ -19,7 +19,8 @@ import logging
 
 from .judge import discount_pct
 from .models import Hunt, Product, Verdict
-from .spec import extract_attrs, normalise_sizes
+from .spec import extract_attrs, merge_vocab, normalise_sizes
+from . import catalogue
 
 logger = logging.getLogger(__name__)
 
@@ -56,9 +57,82 @@ def _check(actual: str | None, allowed: tuple[str, ...]) -> str:
 
 
 def resolve_attrs(product: Product, hunt: Hunt, vocab: dict | None = None) -> dict[str, str]:
-    """Attributes for a product: whatever the collector supplied, plus title-derived."""
-    derived = extract_attrs(product.title, hunt.category or product.category, vocab)
-    return {**derived, **product.attrs}  # collector wins over guessing from the title
+    """Attributes for a product: catalogue first, then the vocabulary, then the collector.
+
+    Order matters and is the whole point. ``extract_attrs`` returns the first match in
+    *declaration order*, so ``elite`` shadows ``academy`` and no token list can ever reach
+    the second — `Diadora Maximus Elite Academy` is unfixable in the vocabulary. Where a
+    catalogue exists for the category it therefore **owns** its attributes outright,
+    including the right to supply none: a catalogue that declines to name a tier must not
+    have the vocabulary's guess quietly restored underneath it.
+    """
+    category = hunt.category or product.category
+    derived = extract_attrs(product.title, category, vocab)
+    known = catalogue.load(category)
+    if known is not None:
+        for name in catalogue.MANAGED_ATTRS:
+            derived.pop(name, None)
+        derived.update(
+            known.classify(product.title, product.brand, product.reference_price).as_attrs()
+        )
+    return {**derived, **product.attrs}  # collector wins over both
+
+
+def known_values(category: str, vocab: dict | None = None) -> dict[str, frozenset[str]]:
+    """Every value the engine can produce per attribute, for validating a hunt."""
+    table = (vocab if vocab is not None else merge_vocab(None)).get(category, {})
+    values = {attr: frozenset(vals) for attr, vals in table.items()}
+    known = catalogue.load(category)
+    if known is not None:
+        values["tier"] = known.tier_values()
+        values["generation_status"] = known.status_values()
+        # Free-text: the catalogue names lines and generations from data, so there is no
+        # closed set to check a config against.
+        values.pop("silo", None)
+        values.pop("generation", None)
+    return values
+
+
+def validate_hunt(hunt: Hunt, vocab: dict | None = None) -> None:
+    """Raise if the hunt requires a value the engine can never assign.
+
+    A stale `require:` is the most dangerous kind of config rot in this tool. The owner's
+    real hunt lives in a private `config.local.yaml`; a value that quietly stops matching
+    turns it into a hunt that finds nothing and — because silence is the normal, correct
+    output most days — says nothing about why. Better to fail on the first run than on the
+    day he wonders where the emails went.
+
+    ``prefer`` only scores, so a stale value there is logged rather than raised.
+    """
+    category = hunt.category
+    if not category:
+        return
+    values = known_values(category, vocab)
+    for attr, allowed in hunt.require.items():
+        permitted = values.get(attr)
+        if permitted is None:
+            continue  # supplied by the collector, not by us — nothing to check against
+        # Case-insensitive on both sides, matching how `_check` compares at judge time —
+        # config writes soleplates as "AG", the vocabulary declares them the same way, and
+        # a validator stricter than the judge would reject working config.
+        folded = {str(v).strip().lower() for v in permitted}
+        unknown = [v for v in allowed if str(v).strip().lower() not in folded]
+        if unknown:
+            raise ValueError(
+                f"hunt {hunt.id!r}: require.{attr} names {', '.join(map(repr, unknown))}, "
+                f"which this engine never assigns. Valid: {', '.join(sorted(permitted))}."
+            )
+    for attr, ranked in hunt.prefer.items():
+        permitted = values.get(attr)
+        if permitted is None:
+            continue
+        folded = {str(v).strip().lower() for v in permitted}
+        stale = [v for v in ranked if str(v).strip().lower() not in folded]
+        if stale:
+            logger.warning(
+                "hunt %s: prefer.%s names %s, which is never assigned — it will not score",
+                hunt.id, attr, ", ".join(map(repr, stale)),
+            )
 
 
 def judge_hunt(
@@ -98,8 +172,34 @@ def judge_hunt(
 
     unknowns: list[str] = []
 
-    # RRP gate: the honest proxy for "is this really the flagship model".
-    if hunt.min_reference_price is not None:
+    # --- attribute requirements ---
+    # Resolved BEFORE the RRP gate, because whether that gate is needed depends on
+    # whether the attributes it stands in for are already known.
+    attrs = resolve_attrs(product, hunt, vocab)
+    established = 0
+    for attr, allowed in hunt.require.items():
+        state = _check(attrs.get(attr), allowed)
+        if state == FAIL:
+            return Verdict(
+                False, 0.0, (f"rejected: {attr}={attrs.get(attr)} not in {'/'.join(allowed)}",)
+            )
+        if state == UNKNOWN:
+            if attr in hunt.require_stated:
+                return Verdict(
+                    False, 0.0, (f"rejected: {attr} not stated — cannot be confirmed",)
+                )
+            unknowns.append(attr)
+        else:
+            established += 1
+
+    # RRP gate. Config calls this "proves it is a flagship, not a lookalike" — it is a
+    # *proxy* for tier, and now only a fallback for when the real signal is missing. Every
+    # requirement having been positively established means the question it approximates is
+    # already answered, and enforcing it anyway rejects genuine finds: the junior Copa Pure
+    # Elite lists at RRP €90, which is the top of the junior range and well under any gate
+    # written for adult boots.
+    tier_is_known = bool(hunt.require) and established == len(hunt.require)
+    if hunt.min_reference_price is not None and not tier_is_known:
         ref = product.reference_price
         if ref is None:
             unknowns.append("RRP")
@@ -116,21 +216,6 @@ def judge_hunt(
             return Verdict(
                 False, 0.0, (f"rejected: {dpct:.0f}% off < {hunt.min_discount_pct:.0f}% required",)
             )
-
-    # --- attribute requirements ---
-    attrs = resolve_attrs(product, hunt, vocab)
-    for attr, allowed in hunt.require.items():
-        state = _check(attrs.get(attr), allowed)
-        if state == FAIL:
-            return Verdict(
-                False, 0.0, (f"rejected: {attr}={attrs.get(attr)} not in {'/'.join(allowed)}",)
-            )
-        if state == UNKNOWN:
-            if attr in hunt.require_stated:
-                return Verdict(
-                    False, 0.0, (f"rejected: {attr} not stated — cannot be confirmed",)
-                )
-            unknowns.append(attr)
 
     # --- size availability ---
     wanted_sizes = hunt.sizes_for(product.brand, product.title)

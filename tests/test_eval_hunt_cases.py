@@ -35,7 +35,7 @@ HUNT_CONFIG = {
             "sizes": ["37.5"],
             "brands": ["Nike", "adidas"],
             "brands_only": True,
-            "require": {"tier": ["elite"], "soleplate": ["AG", "FG"]},
+            "require": {"tier": ["adult-flagship", "junior-flagship"], "soleplate": ["AG", "FG"]},
             "require_stated": ["tier"],
             "price": {"must_buy": 70, "good_offer": 100, "never_above": 100},
         },
@@ -113,31 +113,31 @@ def test_the_hunt_judge_should_reach_a_verdict_the_wardrobe_judge_cannot():
 
 
 def test_a_case_should_be_able_to_pin_the_attributes_behind_the_verdict():
-    result = evaluate([_case(expected_attrs={"tier": "elite", "soleplate": "AG"})], HUNT_CONFIG)
+    result = evaluate([_case(expected_attrs={"tier": "junior-flagship", "soleplate": "AG"})], HUNT_CONFIG)
 
     assert result.results[0].attr_ok is True
     assert result.attr_accuracy == 1.0
 
 
 def test_a_pinned_attribute_the_engine_reads_differently_should_be_a_miss():
-    result = evaluate([_case(expected_attrs={"tier": "takedown"})], HUNT_CONFIG)
+    result = evaluate([_case(expected_attrs={"tier": "adult-flagship"})], HUNT_CONFIG)
 
     assert result.results[0].attr_ok is False
     assert result.attr_accuracy == 0.0
 
 
 def test_an_attribute_miss_should_report_what_was_read_instead():
-    result = evaluate([_case(expected_attrs={"tier": "takedown"})], HUNT_CONFIG)
+    result = evaluate([_case(expected_attrs={"tier": "adult-flagship"})], HUNT_CONFIG)
 
-    assert result.results[0].attr_misses == ("tier=elite, wanted takedown",)
+    assert result.results[0].attr_misses == ("tier=junior-flagship, wanted adult-flagship",)
 
 
 def test_an_attribute_the_title_never_stated_should_read_as_unstated_not_blank():
     boot = _boot(title="Nike Jr. Phantom GX FG")
 
-    result = evaluate([_case(product=boot, expected_attrs={"tier": "elite"})], HUNT_CONFIG)
+    result = evaluate([_case(product=boot, expected_attrs={"tier": "junior-flagship"})], HUNT_CONFIG)
 
-    assert result.results[0].attr_misses == ("tier=(unstated), wanted elite",)
+    assert result.results[0].attr_misses == ("tier=(unstated), wanted junior-flagship",)
 
 
 def test_a_case_pinning_nothing_should_be_excluded_rather_than_counted_as_correct():
@@ -157,7 +157,7 @@ def test_attribute_accuracy_should_be_undefined_when_no_case_pins_anything():
 
 def test_band_accuracy_should_ignore_whether_attributes_were_pinned():
     # A wrong attribute must not silently move the band metric, or the two blur together.
-    result = evaluate([_case(expected_attrs={"tier": "takedown"})], HUNT_CONFIG)
+    result = evaluate([_case(expected_attrs={"tier": "adult-flagship"})], HUNT_CONFIG)
 
     assert result.accuracy == 1.0
     assert result.attr_accuracy == 0.0

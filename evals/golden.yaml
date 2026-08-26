@@ -261,7 +261,7 @@ cases:
       sizes_known: true
     expected:
       band: must-buy
-      attrs: { tier: elite, soleplate: AG, silo: mercurial superfly }
+      attrs: { tier: junior-flagship, soleplate: AG, silo: mercurial superfly, generation_status: superseded }
 
   - id: boots-adidas-predator-elite-good
     note: "adidas Elite at 37 1/3 — priced into the good band, not must-buy"
@@ -279,7 +279,7 @@ cases:
       sizes_known: true
     expected:
       band: good
-      attrs: { tier: elite, soleplate: FG, silo: predator }
+      attrs: { tier: junior-flagship, soleplate: FG, silo: predator }
 
   - id: boots-academy-takedown-reject
     note: "Academy is a takedown of the same silo — rejected on tier, not on price"
@@ -297,7 +297,7 @@ cases:
       sizes_known: true
     expected:
       band: reject
-      attrs: { tier: mid, soleplate: FG }
+      attrs: { tier: takedown, soleplate: FG }
 
   - id: boots-unknown-brand-reject
     note: "A 67%-off boot from a brand the hunt does not want is not a cheap Nike"
@@ -331,7 +331,7 @@ cases:
       sizes_known: true
     expected:
       band: reject
-      attrs: { tier: elite, soleplate: FG }
+      attrs: { tier: junior-flagship, soleplate: FG }
 
   - id: boots-used-condition-reject
     note: "Second-hand is out of scope regardless of price"
@@ -369,3 +369,208 @@ cases:
     expected:
       band: reject
       attrs: { soleplate: FG, silo: phantom }
+
+  # ===========================================================================
+  # TIER CATALOGUE — the false friends the substring matcher could not tell apart.
+  #
+  # Every one of these titles contains the word "Elite". Before the catalogue the
+  # engine read all of them as the flagship tier. Note how few of them move their
+  # BAND: most are rejected on brand or on price either way, so a case asserting
+  # only `band: reject` would pass identically before and after and prove nothing.
+  # The pinned `attrs.tier` is the assertion that actually has teeth here.
+  # ===========================================================================
+
+  - id: boots-diadora-elite-academy-is-a-takedown
+    note: >-
+      "Maximus Elite" is the RANGE name and "Academy" is the tier — an entry-level
+      boot at RRP €70 whose title contains the flagship word. Rejected on brand
+      either way, so only the pinned tier shows the catalogue working.
+    hunt: boots-junior
+    product:
+      title: "Diadora Maximus Elite Academy FG"
+      category: football_boots
+      brand: Diadora
+      price: 30
+      reference_price: 70
+      currency: EUR
+      url: "https://example.com/diadora-maximus-elite-academy"
+      source: example.com
+      sizes: ["37.5"]
+      sizes_known: true
+    expected:
+      band: reject
+      attrs: { tier: takedown, silo: maximus }
+
+  - id: boots-diadora-b-elite-pro-is-a-takedown
+    note: "'B-Elite' is the silo, 'Pro' is the tier. Same trap, different range."
+    hunt: boots-junior
+    product:
+      title: "Diadora Kids B-Elite Pro FG"
+      category: football_boots
+      brand: Diadora
+      price: 35
+      reference_price: 75
+      currency: EUR
+      url: "https://example.com/diadora-b-elite-pro"
+      source: example.com
+      sizes: ["37.5"]
+      sizes_known: true
+    expected:
+      band: reject
+      attrs: { tier: takedown, silo: brasil }
+
+  - id: boots-tiempo-legend-7-is-an-eight-year-old-junior-flagship
+    note: >-
+      The live misrepresentation. A 2018 boot, seven generations superseded, with no
+      RRP published — so nothing but the catalogue can say how old it is. It is a
+      genuine junior flagship and still surfaces, which is correct for a growing
+      child; what changed is that the row can no longer be mistaken for current-season
+      stock. Pinning generation_status is the whole point of the case.
+    hunt: boots-junior
+    product:
+      title: "Nike Kids Tiempo Legend VII Elite FG"
+      category: football_boots
+      brand: Nike
+      price: 55
+      reference_price: null      # komanda.lv and other official dealers publish none
+      currency: EUR
+      url: "https://example.com/nike-tiempo-legend-7-elite-kids"
+      source: komanda.lv
+      sizes: ["37.5"]
+      sizes_known: true
+    expected:
+      band: must-buy
+      attrs:
+        tier: junior-flagship
+        silo: tiempo
+        generation: "7"
+        generation_status: discontinued
+        generation_year: "2018"
+
+  - id: boots-junior-copa-pure-elite-no-longer-rejected-on-rrp
+    note: >-
+      The false negative pointing the other way. RRP €90 is genuinely the top of the
+      junior range, and `min_reference_price: 110` used to reject it as "not a
+      flagship". Now the tier is established from the title, so the price proxy for
+      that same question no longer applies and the boot is surfaced.
+    hunt: boots-junior
+    product:
+      title: "adidas Kids Copa Pure III Elite FG/MG"
+      category: football_boots
+      brand: adidas
+      price: 45
+      reference_price: 90
+      currency: EUR
+      url: "https://example.com/adidas-copa-pure-3-elite-kids"
+      source: example.com
+      sizes: ["37.33"]
+      sizes_known: true
+    expected:
+      band: must-buy
+      attrs: { tier: junior-flagship, silo: copa, generation: "3", generation_status: current }
+
+  - id: boots-wales-bonner-collab-is-a-real-flagship-priced-up
+    note: >-
+      €350 is correct for a designer collaboration, not a mislabel. Rejected here only
+      because it is far over this hunt's ceiling — the tier reading is right.
+    hunt: boots-junior
+    product:
+      title: "adidas Predator Elite Tongue x Wales Bonner FG"
+      category: football_boots
+      brand: adidas
+      price: 350
+      reference_price: 350
+      currency: EUR
+      url: "https://example.com/adidas-predator-elite-wales-bonner"
+      source: example.com
+      sizes: ["37.33"]
+      sizes_known: true
+    expected:
+      band: reject
+      attrs: { tier: adult-flagship, silo: predator, generation: "26", generation_status: current }
+
+  - id: boots-mizuno-made-in-japan-outranks-its-own-elite
+    note: "'Made in Japan' sits ABOVE 'Elite' for Mizuno — the qualifier after it wins."
+    hunt: boots-junior
+    product:
+      title: "Mizuno Morelia II Elite Made in Japan FG"
+      category: football_boots
+      brand: Mizuno
+      price: 200
+      reference_price: 350
+      currency: EUR
+      url: "https://example.com/mizuno-morelia-mij"
+      source: example.com
+      sizes: ["37.5"]
+      sizes_known: true
+    expected:
+      band: reject
+      attrs: { tier: adult-flagship, silo: morelia }
+
+  - id: boots-mizuno-elite-alone-is-second-tier
+    note: >-
+      The same word, the other way round. Without "Made in Japan" a Mizuno "Elite" is
+      their SECOND tier at ~€150-180 — so `elite` is a takedown keyword for this brand
+      and a flagship keyword for Nike, which is exactly why the table is per-brand.
+    hunt: boots-junior
+    product:
+      title: "Mizuno Morelia II Elite FG"
+      category: football_boots
+      brand: Mizuno
+      price: 90
+      reference_price: 160
+      currency: EUR
+      url: "https://example.com/mizuno-morelia-elite"
+      source: example.com
+      sizes: ["37.5"]
+      sizes_known: true
+    expected:
+      band: reject
+      attrs: { tier: takedown, silo: morelia }
+
+  - id: boots-superfly-se-agpro-is-a-current-adult-flagship
+    note: >-
+      Two traps at once: "AG-Pro" is a soleplate, not the Pro tier, and "SE" is a
+      colourway. Both must be stripped before the tier word is read. Roman "XI" folds
+      to generation 11.
+    hunt: boots-junior
+    product:
+      title: "Nike Mercurial Superfly XI Elite SE AG-Pro"
+      category: football_boots
+      brand: Nike
+      price: 300
+      reference_price: 300
+      currency: EUR
+      url: "https://example.com/nike-superfly-11-elite-se"
+      source: example.com
+      sizes: ["37.5"]
+      sizes_known: true
+    expected:
+      band: reject
+      attrs:
+        tier: adult-flagship
+        silo: mercurial superfly
+        generation: "11"
+        generation_status: current
+
+  - id: boots-puma-elite-is-not-a-puma-tier-word
+    note: >-
+      Puma's flagship is "Ultimate". "Elite" is not in their tier naming at all, so the
+      honest reading is no tier — note the pinned silo proves the catalogue recognised
+      the brand and the model line and still declined to name one, rather than simply
+      failing to look.
+    hunt: boots-junior
+    product:
+      title: "Puma Future 8 Elite FG"
+      category: football_boots
+      brand: Puma
+      price: 60
+      reference_price: 120
+      currency: EUR
+      url: "https://example.com/puma-future-8-elite"
+      source: example.com
+      sizes: ["37.5"]
+      sizes_known: true
+    expected:
+      band: reject
+      attrs: { silo: future, soleplate: FG }

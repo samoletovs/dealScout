@@ -19,7 +19,7 @@ from pathlib import Path
 from .collector import enrich_all
 from .config import load_config
 from .feedback import downvoted_urls
-from .hunt import judge_hunt
+from .hunt import judge_hunt, validate_hunt
 from .models import Change, Hunt, Product, Verdict
 from .monitor import (
     DEFAULT_FORGET_AFTER_DAYS,
@@ -48,8 +48,15 @@ Result = tuple[Product, Verdict, Change | None]
 
 
 def load_hunts(config: dict, only: str = "") -> list[Hunt]:
-    """Build Hunt objects from config: enabled ones, or exactly the one named."""
+    """Build Hunt objects from config: enabled ones, or exactly the one named.
+
+    Each is validated as it loads, so a config that has drifted out of step with the
+    engine fails here rather than silently matching nothing for weeks.
+    """
+    vocab = merge_vocab(config.get("vocab"))
     hunts = [Hunt.from_dict(h) for h in (config.get("hunts") or []) if h.get("id")]
+    for hunt in hunts:
+        validate_hunt(hunt, vocab)
     if only:
         hunts = [h for h in hunts if h.id == only]  # naming a hunt overrides `enabled`
         if not hunts:
