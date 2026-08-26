@@ -24,9 +24,10 @@ from pathlib import Path
 
 from .collector import enrich_all
 from .config import load_config
+from .feedback import downvoted_urls
 from .hunt import judge_hunt
 from .models import Hunt, Product
-from .notify import feedback_base_url, render_shortlist, send_email
+from .notify import feedback_base_url, read_feedback, render_shortlist, send_email
 from .pricehistory import HistoryConfig, append, extend, load_history, observe, prune
 from .pricehistory import rewrite as rewrite_history
 from .pricehistory import summarise_all
@@ -67,11 +68,11 @@ def _uncapped(hunt: Hunt) -> Hunt:
 
 
 async def shortlist_for(
-    hunt: Hunt, config: dict, limit: int, per_source: int
+    hunt: Hunt, config: dict, limit: int, per_source: int, rejected: frozenset[str] = frozenset()
 ) -> tuple[list[Product], list[Product], int]:
     """Scout, judge without the price ceiling, and rank into two ranked lists."""
     vocab = merge_vocab(config.get("vocabulary"))
-    candidates = await scout(hunt, config, vocab=vocab)
+    candidates = [p for p in await scout(hunt, config, vocab=vocab) if p.url not in rejected]
     table = delivery_table(config)
     # A single-brand shop leaves its own brand out of its product names; restore it before
     # judging, or `brands_only` rejects the entire storefront.
@@ -138,10 +139,16 @@ async def main(argv: list[str]) -> int:
     limits = HistoryConfig.from_config(config)
     history = load_history(limits.path)
     logged: set[str] = set()  # config ships several hunts; a shared product logs once
+    # A 👎 in a previous email is the owner saying "not this one". The shortlist emits
+    # those rating links, so it must also honour them — otherwise a rejected boot returns
+    # every single run and the feedback loop is decorative. run_hunt already does this.
+    rejected = downvoted_urls(await read_feedback())
+    if rejected:
+        logger.info("%d product(s) previously rejected by 👎 — excluded", len(rejected))
     sent = 0
     for hunt in hunts:
         confirmed, unconfirmed, checked = await shortlist_for(
-            hunt, config, DEFAULT_LIMIT, DEFAULT_PER_SOURCE
+            hunt, config, DEFAULT_LIMIT, DEFAULT_PER_SOURCE, frozenset(rejected)
         )
         shown = [*confirmed, *unconfirmed]
         sources = len({p.source for p in shown})
