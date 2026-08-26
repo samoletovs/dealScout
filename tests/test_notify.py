@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from dealscout.models import Product, Verdict
-from dealscout.notify import feedback_base_url, markdown_to_html, render_report
+from dealscout.models import Hunt, Product, Verdict
+from dealscout.notify import feedback_base_url, markdown_to_html, render_report, render_shortlist
+from dealscout.shortlist import Delivery, SourceCoverage
 
 
 def _signal(url: str = "https://shop.example.com/p", source: str = "Test Store") -> tuple[Product, Verdict]:
@@ -83,3 +84,80 @@ def test_markdown_to_html_renders_headings_and_bullets():
 
     assert "<h1>Title</h1>" in html
     assert "<li>one</li>" in html
+
+
+def test_markdown_to_html_renders_a_pipe_table():
+    # Tables are off by default in Python-Markdown, so the per-source breakdown would
+    # otherwise reach the reader as a paragraph of literal pipe characters.
+    html = markdown_to_html("| Source | Rows |\n|---|---:|\n| Pro:Direct | 6 |\n")
+
+    assert "<table>" in html
+    assert "<td>Pro:Direct</td>" in html
+
+
+SHORTLIST_HUNT = Hunt(id="boots", label="Boots", sizes=("37",))
+SHORTLIST_TABLE = {
+    "prodirectsport.ie": Delivery(label="Pro:Direct (IE)", shipping=7.0),
+    "komanda.lv": Delivery(label="komanda.lv (Rīga)", shipping=0.0),
+}
+
+
+def _boot(title: str, price: float, source: str) -> Product:
+    return Product(
+        title=title,
+        category="football_boots",
+        price=price,
+        reference_price=None,
+        currency="EUR",
+        url=f"https://{source}/{title}",
+        source=source,
+        sizes=frozenset({"37"}),
+        sizes_known=True,
+    )
+
+
+def test_render_shortlist_states_how_many_rows_each_source_contributed():
+    # Diversity nobody can see is indistinguishable from none, and the "found" column is
+    # what tells the reader six rows from one shop is the catalogue talking, not the ranker.
+    coverage = [
+        SourceCoverage("prodirectsport.ie", "Pro:Direct (IE)", count=6, cheapest=62.0, found=15),
+        SourceCoverage("komanda.lv", "komanda.lv (Rīga)", count=2, cheapest=212.0, found=2),
+    ]
+
+    body = render_shortlist(
+        SHORTLIST_HUNT,
+        [_boot("A Elite", 40.0, "prodirectsport.ie")],
+        [],
+        SHORTLIST_TABLE,
+        coverage=coverage,
+    )
+
+    assert "### Where these came from" in body
+    assert "| Pro:Direct (IE) | 6 | €62 | 15 |" in body
+    assert "| komanda.lv (Rīga) | 2 | €212 | 2 |" in body
+
+
+def test_render_shortlist_names_a_source_that_contributed_nothing():
+    # A retailer goes quiet because its parser broke far more often than because it sold
+    # out, and a list that merely lacks the row cannot say which happened.
+    coverage = [
+        SourceCoverage("prodirectsport.ie", "Pro:Direct (IE)", count=6, cheapest=62.0, found=15),
+        SourceCoverage("futbola-apavi.lv", "futbola-apavi.lv", count=0),
+    ]
+
+    body = render_shortlist(
+        SHORTLIST_HUNT,
+        [_boot("A Elite", 40.0, "prodirectsport.ie")],
+        [],
+        SHORTLIST_TABLE,
+        coverage=coverage,
+    )
+
+    assert "Nothing from futbola-apavi.lv this run" in body
+    assert "| futbola-apavi.lv | 0 |" not in body  # a silent shop is a sentence, not a table row
+
+
+def test_render_shortlist_omits_the_breakdown_when_there_is_no_coverage():
+    body = render_shortlist(SHORTLIST_HUNT, [], [], SHORTLIST_TABLE)
+
+    assert "Where these came from" not in body

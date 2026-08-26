@@ -37,7 +37,10 @@ from .shortlist import (
     DEFAULT_LIMIT,
     DEFAULT_PER_SOURCE,
     Delivery,
+    SourceCoverage,
+    expected_sources,
     pick_diverse,
+    source_coverage,
     split_by_size_confidence,
     stamp_house_brands,
 )
@@ -69,7 +72,7 @@ def _uncapped(hunt: Hunt) -> Hunt:
 
 async def shortlist_for(
     hunt: Hunt, config: dict, limit: int, per_source: int, rejected: frozenset[str] = frozenset()
-) -> tuple[list[Product], list[Product], int]:
+) -> tuple[list[Product], list[Product], int, list[SourceCoverage]]:
     """Scout, judge without the price ceiling, and rank into two ranked lists."""
     vocab = merge_vocab(config.get("vocabulary"))
     candidates = [p for p in await scout(hunt, config, vocab=vocab) if p.url not in rejected]
@@ -105,11 +108,15 @@ async def shortlist_for(
         len(confirmed),
         len(unconfirmed),
     )
-    return (
-        pick_diverse(confirmed, table, limit, per_source),
-        pick_diverse(unconfirmed, table, limit, per_source),
-        len(candidates),
+    picked_confirmed = pick_diverse(confirmed, table, limit, per_source)
+    picked_unconfirmed = pick_diverse(unconfirmed, table, limit, per_source)
+    coverage = source_coverage(
+        [*picked_confirmed, *picked_unconfirmed],
+        table,
+        expected_sources(hunt, table),
+        pool=kept,
     )
+    return picked_confirmed, picked_unconfirmed, len(candidates), coverage
 
 
 def config_path() -> Path:
@@ -147,11 +154,15 @@ async def main(argv: list[str]) -> int:
         logger.info("%d product(s) previously rejected by 👎 — excluded", len(rejected))
     sent = 0
     for hunt in hunts:
-        confirmed, unconfirmed, checked = await shortlist_for(
+        confirmed, unconfirmed, checked, coverage = await shortlist_for(
             hunt, config, DEFAULT_LIMIT, DEFAULT_PER_SOURCE, frozenset(rejected)
         )
         shown = [*confirmed, *unconfirmed]
-        sources = len({p.source for p in shown})
+        logger.info(
+            "hunt %s: shortlist spread %s",
+            hunt.id,
+            ", ".join(f"{c.label}={c.count}/{c.found}" for c in coverage) or "empty",
+        )
 
         # Log this run's prices before rendering, so a row can say where today's price
         # sits rather than where the previous run's did.
@@ -169,8 +180,9 @@ async def main(argv: list[str]) -> int:
             feedback_base_url(),
             vocab,
             checked=checked,
-            sources=sources,
+            sources=len({p.source for p in shown}),
             memory=memory,
+            coverage=coverage,
         )
         path = Path("out") / f"shortlist-{hunt.id}.md"
         path.parent.mkdir(parents=True, exist_ok=True)

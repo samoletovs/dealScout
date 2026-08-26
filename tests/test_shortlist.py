@@ -6,9 +6,11 @@ from dealscout.models import Hunt, Product
 from dealscout.shortlist import (
     Delivery,
     delivery_for,
+    expected_sources,
     landed_cost,
     matched_sizes,
     pick_diverse,
+    source_coverage,
     split_by_size_confidence,
     stamp_house_brands,
 )
@@ -121,6 +123,109 @@ def test_pick_diverse_should_return_the_list_in_landed_cost_order():
     picked = pick_diverse(products, TABLE, limit=6, per_source=2)
     costs = [landed_cost(p, delivery_for(p.source, TABLE)) for p in picked]
     assert costs == sorted(costs)
+
+
+def test_pick_diverse_should_give_every_shop_a_row_before_any_shop_gets_a_second():
+    # Cheapest-first hands the whole cap to the deepest sale before a shop with one
+    # bargain is reached at all, so a shop can be squeezed off the list entirely.
+    deep = [_boot(f"Deep {i}", 40.0 + i, "deep.example") for i in range(5)]
+    others = [_boot(f"Only {s}", 200.0 + s, f"shop{s}.example") for s in range(3)]
+
+    picked = pick_diverse([*deep, *others], TABLE, limit=4, per_source=3)
+
+    assert {p.source for p in picked} == {
+        "deep.example",
+        "shop0.example",
+        "shop1.example",
+        "shop2.example",
+    }
+
+
+def test_pick_diverse_should_split_the_list_between_two_shops_that_can_both_fill_it():
+    # Relaxing the cap cheapest-first gave the whole remainder to the shop with the
+    # deepest sale; relaxing it round-robin keeps the spread the cap was there to protect.
+    deep = [_boot(f"Deep {i}", 40.0 + i, "deep.example") for i in range(10)]
+    local = [_boot(f"Local {i}", 60.0 + i, "komanda.lv") for i in range(5)]
+
+    picked = pick_diverse([*deep, *local], TABLE, limit=10, per_source=3)
+
+    assert sum(1 for p in picked if p.source == "deep.example") == 5
+    assert sum(1 for p in picked if p.source == "komanda.lv") == 5
+
+
+def test_pick_diverse_should_still_take_the_cheapest_row_of_each_shop_first():
+    # Round-robin spreads the rows; within one shop it must still be its cheapest.
+    deep = [_boot(f"Deep {i}", 40.0 + i * 10, "deep.example") for i in range(4)]
+    local = [_boot("Local", 55.0, "komanda.lv")]
+
+    picked = pick_diverse([*deep, *local], TABLE, limit=3, per_source=3)
+
+    assert [p.title for p in picked if p.source == "deep.example"] == ["Deep 0", "Deep 1"]
+
+
+def test_source_coverage_should_count_the_rows_each_shop_contributed():
+    products = [
+        _boot("A Elite", 40.0, "prodirectsport.ie"),
+        _boot("B Elite", 50.0, "prodirectsport.ie"),
+        _boot("C Elite", 90.0, "komanda.lv"),
+    ]
+
+    coverage = source_coverage(products, TABLE)
+
+    assert [(c.source, c.label, c.count, c.cheapest) for c in coverage] == [
+        ("prodirectsport.ie", "Pro:Direct", 2, 47.0),
+        ("komanda.lv", "komanda", 1, 90.0),
+    ]
+
+
+def test_source_coverage_should_report_how_many_candidates_a_shop_offered():
+    # Six rows from one shop reads as a ranking bug until the table shows that shop had
+    # fifteen candidates and the next one had two.
+    picked = [_boot("A Elite", 40.0, "prodirectsport.ie")]
+    pool = [_boot(f"Elite {i}", 40.0 + i, "prodirectsport.ie") for i in range(15)]
+
+    [row] = source_coverage(picked, TABLE, pool=pool)
+
+    assert row.count == 1
+    assert row.found == 15
+
+
+def test_source_coverage_should_report_a_configured_shop_that_contributed_nothing():
+    # A shop goes quiet because its parser broke far more often than because it sold out,
+    # and a list that merely lacks the row cannot say which happened.
+    products = [_boot("A Elite", 40.0, "prodirectsport.ie")]
+
+    coverage = source_coverage(products, TABLE, expected=["prodirectsport.ie", "komanda.lv"])
+
+    assert [(c.source, c.count) for c in coverage] == [("prodirectsport.ie", 1), ("komanda.lv", 0)]
+
+
+def test_source_coverage_should_label_a_shop_config_does_not_know():
+    [row] = source_coverage([_boot("A Elite", 40.0, "unknown-shop.com")], TABLE)
+
+    assert row.label == "unknown-shop.com"
+
+
+def test_expected_sources_should_read_the_hosts_the_hunt_is_configured_to_poll():
+    hunt = Hunt(
+        id="boots",
+        watch=(
+            "https://www.prodirectsport.ie/collections/a/products.json",
+            "https://www.prodirectsport.ie/collections/b/products.json",
+            "https://komanda.lv/collections/c/products.json",
+        ),
+        catalogs=({"sitemap": "https://teamsport.lv/s.xml", "origin": "https://teamsport.lv"},),
+    )
+
+    assert expected_sources(hunt, TABLE) == ["prodirectsport.ie", "komanda.lv", "teamsport.lv"]
+
+
+def test_expected_sources_should_skip_a_shop_config_states_no_delivery_terms_for():
+    # A watch list keeps URLs for shops that have since been blocked, and reporting those
+    # as "gone quiet" every run would train the reader to ignore the line that matters.
+    hunt = Hunt(id="boots", watch=("https://www.sportsdirect.lv/football", "https://komanda.lv/c"))
+
+    assert expected_sources(hunt, TABLE) == ["komanda.lv"]
 
 
 def test_should_stamp_the_house_brand_of_a_single_brand_shop():
