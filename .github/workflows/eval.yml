@@ -11,17 +11,32 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+    # NOTE: this list is duplicated under `pull_request` below. GitHub Actions does not
+    # support YAML anchors, so the two must be kept in step by hand.
     paths:
       - "dealscout/judge.py"
       - "dealscout/eval.py"
       - "evals/golden.yaml"
       - "config.example.yaml"
+      # The golden set now scores boots through `judge_hunt`, so the files that decide a
+      # hunt verdict have to trigger this too. Without them a change to tier reading
+      # could land with the gate never running — the eval would be measuring code it no
+      # longer covers. `catalogue.py` and `data/` are listed ahead of existing to keep
+      # that true for the tier catalogue that lands next.
+      - "dealscout/hunt.py"
+      - "dealscout/spec.py"
+      - "dealscout/catalogue.py"
+      - "data/**"
   pull_request:
     paths:
       - "dealscout/judge.py"
       - "dealscout/eval.py"
       - "evals/golden.yaml"
       - "config.example.yaml"
+      - "dealscout/hunt.py"
+      - "dealscout/spec.py"
+      - "dealscout/catalogue.py"
+      - "data/**"
 
 permissions:
   contents: read
@@ -36,4 +51,13 @@ jobs:
           python-version: "3.11"
       - run: pip install -r requirements.txt
       - name: Score the judge against the golden set
-        run: python -m dealscout.eval --min-accuracy 0.90 --min-deal-precision 0.90
+        # --min-attr-accuracy gates the pinned attributes; --min-kind-accuracy gates each
+        # judge separately. Without the latter the boot cases could regress wholesale and
+        # still pass, because the blended figure is dominated by the wardrobe cases:
+        # measured at 91% with two of seven hunt cases failing outright.
+        run: >-
+          python -m dealscout.eval
+          --min-accuracy 0.90
+          --min-deal-precision 0.90
+          --min-attr-accuracy 0.90
+          --min-kind-accuracy 0.90

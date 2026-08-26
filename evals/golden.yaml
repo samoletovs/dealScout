@@ -228,3 +228,144 @@ cases:
       materials: { cotton: 1.0 }
       care: "machine wash"
     expected: { band: reject }
+
+  # ===========================================================================
+  # HUNT CASES — scored by `judge_hunt` against the `boots-junior` hunt as it is
+  # actually configured, not by the wardrobe judge. Adding `hunt:` is what routes
+  # them; without it they would be scored by `judge`, which has no concept of tier
+  # and would pass or fail them for unrelated reasons.
+  #
+  # `expected.attrs` pins the attributes the verdict was built from. Band alone is
+  # not enough here: several of these are rejected today, and a case that only
+  # asserts `band: reject` cannot tell a rejection for the right reason from one
+  # that happened for another. Pinning the attribute is what gives the case teeth.
+  #
+  # These are all cases the engine gets RIGHT today. They exist to stop the tier
+  # catalogue regressing them. The known-wrong cases (Diadora "Elite Academy",
+  # superseded generations) land with the catalogue that fixes them.
+  # ===========================================================================
+
+  - id: boots-nike-superfly-elite-mustbuy
+    note: "Genuine junior Elite, in a wanted size, under the must-buy price"
+    hunt: boots-junior
+    product:
+      title: "Nike Jr. Mercurial Superfly 10 Elite AG"
+      category: football_boots
+      brand: Nike
+      price: 65
+      reference_price: 130
+      currency: EUR
+      url: "https://example.com/nike-superfly-10-elite-jr"
+      source: komanda.lv
+      sizes: ["37.5"]
+      sizes_known: true
+    expected:
+      band: must-buy
+      attrs: { tier: elite, soleplate: AG, silo: mercurial superfly }
+
+  - id: boots-adidas-predator-elite-good
+    note: "adidas Elite at 37 1/3 — priced into the good band, not must-buy"
+    hunt: boots-junior
+    product:
+      title: "adidas Predator Elite FG"
+      category: football_boots
+      brand: adidas
+      price: 95
+      reference_price: 130
+      currency: EUR
+      url: "https://example.com/adidas-predator-elite-fg"
+      source: komanda.lv
+      sizes: ["37.33"]
+      sizes_known: true
+    expected:
+      band: good
+      attrs: { tier: elite, soleplate: FG, silo: predator }
+
+  - id: boots-academy-takedown-reject
+    note: "Academy is a takedown of the same silo — rejected on tier, not on price"
+    hunt: boots-junior
+    product:
+      title: "Nike Jr. Mercurial Vapor 16 Academy FG"
+      category: football_boots
+      brand: Nike
+      price: 60
+      reference_price: 90
+      currency: EUR
+      url: "https://example.com/nike-vapor-16-academy-jr"
+      source: komanda.lv
+      sizes: ["37.5"]
+      sizes_known: true
+    expected:
+      band: reject
+      attrs: { tier: mid, soleplate: FG }
+
+  - id: boots-unknown-brand-reject
+    note: "A 67%-off boot from a brand the hunt does not want is not a cheap Nike"
+    hunt: boots-junior
+    product:
+      title: "Skechers Razor Elite FG"
+      category: football_boots
+      brand: Skechers
+      price: 40
+      reference_price: 120
+      currency: EUR
+      url: "https://example.com/skechers-razor-elite"
+      source: example.com
+      sizes: ["37.5"]
+      sizes_known: true
+    expected: { band: reject }
+
+  - id: boots-size-sold-out-reject
+    note: "The shop stated its sizes and ours is not among them — answered, and the answer is no"
+    hunt: boots-junior
+    product:
+      title: "Nike Jr. Mercurial Superfly 10 Elite FG"
+      category: football_boots
+      brand: Nike
+      price: 65
+      reference_price: 130
+      currency: EUR
+      url: "https://example.com/nike-superfly-10-elite-jr-sold-out"
+      source: komanda.lv
+      sizes: ["38", "38.5", "39"]
+      sizes_known: true
+    expected:
+      band: reject
+      attrs: { tier: elite, soleplate: FG }
+
+  - id: boots-used-condition-reject
+    note: "Second-hand is out of scope regardless of price"
+    hunt: boots-junior
+    product:
+      title: "Nike Jr. Mercurial Superfly 10 Elite AG"
+      category: football_boots
+      brand: Nike
+      price: 45
+      reference_price: 130
+      currency: EUR
+      url: "https://example.com/nike-superfly-10-elite-jr-used"
+      source: example.com
+      condition: used
+      sizes: ["37.5"]
+      sizes_known: true
+    expected: { band: reject }
+
+  - id: boots-tier-unstated-reject
+    note: >-
+      No tier word in the title. `require_stated: [tier]` rejects rather than flags,
+      because no amount of clicking will make a title state a tier it omits.
+    hunt: boots-junior
+    product:
+      title: "Nike Jr. Phantom GX FG"
+      category: football_boots
+      brand: Nike
+      price: 65
+      reference_price: 130
+      currency: EUR
+      url: "https://example.com/nike-phantom-gx-jr"
+      source: komanda.lv
+      sizes: ["37.5"]
+      sizes_known: true
+    expected:
+      band: reject
+      attrs: { soleplate: FG, silo: phantom }
