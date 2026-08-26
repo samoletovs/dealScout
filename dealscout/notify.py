@@ -255,9 +255,17 @@ def render_shortlist(
 ) -> str:
     """The buy-now shortlist: what to buy, ranked by what it actually costs to receive."""
     lines = [f"# dealScout — {hunt.label or hunt.id}\n"]
-    wanted = ", ".join(hunt.sizes)
+    if hunt.sizes_by_brand:
+        # Naming the fallback list here would misdescribe the search: adidas is only ever
+        # matched on 37⅓ and Nike only on 37.5, so say that rather than their union.
+        per_brand = " · ".join(
+            f"{brand} EU {', '.join(sizes)}" for brand, sizes in hunt.sizes_by_brand.items()
+        )
+        wanted_label = per_brand
+    else:
+        wanted_label = f"EU {', '.join(hunt.sizes)}"
     lines.append(
-        f"_Top-tier only · EU {wanted} · ranked by **landed cost** "
+        f"_Top-tier only · {wanted_label} · ranked by **landed cost** "
         f"(price + delivery to Latvia), not shelf price._\n"
     )
 
@@ -290,7 +298,7 @@ def render_shortlist(
         lines.append(
             f"---\n\n_Checked {checked} products across {sources} sources. "
             f"Excluded: boots already owned, and anything the shop states is out of "
-            f"stock in EU {wanted}._\n"
+            f"stock in your size ({wanted_label})._\n"
         )
     lines.append(_SHORTLIST_FOOTER)
     return "\n".join(lines)

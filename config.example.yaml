@@ -171,12 +171,16 @@ hunts:
     for: junior                  # opaque household role, never a real name
     category: football_boots     # selects the vocabulary used to read titles
     deliver_to: LV
-    sizes: ["37", "37.5", "37.33", "36.67"]
-    # 37 and 37.5 are the plain EU labels. adidas sizes in thirds and prints EU 37 as
-    # "37⅓" (37.33 here) and the half-step below it as "36⅔" (36.67) — the owner has
-    # tried adidas 37 and it fits, and Nike tends to run to 37.5. Before these were
-    # parsed at all they normalised to "" and were dropped, which hid every adidas Elite
-    # boot in his size.
+    sizes: ["37", "37.5", "37.33"]
+    # A size is a brand's opinion, not a measurement. adidas sizes in thirds and prints EU
+    # 37 as "37⅓" (37.33 here) — tried on and confirmed to fit. Nike's equivalent for the
+    # same foot is 37.5 (Nike "5"), and Nike makes no third sizes at all. Searching both
+    # lists against both brands surfaces boots that will not fit and buries ones that will.
+    # `sizes` above stays as the fallback for a brand not named here.
+    sizes_by_brand:
+      adidas: ["37.33"]
+      nike: ["37.5"]
+      puma: ["37.5"]
     brands: [Nike, adidas]       # ranked — Nike scores highest
     # Puma was removed on 2026-08-25: the owner rejected the design, not the price. It is
     # the one brand whose Elite-tier boots are currently *in stock* in 37/37.5 and heavily

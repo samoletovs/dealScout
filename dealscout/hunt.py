@@ -133,15 +133,16 @@ def judge_hunt(
             unknowns.append(attr)
 
     # --- size availability ---
-    if hunt.sizes:
-        available = normalise_sizes(hunt.sizes) & normalise_sizes(product.sizes)
+    wanted_sizes = hunt.sizes_for(product.brand, product.title)
+    if wanted_sizes:
+        available = normalise_sizes(wanted_sizes) & normalise_sizes(product.sizes)
         if not product.sizes_known:
             unknowns.append("size")
         elif available:
             reasons.append(f"size {'/'.join(sorted(available))} in stock")
         elif hunt.require_size_in_stock:
             return Verdict(
-                False, 0.0, (f"rejected: size {'/'.join(hunt.sizes)} not in stock",)
+                False, 0.0, (f"rejected: size {'/'.join(wanted_sizes)} not in stock",)
             )
         else:
             # The page listed its sizes and ours was not among them. This hunt opted out

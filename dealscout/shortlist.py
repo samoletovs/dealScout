@@ -93,10 +93,11 @@ def landed_cost(product: Product, delivery: Delivery) -> float:
 
 
 def matched_sizes(product: Product, hunt: Hunt) -> list[str]:
-    """The hunt's wanted sizes this product is actually in stock in."""
+    """The sizes this product is in stock in that the hunt wants *for its brand*."""
     if not product.sizes_known:
         return []
-    return sorted(normalise_sizes(hunt.sizes) & normalise_sizes(product.sizes), key=_as_float)
+    wanted = hunt.sizes_for(product.brand, product.title)
+    return sorted(normalise_sizes(wanted) & normalise_sizes(product.sizes), key=_as_float)
 
 
 def _as_float(size: str) -> float:
