@@ -766,3 +766,67 @@ def test_should_not_invent_a_brand_from_a_shop_root_path():
     [boot] = parse_ldjson_products(html, "https://komanda.lv/collections/futbola-apavi", "football_boots")
     assert boot.brand == ""
 
+
+
+def test_collect_page_should_fetch_once_and_return_products_and_links(monkeypatch):
+    # The scout used to ask for products, get none, then ask for links — each call
+    # fetching. Every listing that declared no products was therefore downloaded twice per
+    # run: wasted time, and twice the load on a retailer we are a guest of.
+    import dealscout.collector as collector
+
+    calls: list[str] = []
+
+    async def counting_fetch(url, timeout=20.0, retries=1):
+        calls.append(url)
+        return (
+            '<div class="product-item-info">'
+            '<a class="product-item-link" href="/p/a-elite">A Elite</a>'
+            '<span data-price-amount="99.00" data-price-type="finalPrice"></span></div>'
+        )
+
+    monkeypatch.setattr(collector, "fetch", counting_fetch)
+    monkeypatch.setattr(collector, "robots_allows", _always_allowed)
+
+    products, links = asyncio.run(
+        collector.collect_page("https://shop.example/list", "football_boots", delay=0)
+    )
+
+    assert len(calls) == 1
+    assert [p.title for p in products] == ["A Elite"]
+    assert links == []  # not parsed when products were found — the caller cannot need them
+
+
+def test_collect_page_should_return_links_when_the_page_declares_no_products(monkeypatch):
+    import dealscout.collector as collector
+
+    calls: list[str] = []
+
+    async def counting_fetch(url, timeout=20.0, retries=1):
+        calls.append(url)
+        return '<a href="/nike-phantom-elite-fg-42731"><img src="a.jpg"></a>'
+
+    monkeypatch.setattr(collector, "fetch", counting_fetch)
+    monkeypatch.setattr(collector, "robots_allows", _always_allowed)
+
+    products, links = asyncio.run(
+        collector.collect_page("https://shop.example/list", "football_boots", delay=0)
+    )
+
+    assert len(calls) == 1
+    assert products == []
+    assert [name for name, _ in links] == ["nike phantom elite fg"]
+
+
+def test_collect_page_should_not_fetch_when_robots_forbids_it(monkeypatch):
+    import dealscout.collector as collector
+
+    async def refuse(url, agent="*"):
+        return False
+
+    async def explode(url, timeout=20.0, retries=1):  # pragma: no cover - must not run
+        raise AssertionError("fetched a page robots.txt disallows")
+
+    monkeypatch.setattr(collector, "robots_allows", refuse)
+    monkeypatch.setattr(collector, "fetch", explode)
+
+    assert asyncio.run(collector.collect_page("https://shop.example/x", "x", delay=0)) == ([], [])
