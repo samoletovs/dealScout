@@ -457,6 +457,88 @@ def parse_html_product(html: str, url: str, category: str) -> Product | None:
     )
 
 
+# A Magento product tile. The name and the price sit in separate elements, so the tile
+# boundary is what binds them: a product detail page carries several "related products"
+# carousels built from the same markup, and reading a price without respecting the
+# boundary attaches a neighbouring boot's price to this one.
+_TILE_SPLIT_RE = re.compile(r'class="[^"]*product-item-info[^"]*"', re.IGNORECASE)
+_TILE_LINK_RE = re.compile(
+    r'class="product-item-link"[^>]*href="([^"]+)"[^>]*>(.*?)</a>', re.IGNORECASE | re.DOTALL
+)
+_TILE_TITLE_ATTR_RE = re.compile(
+    r'class="product-item-link"[^>]*title="([^"]+)"[^>]*href="([^"]+)"', re.IGNORECASE
+)
+_TILE_FINAL_RE = re.compile(
+    r'data-price-amount="([\d.]+)"[^>]*data-price-type="finalPrice"', re.IGNORECASE
+)
+_TILE_OLD_RE = re.compile(
+    r'data-price-amount="([\d.]+)"[^>]*data-price-type="oldPrice"', re.IGNORECASE
+)
+
+
+def parse_product_tiles(html: str, url: str, category: str) -> list[Product]:
+    """Products from a Magento listing rendered as tiles (pure).
+
+    Some Magento storefronts publish no ld+json and load the *detail* page price over
+    AJAX, so a product page states no price at all — but the listing still renders every
+    tile server-side, with the name, the link and the price already in the markup. That
+    listing is then the only readable statement of price the site offers.
+
+    Each tile is parsed within its own boundary. That is the whole safety of this reader:
+    prices and names are separate elements, and a page usually carries more tiles than it
+    has products — related-item carousels reuse the identical markup — so a scan that
+    ignored boundaries would confidently pair a name with the wrong boot's price.
+    """
+    chunks = _TILE_SPLIT_RE.split(html)[1:]
+    origin = f"{urlsplit(url).scheme}://{urlsplit(url).netloc}"
+    source = urlsplit(url).netloc.removeprefix("www.")
+    products: list[Product] = []
+    seen: set[str] = set()
+
+    for chunk in chunks:
+        title = ""
+        href = ""
+        link_match = _TILE_LINK_RE.search(chunk)
+        if link_match:
+            href = link_match.group(1)
+            title = " ".join(unescape(_TAG_STRIP_RE.sub(" ", link_match.group(2))).split())
+        # The carousel variant of this markup keeps the name in `title=` and puts an image
+        # in the anchor, so the link text is empty or a stray character. Prefer the
+        # attribute whenever the text is too short to be a product name.
+        if len(title) < 3:
+            attr_match = _TILE_TITLE_ATTR_RE.search(chunk)
+            if attr_match:
+                title = " ".join(unescape(attr_match.group(1)).split())
+                href = href or attr_match.group(2)
+        if not href:
+            continue
+
+        final = _TILE_FINAL_RE.search(chunk)
+        price = _money(final.group(1)) if final else None
+        if not title or price is None:
+            continue
+
+        link = urljoin(origin, unescape(href))
+        if link in seen:
+            continue
+        seen.add(link)
+
+        old = _TILE_OLD_RE.search(chunk)
+        was = _money(old.group(1)) if old else None
+        products.append(
+            Product(
+                title=title,
+                category=category,
+                price=price,
+                reference_price=was if was and was > price else None,
+                currency="EUR",
+                url=link,
+                source=source,
+            )
+        )
+    return products
+
+
 def _merge_size_variant(existing: Product, extra: Product) -> Product:
     """Fold another ld+json node for the same product into the one already collected.
 
@@ -704,9 +786,12 @@ async def collect_listing(url: str, category: str, delay: float = 1.0) -> list[P
     if html is None:
         return []
     # A Shopify collection endpoint hands over structured data directly; no parsing of
-    # rendered markup, and one request covers a whole collection.
-    products = parse_shopify_products(html, url, category) or parse_ldjson_products(
-        html, url, category
+    # rendered markup, and one request covers a whole collection. Rendered Magento tiles
+    # are the last resort, for a storefront that publishes no structured data anywhere.
+    products = (
+        parse_shopify_products(html, url, category)
+        or parse_ldjson_products(html, url, category)
+        or parse_product_tiles(html, url, category)
     )
     if not products:
         logger.info("no product found at %s", url)

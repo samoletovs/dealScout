@@ -126,6 +126,44 @@ serpapi:
 # ranked best-first. An attribute the page never stated is *unknown*, not failed: the
 # find is still surfaced, flagged "verify on click", and capped below 🟢 must-buy.
 # ---------------------------------------------------------------------------
+# What each source costs to actually receive from. The shortlist ranks on price + delivery,
+# not shelf price: a €45 boot from Ireland at €7 postage costs more than a €50 boot
+# collected in Rīga, and sorting on the shelf price quietly recommends the wrong shop.
+# A source missing from this table contributes no shipping rather than a guessed figure —
+# an invented postage number would silently reorder the list.
+delivery:
+  prodirectsport.ie:
+    label: "Pro:Direct (IE)"
+    shipping: 7
+    note: "ships from CZ"
+  11teamsports.com:
+    label: "11teamsports (DE)"
+    shipping: 10
+    note: "DHL 2-5 days · best-rated returns"
+  komanda.lv:
+    label: "komanda.lv (Rīga)"
+    shipping: 0
+    pickup: true
+    note: "adidas official · Duntes iela 7"
+  teamsport.lv:
+    label: "teamsport.lv (Rīga)"
+    shipping: 5
+    free_over: 50
+    pickup: true
+    house_brand: Nike        # Nike's LV distributor: its own listings say "ZM SUPERFLY
+                             # 10 ELITE SG-PRO", never "Nike", so brands_only would
+                             # otherwise reject the entire shop.
+    note: "Nike official LV since 1998"
+  sportland.lv:
+    label: "Sportland (Rīga)"
+    shipping: 3
+    free_over: 50
+    pickup: true
+    note: "~80 Baltic stores"
+  futbola-apavi.lv:
+    label: "futbola-apavi.lv"
+    shipping: 4
+
 hunts:
   - id: boots-junior
     enabled: true
@@ -133,12 +171,16 @@ hunts:
     for: junior                  # opaque household role, never a real name
     category: football_boots     # selects the vocabulary used to read titles
     deliver_to: LV
-    sizes: ["37", "37.5", "37.33", "36.67"]
-    # 37 and 37.5 are the plain EU labels. adidas sizes in thirds and prints EU 37 as
-    # "37⅓" (37.33 here) and the half-step below it as "36⅔" (36.67) — the owner has
-    # tried adidas 37 and it fits, and Nike tends to run to 37.5. Before these were
-    # parsed at all they normalised to "" and were dropped, which hid every adidas Elite
-    # boot in his size.
+    sizes: ["37", "37.5", "37.33"]
+    # A size is a brand's opinion, not a measurement. adidas sizes in thirds and prints EU
+    # 37 as "37⅓" (37.33 here) — tried on and confirmed to fit. Nike's equivalent for the
+    # same foot is 37.5 (Nike "5"), and Nike makes no third sizes at all. Searching both
+    # lists against both brands surfaces boots that will not fit and buries ones that will.
+    # `sizes` above stays as the fallback for a brand not named here.
+    sizes_by_brand:
+      adidas: ["37.33"]
+      nike: ["37.5"]
+      puma: ["37.5"]
     brands: [Nike, adidas]       # ranked — Nike scores highest
     # Puma was removed on 2026-08-25: the owner rejected the design, not the price. It is
     # the one brand whose Elite-tier boots are currently *in stock* in 37/37.5 and heavily
@@ -234,6 +276,35 @@ hunts:
       # can be asked for the tier directly instead of filtering 700 boots client-side.
       - "https://www.11teamsports.com/de-de/sale/fussballschuhe/?serie=Elite"
       - "https://www.11teamsports.com/de-de/fussballschuhe/kinder-fussballschuhe/"
+      # teamsport.lv — SIA VIVA SPORT, the official Nike distributor for Latvia since
+      # 1998. Free shipping over €50 and Rīga pickup, so a find here can be collected in
+      # person. Runs Magento and publishes no ld+json; its *product* pages load the price
+      # over AJAX, so a product page states no price at all — but the category renders
+      # every tile server-side with name, link and price, which is what the scout reads.
+      # One request covers the whole boots category (48 products, 34 of them Elite;
+      # paging parameters are ignored, so asking for page 2 just re-fetches page 1).
+      # Tiles state no sizes, so everything here is capped at 🟡 "verify on click".
+      - "https://www.teamsport.lv/lv_lv/futbols/futbola-apavi.html"
+    catalogs:
+      # sportland.lv — Baltic's largest sports chain (~80 stores, official Nike Baltic
+      # distributor), so a find here can be tried on before buying. The site is a
+      # ScandiPWA shell: no ld+json, no price, no tiles, nothing a parser can read, which
+      # looked like it needed a headless browser. It does not. ScandiPWA is a React front
+      # end *for Magento 2*, so the same data arrives over Magento's GraphQL endpoint —
+      # public by design, unlike the REST API that guards the same catalogue behind a
+      # token. This reads the shop exactly the way its own front end does.
+      #
+      # GraphQL here accepts only url_key/category filters and no free-text search, so the
+      # sitemap does discovery: 18,616 products, filtered to a few dozen on the slug
+      # before any request is spent. Take the sitemap named in robots.txt — the default
+      # /sitemap.xml belongs to a different storefront of the same group.
+      #
+      # Sizes are NOT read: a variant carries a stock flag but no attributes, so which
+      # size is in stock cannot be established, and everything here stays 🟡 verify-on-click.
+      - sitemap: "https://sportland.lv/media/sitemap_LV.xml"
+        graphql: "https://sportland.lv/graphql"
+        origin: "https://sportland.lv"
+        match: "boots|cleats"
     queries:                     # SerpApi (dormant without SERPAPI_KEY) — costs 1 search each
       - "Nike Mercurial Superfly 10 Elite junior AG"
       - "Nike Mercurial Vapor 16 Elite junior football boots"
