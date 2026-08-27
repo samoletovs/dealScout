@@ -6,6 +6,9 @@ import asyncio
 
 import pytest
 
+from dataclasses import replace
+from pathlib import Path
+
 import dealscout.run_shortlist as run_shortlist
 from dealscout.models import Hunt, Product
 
@@ -54,9 +57,9 @@ def test_should_drop_a_product_the_owner_has_thumbed_down(monkeypatch):
     # rejected boot returns on every run and the feedback loop is decorative.
     keep = _boot("adidas Predator Elite FG", "https://shop.example/keep")
     drop = _boot("adidas F50 Elite FG", "https://shop.example/drop")
-    confirmed, _, checked, _coverage = _run(HUNT, [keep, drop], frozenset({drop.url}), monkeypatch)
-    assert [p.url for p in confirmed] == [keep.url]
-    assert checked == 1
+    run = _run(HUNT, [keep, drop], frozenset({drop.url}), monkeypatch)
+    assert [p.url for p in run.confirmed] == [keep.url]
+    assert run.checked == 1
 
 
 def test_should_keep_everything_when_nothing_has_been_rejected(monkeypatch):
@@ -64,9 +67,9 @@ def test_should_keep_everything_when_nothing_has_been_rejected(monkeypatch):
         _boot("adidas Predator Elite FG", "https://shop.example/a"),
         _boot("adidas F50 Elite FG", "https://shop.example/b"),
     ]
-    confirmed, _, checked, _coverage = _run(HUNT, boots, frozenset(), monkeypatch)
-    assert len(confirmed) == 2
-    assert checked == 2
+    run = _run(HUNT, boots, frozenset(), monkeypatch)
+    assert len(run.confirmed) == 2
+    assert run.checked == 2
 
 
 def test_uncapped_should_lift_the_ceiling_without_clearing_every_band():
@@ -110,3 +113,66 @@ def test_no_email_should_still_suppress_sending():
 def test_a_named_hunt_should_still_be_honoured():
     assert run_shortlist.parse_args(["boots-junior"]).hunt == "boots-junior"
     assert run_shortlist.parse_args([]).hunt == ""
+
+
+# --- price memory must remember every boot judged, not only the ones shown ------------
+
+
+def test_a_boot_that_lost_its_place_should_still_be_remembered(monkeypatch):
+    """The memory used to see only the rows that reached the email.
+
+    That made it mute at the one moment it matters: a boot appearing for the first time
+    at a startling price has no history precisely because it was never shown before. The
+    cap that keeps the email readable was silently also capping what could be learned.
+    """
+    boots = [
+        replace(
+            _boot("adidas Predator Elite FG", f"https://shop{i}.example/b"),
+            source=f"shop{i}.example",
+        )
+        for i in range(14)
+    ]
+
+    run = _run(HUNT, boots, frozenset(), monkeypatch)
+
+    assert len(run.confirmed) == 10, "the email is still capped at ten rows"
+    assert len(run.kept) == 14, "but everything that qualified is available to remember"
+    unshown = {p.url for p in run.kept} - {p.url for p in run.confirmed}
+    assert len(unshown) == 4, "four qualified boots never reached the email"
+
+def test_the_run_should_log_a_price_for_every_boot_it_judged(monkeypatch, tmp_path):
+    """The behaviour, not the plumbing: what reaches the price log when main() runs.
+
+    The previous test only proved `kept` was exposed. Reverting the line that uses it
+    left all 495 tests green — a suite certifying the implementation rather than the
+    requirement, which is the failure that shipped a regression here yesterday. This
+    one asserts what `append` actually received.
+    """
+    boots = [
+        replace(
+            _boot("adidas Predator Elite FG", f"https://shop{i}.example/b"),
+            source=f"shop{i}.example",
+        )
+        for i in range(14)
+    ]
+    logged: list = []
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(run_shortlist, "scout", _stub_scout(boots))
+    monkeypatch.setattr(run_shortlist, "load_config", lambda _p: CONFIG)
+    monkeypatch.setattr(run_shortlist, "config_path", lambda: Path("config.example.yaml"))
+    monkeypatch.setattr(run_shortlist, "load_hunts", lambda _c, _o="": [HUNT])
+    monkeypatch.setattr(run_shortlist, "append", lambda obs, _path: logged.extend(obs))
+
+    async def _no_feedback():
+        return []
+
+    async def _no_send(_subject, _body):
+        return False
+
+    monkeypatch.setattr(run_shortlist, "read_feedback", _no_feedback)
+    monkeypatch.setattr(run_shortlist, "send_email", _no_send)
+
+    asyncio.run(run_shortlist.main([]))
+
+    assert len(logged) == 14, "every boot that qualified is remembered, not only the ten shown"
