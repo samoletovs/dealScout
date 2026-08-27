@@ -85,6 +85,30 @@ def test_the_budget_is_spent_cheapest_first():
     assert [p.url for p in picked] == [cheap.url, mid.url], "the two cheapest, in order"
 
 
+def test_a_size_owing_boot_is_never_passed_over_for_an_rrp_only_boot():
+    """A relation, not a count: a boot owing only an RRP must not take a slot while a boot
+    owing a size waits. Resolving a size can make a boot buyable ("❔ → ✅ in your size");
+    resolving an RRP only adds "−58%" to a row already shown. So even a dearer size-owing
+    boot outranks a cheaper RRP-only one — and when a single slot is free, size wins it.
+    """
+    cheap_rrp_only = _boot(
+        "https://a/rrp", "teamsport.lv", price=40.0, sizes_known=True
+    )  # owes only an RRP, and is the cheapest boot in the pool
+    dear_size_owing = _boot(
+        "https://a/size", "teamsport.lv", price=200.0, reference_price=250.0
+    )  # owes a size, but costs far more
+
+    one_slot = plan_confirmations([cheap_rrp_only, dear_size_owing], limit=1)
+    assert [p.url for p in one_slot] == [dear_size_owing.url], (
+        "the size-owing boot takes the only slot, though the RRP-only boot is cheaper"
+    )
+
+    both = plan_confirmations([cheap_rrp_only, dear_size_owing], limit=2)
+    assert [p.url for p in both] == [dear_size_owing.url, cheap_rrp_only.url], (
+        "size-owing first, RRP-only only once size-owing boots are served"
+    )
+
+
 def test_the_cap_is_honoured_and_a_nonpositive_cap_confirms_nothing():
     boots = [_boot(f"https://a/{i}", "teamsport.lv", price=float(i)) for i in range(5)]
     assert len(plan_confirmations(boots, limit=3)) == 3

@@ -17,10 +17,13 @@ Two facts let the same budget buy more, and they are different in kind:
   the measured ``futbolemotion.com=0/7`` on a real run is exactly that waste. These sources
   are declared in ``scrape.size_unreadable_sources`` and a boot from one is not confirmed.
 
-* **A cheap boot's size is worth more than an expensive one's.** Resolving a €64 boot's
-  size promotes it into the confirmed "in your size" list; resolving a €249 boot's size
-  changes nothing the owner will act on. So what remains is ordered cheapest-first, mirroring
-  ``scout.py``'s already-ordered link budget rather than leaving this one unordered beside it.
+* **A size answer is worth more than an RRP answer, and a cheap boot's size more than a dear
+  one's.** Resolving a size can move a boot from "❔ go and check this yourself" into "✅ in
+  your size" — it changes what the owner can act on; resolving an RRP only adds a "−58%" to a
+  row he already sees. So size-owing boots are ordered ahead of RRP-only ones, and cheapest
+  first *within* each group — resolving a €64 boot's size promotes it into the confirmed list,
+  where a €249 boot's changes nothing he will act on. This mirrors ``scout.py``'s already-
+  ordered link budget rather than leaving this one unordered beside it.
 
 Both are opinions about *ordering and skipping*, never about the answer: nothing here fills
 in a size or drops an unresolved boot. An unresolved boot still reaches the email's
@@ -75,8 +78,13 @@ def plan_confirmations(
        same listing data on its product page, so re-fetching it learns nothing. Measured:
        ``futbolemotion.com=0/7`` a run. These are declared in ``size_unreadable`` because a
        missing per-size stock is the fact that makes their product page redundant;
-    3. order the survivors cheapest-first, because resolving a cheap boot's size is what
-       actually promotes it into the confirmed list.
+    3. order size-owing boots ahead of RRP-only boots, then cheapest-first *within* each
+       group. The two answers are not comparable in value: resolving a size can move a boot
+       from "❔ go and check this yourself" into "✅ confirmed in your size" — it changes what
+       the owner can act on — while resolving an RRP only adds a "−58%" to a row he is already
+       shown. So a boot owing a size is never passed over for a cheaper boot that owes only an
+       RRP; on a run where size-owing boots already fill the budget, no slot is spent decorating
+       a row when one could have made a boot buyable.
 
     ``limit <= 0`` disables confirmation entirely, matching the previous slice semantics.
     """
@@ -93,7 +101,8 @@ def plan_confirmations(
         if _source(product) in unreadable and owes_size(product):
             continue
         worth.append(product)
-    worth.sort(key=lambda p: p.price)
+    # Size-owing boots first (key False sorts before True), then cheapest within each group.
+    worth.sort(key=lambda p: (not owes_size(p), p.price))
     return worth[:limit]
 
 
