@@ -204,15 +204,43 @@ class Catalogue:
         hits = [m.start() for t in tokens if (m := _compiled_token(str(t)).search(text))]
         return min(hits) if hits else -1
 
+    def _stated_generation(self, normalised: str, patterns: list) -> str:
+        """The generation number a title states for this line, or "" if it states none.
+
+        Read from immediately after the line's own name, so `copa pure 4` states 4 while
+        `predator elite` states nothing. Roman numerals are already digits by this point.
+        """
+        for pattern in patterns:
+            match = _compiled_token(str(pattern)).search(normalised)
+            if not match:
+                continue
+            stated = re.match(r"\s*(\d{1,2})\b", normalised[match.end() : match.end() + 5])
+            if stated:
+                return stated.group(1)
+        return ""
+
     def _line_and_generation(self, normalised: str, brand: str) -> tuple[str, dict]:
         """Match the model line, then the most specific generation within it."""
         for line, spec in (self.brands.get(brand, {}).get("lines") or {}).items():
-            if not any(_compiled_token(p).search(normalised) for p in spec.get("patterns") or []):
+            line_patterns = spec.get("patterns") or []
+            if not any(_compiled_token(p).search(normalised) for p in line_patterns):
                 continue
+            stated = self._stated_generation(normalised, line_patterns)
             for generation in spec.get("generations") or []:
-                patterns = generation.get("patterns") or []
-                if any(_compiled_token(p).search(normalised) for p in patterns):
-                    return line, generation
+                patterns = [str(p) for p in (generation.get("patterns") or [])]
+                if not any(_compiled_token(p).search(normalised) for p in patterns):
+                    continue
+                # A title naming a generation must not be answered by an entry that names
+                # none. `copa pure` is listed as the 2022 original, and being a prefix of
+                # every later name it swallowed them: a Copa Pure IV — newer than anything
+                # in this file — was reported as "discontinued generation (2022)". That is
+                # the worst direction to be wrong in, because it argues the owner out of a
+                # current boot, and it arrives silently on the day a brand ships a number
+                # we have not seen. Falling through to "generation unknown" is the honest
+                # answer, and the one the renderer already knows how to say nothing about.
+                if stated and not any(any(c.isdigit() for c in p) for p in patterns):
+                    continue
+                return line, generation
             return line, {}  # line recognised, generation not stated
         return "", {}
 

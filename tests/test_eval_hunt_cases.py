@@ -16,6 +16,7 @@ import pytest
 from dealscout.eval import (
     UNWANTED_SIZE,
     WANTED_SIZE,
+    CaseResult,
     load_golden,
     resolve_sizes,
     DEFAULT_CONFIG,
@@ -438,3 +439,49 @@ def test_a_literal_size_should_be_left_exactly_as_written():
     product = replace(_boot(), sizes=frozenset({"42"}), sizes_known=True)
 
     assert resolve_sizes(product, hunt).sizes == frozenset({"42"})
+
+
+def test_a_null_expected_attr_should_pin_that_nothing_is_asserted():
+    """Declining to answer is a real outcome here, so a case has to be able to pin it.
+
+    Without this the Copa Pure IV case could only pin the attributes that did not move,
+    and passed just as happily with the bug reinstated.
+    """
+    case = _case(expected_attrs={"generation_status": None})
+    result = CaseResult(
+        case=case,
+        predicted_band=case.expected_band,
+        predicted_is_deal=True,
+        reasons=(),
+        predicted_attrs={"generation_status": "discontinued"},
+    )
+
+    assert result.attr_ok is False
+    assert "wanted nothing asserted" in result.attr_misses[0]
+
+
+def test_a_null_expected_attr_should_pass_when_the_engine_stays_silent():
+    case = _case(expected_attrs={"generation_status": None})
+    result = CaseResult(
+        case=case,
+        predicted_band=case.expected_band,
+        predicted_is_deal=True,
+        reasons=(),
+        predicted_attrs={"tier": "junior-flagship"},
+    )
+
+    assert result.attr_ok is True
+
+
+def test_an_empty_string_should_count_as_saying_nothing():
+    """The engine writes "" for an attribute it looked at and could not name."""
+    case = _case(expected_attrs={"generation_status": None})
+    result = CaseResult(
+        case=case,
+        predicted_band=case.expected_band,
+        predicted_is_deal=True,
+        reasons=(),
+        predicted_attrs={"generation_status": ""},
+    )
+
+    assert result.attr_ok is True
