@@ -301,6 +301,7 @@ async def main(argv: list[str]) -> int:
     rrp_stamps = rrpcache.load_stamps(rrp_limits.path)
     rrp_memory = rrpcache.load(rrp_limits.path)
     sent = 0
+    unsent = 0
     for hunt in hunts:
         run = await shortlist_for(
             hunt, config, DEFAULT_LIMIT, DEFAULT_PER_SOURCE, frozenset(rejected), rrp_memory
@@ -377,12 +378,25 @@ async def main(argv: list[str]) -> int:
             )
             if await send_email(subject, body):
                 sent += 1
+            else:
+                unsent += 1
     rewrite_history(prune(history, limits.keep_days, limits.max_points), limits.path)
     save_yields(yield_history)
     rrpcache.save(
         rrp_memory, rrp_stamps, keep_days=rrp_limits.keep_days, path=rrp_limits.path
     )
     logger.info("shortlist complete; %d email(s) sent", sent)
+    if unsent:
+        # Sending is the point. For the first eight months of this project it was not
+        # happening at all: COURIER_URL, COURIER_KEY and DEALSCOUT_EMAIL_TO were never set
+        # as repository secrets, so every scheduled run scraped seven retailers, judged
+        # them, wrote the markdown — and logged "courier not configured, skipping send"
+        # before exiting 0. Green ticks, twice a day, and an owner who never got an email.
+        #
+        # A warning was not enough because nobody reads a successful run's log. The run
+        # asked to send and did not, so it failed; `--no-email` is how you say you meant it.
+        logger.error("%d email(s) could not be sent — the run produced nothing", unsent)
+        return 1
     return 0
 
 
