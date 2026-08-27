@@ -420,6 +420,24 @@ scrape:
   delay_seconds: 1.0
   max_confirmations: 25        # product pages one hunt may open to confirm size + RRP
   link_budget: 30              # product pages a single link-only listing may cost us
+  # Sources a second request cannot resolve — documented in SOURCES.md from investigation,
+  # not guessed from a quiet run. Both serve the same ld+json on the product page as on the
+  # listing and fill per-size stock from a separate API the page never carries, so
+  # re-fetching a boot from here learns neither a size nor a new RRP (measured
+  # futbolemotion.com=0/7 a run). The shortlist does not spend a confirmation slot on them;
+  # their boots stay honestly unresolved in "❔ Size not published". This is season-scale
+  # knowledge and can rot: the run WARNS if one ever returns a size, so re-check this list
+  # and SOURCES.md rather than trusting it forever. Verified 2026-08-27.
+  size_unreadable_sources:
+    - futbolemotion.com        # size table is "Loading…" placeholders; product page == listing
+    - sportland.lv             # ScandiPWA/Magento2; per-size stock not reachable by the GraphQL path we currently use — may be a different field, worth a look
+  # RRP memory: an RRP is a manufacturer list price and moves at a season boundary, so a
+  # boot confirmed before need not spend a slot re-learning it. Stock is NEVER cached (sizes
+  # sell out between runs); only the RRP is, and only where the listing gave none — a live
+  # RRP always wins. Entries expire after rrp_cache_days so a re-priced or retired boot's
+  # number cannot live forever.
+  rrp_cache_path: state/rrp.json
+  rrp_cache_days: 180
 
 # Vocabulary overrides — teach the extractor new words without a code change.
 # Shape: category -> attribute -> value -> [patterns]. A value listed here REPLACES
