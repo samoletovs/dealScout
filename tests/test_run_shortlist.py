@@ -226,3 +226,99 @@ def test_a_page_that_failed_to_load_should_count_as_spent_and_unhelpful():
     asked = [_unsized("https://d.example/1", "broken.example")]
 
     assert run_shortlist.confirmation_payoff(asked, {})["broken.example"] == (1, 0)
+
+
+# --- the confirmation budget: don't ask what can't answer; still show what stays unknown -
+
+
+def _capture_enrich(monkeypatch, resolve=None):
+    """Record which URLs `shortlist_for` chose to confirm, and optionally resolve them.
+
+    Returns the list the planner fed to enrich_all, so a test can assert what the scarce
+    budget was actually spent on rather than only what came back.
+    """
+    asked_urls: list[str] = []
+
+    async def _enrich(products, delay):
+        asked_urls.extend(p.url for p in products)
+        out = []
+        for p in products:
+            out.append(resolve(p) if resolve else p)
+        return out
+
+    monkeypatch.setattr(run_shortlist, "enrich_all", _enrich)
+    return asked_urls
+
+
+def test_a_size_unreadable_source_does_not_consume_a_slot_for_a_size(monkeypatch):
+    """The task's whole point: with a tight budget, a boot from a shop that cannot state a
+    size must not take a slot from one that can — and asking it would learn nothing anyway.
+    """
+    config = {"scrape": {"delay_seconds": 0, "max_confirmations": 1,
+                         "size_unreadable_sources": ["mute.example"]}}
+    cannot = replace(
+        _unsized("https://cannot/1", "mute.example"), reference_price=200.0, price=50.0
+    )  # first in order and cheaper — a bare slice would grab it
+    can_answer = replace(
+        _unsized("https://can/1", "loud.example"), reference_price=200.0, price=90.0
+    )  # dearer, but its source can actually state a size
+
+    monkeypatch.setattr(run_shortlist, "scout", _stub_scout([cannot, can_answer]))
+    asked = _capture_enrich(monkeypatch)
+    asyncio.run(run_shortlist.shortlist_for(HUNT, config, limit=10, per_source=5))
+
+    assert asked == ["https://can/1"], "the one slot went to the source that can answer"
+
+
+def test_an_unresolved_boot_still_reaches_the_email(monkeypatch):
+    """Never silently dropped: a boot the budget could not resolve stays visible in the
+    "size not published" list rather than vanishing because we skipped or ran out of slots.
+    """
+    config = {"scrape": {"delay_seconds": 0, "max_confirmations": 0}}
+    unresolved = replace(_unsized("https://x/1", "mute.example"), reference_price=200.0)
+
+    monkeypatch.setattr(run_shortlist, "scout", _stub_scout([unresolved]))
+    run = asyncio.run(run_shortlist.shortlist_for(HUNT, config, limit=10, per_source=5))
+
+    assert [p.url for p in run.unconfirmed] == ["https://x/1"], "still shown, just unconfirmed"
+    assert run.confirmed == [], "and never optimistically promoted"
+
+
+def test_the_budget_is_spent_cheapest_first_end_to_end(monkeypatch):
+    """A single scarce slot goes to the cheapest unresolved boot, because resolving a cheap
+    boot's size is what actually changes the email.
+    """
+    config = {"scrape": {"delay_seconds": 0, "max_confirmations": 1}}
+    dear = replace(_unsized("https://a/dear", "loud.example"), reference_price=200.0, price=249.0)
+    cheap = replace(_unsized("https://a/cheap", "loud.example"), reference_price=200.0, price=64.0)
+
+    monkeypatch.setattr(run_shortlist, "scout", _stub_scout([dear, cheap]))
+    asked = _capture_enrich(monkeypatch)
+    asyncio.run(run_shortlist.shortlist_for(HUNT, config, limit=10, per_source=5))
+
+    assert asked == ["https://a/cheap"], "the cheapest unresolved boot got the slot"
+
+
+def test_a_remembered_rrp_frees_a_slot_for_a_size(monkeypatch):
+    """Half of confirmations chase an RRP. If yesterday taught us this boot's RRP, today's
+    slot should not be re-spent on it — it should go to a boot that still owes a size.
+    """
+    config = {"scrape": {"delay_seconds": 0, "max_confirmations": 1}}
+    # Boot A: size known, RRP missing — would normally take the slot to learn its RRP.
+    knows_size = replace(
+        _boot("adidas Predator Elite FG", "https://a/rrp", price=40.0),
+        reference_price=None,
+    )
+    # Boot B: dearer, owes a size — only wins the slot once A's RRP is remembered.
+    owes_size = replace(_unsized("https://a/size", "loud.example"), reference_price=200.0, price=99.0)
+
+    monkeypatch.setattr(run_shortlist, "scout", _stub_scout([knows_size, owes_size]))
+    asked = _capture_enrich(monkeypatch)
+    asyncio.run(
+        run_shortlist.shortlist_for(
+            HUNT, config, limit=10, per_source=5, rrp_memory={"https://a/rrp": 130.0}
+        )
+    )
+
+    assert asked == ["https://a/size"], "the slot went to the boot still owing a size"
+
