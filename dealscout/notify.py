@@ -432,6 +432,35 @@ def _coverage_block(
     return lines
 
 
+def _unconfirmed_note(unconfirmed: list, table: dict) -> str:
+    """Explain the size-not-published section, describing the shops actually in it.
+
+    This sentence used to assert "Both are in Rīga, so they can also be phoned or
+    visited". That was true the week it was written, when the only two shops that
+    withheld per-size stock were Sportland and teamsport. Sources were then added and
+    the claim quietly became false: today the section leads with Fútbol Emotion in
+    Spain. Nobody was told, because a hardcoded sentence has nothing to go stale
+    against — which is exactly the confident-wrong-answer this engine exists to avoid,
+    and worse here for being in the paragraph that explains our own honesty.
+
+    So it is counted from the rows. A shop is phoneable if the delivery table says its
+    boots can be collected, which is the same fact the row itself renders.
+    """
+    local = sum(1 for p in unconfirmed if delivery_for(p.source, table).pickup)
+    note = (
+        "_These shops publish a price but not per-size stock, so the size has to be "
+        "checked on the page — which is the point of listing them separately rather "
+        "than pretending they are confirmed."
+    )
+    if local == len(unconfirmed):
+        note += " All of them are in Rīga, so they can also be phoned or visited."
+    elif local == 1:
+        note += " One is in Rīga, so it can also be phoned or visited."
+    elif local:
+        note += f" {local} of them are in Rīga, so they can also be phoned or visited."
+    return note + "_"
+
+
 def render_shortlist(
     hunt: Hunt,
     confirmed: list[Product],
@@ -484,12 +513,7 @@ def render_shortlist(
 
     lines.append(f"## ❔ Size not published — {len(unconfirmed)}")
     if unconfirmed:
-        lines.append(
-            "_These shops publish a price but not per-size stock, so the size has to be "
-            "checked on the page. Both are in Rīga, so they can also be phoned or "
-            "visited — which is the point of listing them separately rather than "
-            "pretending they are confirmed._\n"
-        )
+        lines.append(_unconfirmed_note(unconfirmed, table) + "\n")
         for i, product in enumerate(unconfirmed, 1):
             attrs = resolve_attrs(product, hunt, vocab)
             lines.append(
