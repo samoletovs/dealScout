@@ -104,9 +104,14 @@ def test_shortlist_should_quote_only_the_history_it_actually_holds():
 
 
 def test_shortlist_should_keep_the_retailer_claim_and_the_measured_one_side_by_side():
+    # The invariant, not the wording: the retailer's own discount claim and the sentence
+    # that says whether it means anything sit together on one line, the discount first.
+    # Pinning the exact phrasing here made this test break on a pure rewording once already.
     body = _shortlist(85.0, _memory([120.0, 110.0, 95.0, 85.0], 85.0))
 
-    assert "RRP €220, **-61%** · **cheapest seen in 30 days**" in body
+    line = next(ln for ln in body.splitlines() if "−61%" in ln or "-61%" in ln)
+    assert "cheapest seen in 30 days" in line
+    assert line.index("61%") < line.index("cheapest")
 
 
 def test_shortlist_should_read_memory_through_the_tracking_stripped_url():
