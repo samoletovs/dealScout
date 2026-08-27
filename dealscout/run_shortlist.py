@@ -20,7 +20,7 @@ import argparse
 import asyncio
 import logging
 import sys
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from .collector import enrich_all
@@ -74,9 +74,26 @@ def _uncapped(hunt: Hunt) -> Hunt:
     return replace(hunt, never_above=None, good_offer=float("inf"))
 
 
+@dataclass(frozen=True)
+class ShortlistResult:
+    """One hunt's run: what was shown, what qualified behind it, and what was read.
+
+    A tuple until ``kept`` was needed. Each addition made the unpacking at the call site
+    less legible than the last, and ``kept`` is precisely the field a reader would
+    otherwise confuse with ``confirmed`` — one is every boot that qualified, the other is
+    the ten that reached the email.
+    """
+
+    confirmed: list[Product]  # in a wanted size, ranked, capped
+    unconfirmed: list[Product]  # size not published, ranked, capped
+    checked: int  # candidates seen before judging
+    coverage: list[SourceCoverage]
+    kept: list[Product]  # everything that qualified, including what lost its place
+
+
 async def shortlist_for(
     hunt: Hunt, config: dict, limit: int, per_source: int, rejected: frozenset[str] = frozenset()
-) -> tuple[list[Product], list[Product], int, list[SourceCoverage]]:
+) -> ShortlistResult:
     """Scout, judge without the price ceiling, and rank into two ranked lists."""
     vocab = merge_vocab(config.get("vocabulary"))
     candidates = [p for p in await scout(hunt, config, vocab=vocab) if p.url not in rejected]
@@ -121,7 +138,13 @@ async def shortlist_for(
         pool=kept,
         scouted=candidates,
     )
-    return picked_confirmed, picked_unconfirmed, len(candidates), coverage
+    return ShortlistResult(
+        confirmed=picked_confirmed,
+        unconfirmed=picked_unconfirmed,
+        checked=len(candidates),
+        coverage=coverage,
+        kept=kept,
+    )
 
 
 def config_path() -> Path:
@@ -188,8 +211,14 @@ async def main(argv: list[str]) -> int:
     yield_history = load_yields()
     sent = 0
     for hunt in hunts:
-        confirmed, unconfirmed, checked, coverage = await shortlist_for(
+        run = await shortlist_for(
             hunt, config, DEFAULT_LIMIT, DEFAULT_PER_SOURCE, frozenset(rejected)
+        )
+        confirmed, unconfirmed, checked, coverage = (
+            run.confirmed,
+            run.unconfirmed,
+            run.checked,
+            run.coverage,
         )
         shown = [*confirmed, *unconfirmed]
         logger.info(
@@ -200,7 +229,14 @@ async def main(argv: list[str]) -> int:
 
         # Log this run's prices before rendering, so a row can say where today's price
         # sits rather than where the previous run's did.
-        fresh = [o for o in observe(shown, hunt.sizes) if o.url not in logged]
+        #
+        # Every boot that qualified is remembered, not only the ten that reached the
+        # email. Logging the shown rows alone made the memory able to speak only about
+        # boots it had already shown — so the one moment the owner most needs it, a boot
+        # appearing for the first time at a startling price, was exactly the moment it
+        # had nothing to say. A boot sitting in the €130 pool for a month and dropping to
+        # €62 is now recognised on the run it drops, rather than three runs later.
+        fresh = [o for o in observe(run.kept, hunt.sizes) if o.url not in logged]
         logged.update(o.url for o in fresh)
         append(fresh, limits.path)
         history = extend(history, fresh)
