@@ -1,8 +1,14 @@
 name: dealScout watch
 
+# Manual only. This ran daily for months against the shipped example config, whose single
+# watch item is the literal placeholder `https://www.example.com/product/123` — so every
+# run fetched a 404, wrote an empty report and reported success. The owner's real watch
+# list lives in `config.local.yaml`, which is private and not in CI, so a scheduled run
+# here cannot do anything useful. Restore the schedule the day CI has a config worth
+# running: the entrypoint now exits non-zero when nothing could be read, so a broken
+# watch list will announce itself instead of passing quietly.
+
 on:
-  schedule:
-    - cron: "0 7 * * *" # daily 07:00 UTC
   workflow_dispatch:
 
 jobs:
