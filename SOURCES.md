@@ -20,7 +20,7 @@ Two notes on tier, both of which have caused wrong conclusions here before:
 - **A junior Elite lists at €120–130, not €200+.** The RRP > €200 bar qualifies the
   *shop* (it proves the flagship line is carried); it is not a filter on the boot bought.
 
-Last verified: **2026-08-26**.
+Last verified: **2026-08-27**.
 
 **Two other things here go stale, and differently.** The retailer facts above rot slowly —
 a shop changes platform or stops shipping to Latvia perhaps once a year. The *boot*
@@ -50,7 +50,7 @@ decision outright, and one that states only a price is capped at 🟡 *verify on
 | **prodirectsport.ie** | 🇮🇪 IE (CZ warehouse) | Shopify | `/products.json` — one request per collection | 4.0/5, **175k+ reviews** | New Balance Furon V9 Elite FG, RRP €230; Superfly XI Elite €289.99 |
 | **komanda.lv** | 🇱🇻 LV — shop at Duntes iela 7, Rīga | Shopify | `/products.json` | official adidas Baltic dealer | adidas Predator Elite FT FG €280; Copa Pure IV Elite €240 |
 | **futbola-apavi.lv** | 🇱🇻 LV | OpenCart | rendered size boxes (`read_size_boxes`) | small specialist, unrated | Nike Tiempo Maestro Elite FG €250 (RRP €270) |
-| **teamsport.lv** | 🇱🇻 LV — **official Nike distributor since 1998**, free shipping >€50, Rīga pickup | Magento 2 | rendered listing tiles (`parse_product_tiles`) — no sizes, so 🟡 only | authorised channel, zero authenticity risk | Legend 10 Elite SG-Pro €120 (was €330); ZM Vapor 16 Elite KM FG €120 (was €350) |
+| **teamsport.lv** | 🇱🇻 LV — **official Nike distributor since 1998**, free shipping >€50, Rīga pickup | Magento 2 | listing tiles for discovery, then the product page's `jsonConfig` swatch blob for **exact per-size stock**, converted US→EU (`read_magento_swatch`) | authorised channel, zero authenticity risk | Legend 10 Elite SG-Pro €120 (was €330); ZM Vapor 16 Elite KM FG €120 (was €350) |
 | **sportland.lv** | 🇱🇻 LV — ~80 Baltic stores, official Nike Baltic distributor, **try-on before buying** | Magento 2 / ScandiPWA | its own **GraphQL API**, discovery via sitemap (`magento.py`) — no sizes, so 🟡 only | Frasers Group backing | Nike Phantom GX 2 Elite €99 (was €330); adidas Predator Elite FG €104 (was €260) |
 | **voetbalshop.nl** | 🇳🇱 NL → LV **€24.99** ("Other - Europe") | Magento 2 | rendered listing tiles *with a size swatch* (`parse_product_tiles`) — **exact per-size stock** | large NL specialist | adidas F50 Hyperfast Elite Laceless FG €223.99 (RRP €279.99); Nike ZM Superfly 11 Elite FG €289.99 |
 | **futbolemotion.com** | 🇪🇸 ES → LV, cost quoted per order | custom | ld+json on the listing — no sizes, so 🟡 only | 4.0/5, replies to 96% of negative reviews | Superfly 11 Elite AG-Pro €289.99; F50 Elite FG L-Tech €279.99 |
@@ -84,6 +84,40 @@ where the markup draws no distinction and "all in stock" cannot be told from "no
 rendered". Paging is ignored, as on teamsport.lv, so breadth comes from category URLs.
 Its postage is the catch: **€24.99 to Latvia**, the dearest of any source here, so a find
 must be about €25 better than a Baltic one to actually be a better buy.
+
+**teamsport.lv states exact per-size stock — in US sizes, which had to be proven before it
+could be read.** Its product pages carry a Magento swatch `jsonConfig` blob whose size
+options each hold a `products` array: empty means that size is unavailable, non-empty means
+it is buyable. That is complete per-size stock, and until 2026-08-27 the tool threw all of
+it away — the generic variant reader rejects the labels because they are 5–12.5, a range
+that is impossible in EU (EU starts at 35). So every run spent ~22 sequential product
+fetches learning nothing.
+
+The reason those numbers were not simply parsed: **5–12.5 is a valid UK *or* US ladder, and
+UK and US differ by roughly a full size** — so reading the wrong one would tell the owner a
+boot is in his son's size when it is not, the one mistake this engine must never make. The
+system was settled with two independent lines of evidence, not plausibility:
+
+1. **The shop states it.** Beside the swatch the page renders
+   `<div class="size-additional-info">US izmēri</div>` — Latvian for "US sizes". (`UK`
+   appears three times on the page but never near a size; `EUR` is the currency.)
+2. **Nike's own ladder fits it exactly.** Nike's authoritative men's footwear chart
+   (the `mens_footwear_us`/`size_eu` rows of `nike.com/size-fit/mens-footwear`) maps
+   US 6.5→EU 39, 7→40, 8→41, 9→42.5 … 12→46. teamsport's in-stock sets on three probed
+   boots (Vapor 16 Elite `FQ1457-446`, Phantom 6 High Elite `HJ2147-446`, Tiempo Maestro
+   Elite `HQ3157-101`) are each a continuous slice of that ladder and nothing else — and
+   the smallest rung teamsport lists, US 5, is EU 37.5, **exactly the owner's son's Nike
+   size**, which is why its ladders bottom out there.
+
+The conversion table (Nike US→EU, primary-sourced from Nike) lives in
+`data/size_conversions.yaml`; `dealscout.sizeconvert` reads it and `variants.read_magento_swatch`
+applies it. It is deliberately **not inferred**: a size is converted only when the page
+names its system *and* the brand's ladder is recorded, and a US label the ladder cannot
+place is dropped rather than mapped to a nearest EU size. teamsport is Nike-only in
+practice, so only the Nike ladder is carried. Measured 2026-08-27: all three probed boots
+now yield exact EU stock (1, 10 and 10 in-stock sizes respectively). If this reader ever
+returns nothing where the swatch is clearly populated, check the `US izmēri` marker and the
+Nike ladder's `last_verified` before the parser.
 
 **futbolemotion.com** is the largest Spanish specialist and the best source of colourways
 that never reach the Baltics. Its listing publishes ld+json for every product, so price

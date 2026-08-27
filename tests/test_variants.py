@@ -7,10 +7,106 @@ from dealscout.variants import (
     extract_size_stock,
     find_variant_arrays,
     in_stock,
+    read_magento_swatch,
     read_select_options,
     read_size_boxes,
     read_variants,
 )
+from dealscout.sizeconvert import us_to_eu
+
+
+# The shape teamsport.lv (Magento 2, Nike's Latvian distributor) renders: a `US izmēri`
+# label beside the swatch, and a `jsonConfig` blob whose size options each carry a
+# `products` array — empty when that size is unavailable, non-empty when it can be bought.
+# The labels are US numbers with a European decimal comma ("10,5"). This is faithful to
+# the live page, trimmed to the fields the reader reads.
+def _teamsport_page(options: str, system_label: str = "US izmēri") -> str:
+    return (
+        '<div class="size-additional-wrapper">'
+        f'<div class="size-additional-info">{system_label}</div></div>'
+        '<script type="text/x-magento-init">{"[data-role=swatch-options]":'
+        '{"Magento_Swatches/js/swatch-renderer":{"jsonConfig":'
+        '{"attributes":{"155":{"id":"155","code":"size","label":"Izm\\u0113rs",'
+        f'"options":[{options}]}}}}}}}}}}}}</script>'
+    )
+
+
+# US 5 == EU 37.5 (the owner's son's Nike size), US 9 == EU 42.5, US 12 == EU 46.
+# 8 (== EU 41) is offered but its products array is empty, so it is out of stock.
+_TEAMSPORT_OPTIONS = (
+    '{"id":"1","label":"5","products":["111"]},'
+    '{"id":"2","label":"8","products":[]},'
+    '{"id":"3","label":"9","products":["222"]},'
+    '{"id":"4","label":"10,5","products":["333"]},'
+    '{"id":"5","label":"12","products":["444"]}'
+)
+
+
+def test_should_read_us_swatch_stock_and_convert_to_eu():
+    stock = read_magento_swatch(_teamsport_page(_TEAMSPORT_OPTIONS))
+    assert stock.known is True
+    # US {5,9,10.5,12} in stock -> EU {37.5,42.5,44.5,46}; US 8 (EU 41) is offered but
+    # its products array is empty, so it must NOT appear as available.
+    assert stock.sizes == frozenset({"37.5", "42.5", "44.5", "46"})
+    assert "41" not in stock.sizes
+
+
+def test_should_surface_the_owners_son_size_when_teamsport_stocks_it():
+    # The behaviour that matters end-to-end: a boot teamsport has in US 5 must be reported
+    # in stock as EU 37.5, because that is the size the hunt is written in.
+    page = _teamsport_page('{"id":"1","label":"5","products":["111"]}')
+    assert extract_size_stock(page).sizes == frozenset({"37.5"})
+
+
+def test_should_refuse_to_read_the_swatch_when_no_size_system_is_declared():
+    # Without the `US izmēri` label the numbers could be US or UK, which differ by ~a full
+    # size. Reading them anyway would be the confident wrong answer the engine forbids, so
+    # the sizes stay unknown rather than being taken as either system.
+    page = _teamsport_page(_TEAMSPORT_OPTIONS, system_label="Izmēri")
+    assert read_magento_swatch(page).known is False
+    assert extract_size_stock(page).known is False
+
+
+def test_should_refuse_a_youth_ladder_rather_than_read_it_on_the_mens_table():
+    # teamsport prints the SAME `US izmēri` label over youth sizes (a trailing `Y`), but
+    # youth US and men's US are different ladders. The reader must not place a youth boot on
+    # the men's table: youth `5,5Y` is really ~EU 37.5 (the son's size), while the men's
+    # `5,5` this table knows is EU 38 — so a men's reading would be wrong by a rung at
+    # exactly the size that matters. The whole swatch is refused (unknown), not partly read.
+    mens_twin_eu = us_to_eu("5.5", "nike")  # what the men's ladder WOULD say for a bare 5.5
+    page = _teamsport_page(
+        '{"id":"1","label":"3,5Y","products":[]},'
+        '{"id":"2","label":"5,5Y","products":["222"]},'
+        '{"id":"3","label":"6,5Y","products":[]}'
+    )
+    stock = read_magento_swatch(page)
+    assert stock.known is False
+    # It must not have leaked the men's-twin EU size for the youth label it saw in stock.
+    assert mens_twin_eu not in stock.sizes
+    assert extract_size_stock(page).known is False
+
+
+def test_should_refuse_a_mixed_swatch_if_any_size_is_youth_marked():
+    # A defensive case: even a swatch that mixes a placeable men's size with a youth one is
+    # refused wholesale, so no men's sizes are surfaced from a page that is really a youth
+    # boot. Placing the men's ones and dropping the youth ones would still mislabel the boot.
+    page = _teamsport_page(
+        '{"id":"1","label":"9","products":["222"]},'
+        '{"id":"2","label":"5,5Y","products":["333"]}'
+    )
+    assert read_magento_swatch(page).known is False
+
+
+def test_should_drop_a_us_size_outside_the_recorded_ladder_rather_than_guess():
+    # A label the Nike ladder does not contain (99) is dropped, not mapped to a nearest EU
+    # size — but the sizes it can place are still read.
+    page = _teamsport_page(
+        '{"id":"1","label":"9","products":["222"]},'
+        '{"id":"2","label":"99","products":["999"]}'
+    )
+    stock = read_magento_swatch(page)
+    assert stock.sizes == frozenset({"42.5"})
+
 
 # The shape futbola-apavi.lv (OpenCart, vs-design theme) renders: a radio "box" per size,
 # with the quantity on the input and the size as the label's own text.

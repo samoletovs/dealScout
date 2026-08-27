@@ -1,0 +1,76 @@
+# Foot-size conversion ladders, US -> EU, per brand.
+#
+# Why this file exists
+# --------------------
+# Most sources here state EU sizes, the dialect the whole engine speaks. teamsport.lv is
+# the exception: it is Nike's official Latvian distributor and its product pages label the
+# size selector `US izmēri` ("US sizes") and list the ladder in US numbers — 5 .. 12.5.
+# Read as EU those numbers are nonsense (EU starts at 35); read as US they are exactly a
+# Nike men's ladder. Converting at the collector boundary lets teamsport contribute exact
+# per-size stock in the same EU terms as every other source, so nothing downstream has to
+# know it speaks another dialect.
+#
+# Why the conversion is safe to hard-code, and where it is *not*
+# -------------------------------------------------------------
+# US and UK differ by ~a full size, so guessing the wrong one would tell the owner a boot
+# is in his son's size when it is not — the one mistake this engine must never make. The
+# system is therefore never inferred: a reader converts a size only when the page itself
+# names the system (teamsport prints `US izmēri`), and only for a brand whose ladder is
+# recorded here. A page that states a system this file has no table for yields `unknown`,
+# not a guess. See dealscout.sizeconvert.
+#
+# Provenance
+# ----------
+# The Nike ladder below is Nike's own, lifted from the size chart embedded in
+# https://www.nike.com/size-fit/mens-footwear (the `mens_footwear_us` and `size_eu` rows
+# of its __NEXT_DATA__ payload), 2026-08-27. It is the men's footwear ladder — the one
+# teamsport's football boots use — and it decides the owner's son's size: Nike EU 37.5 is
+# US 5, the smallest rung, which is why teamsport's ladders bottom out there.
+#
+# The men's ladder is NOT the only one on the shop, only the only one on the boots
+# ----------------------------------------------------------------------------------
+# teamsport prints the *same* `US izmēri` label over a *different* ladder for youth shoes:
+# its Star Runner 4 GS (a running shoe) lists `3,5Y  5,5Y  6,5Y` — Nike's youth/child
+# ladder, marked with a trailing `Y`. Youth US and men's US diverge exactly where it hurts
+# here: youth `5.5Y` is ~EU 37.5 while men's `5.5` is EU 38, and EU 37.5 is the son's size.
+# This file deliberately does NOT carry the youth ladder, because teamsport's football-boot
+# catalogue is adult-only today, so nothing to buy needs it. The reader
+# (dealscout.variants.read_magento_swatch) refuses any `Y`-marked label outright rather than
+# place it on the men's table — so if teamsport ever stocks a junior Elite, it yields
+# `unknown` (a safe non-answer) instead of a confident wrong size. Add a `youth` ladder here
+# and teach the reader to select it before removing that refusal.
+#
+# This is a season-independent physical conversion, not a catalogue snapshot, so it rots
+# far more slowly than data/football_boots.yaml — but `last_verified` is kept so a future
+# reader can see how old the primary-source check is.
+
+last_verified: "2026-08-27"
+
+brands:
+  nike:
+    source: "https://www.nike.com/size-fit/mens-footwear (mens footwear chart)"
+    # US label -> EU label. US labels are the plain numbers teamsport prints (a decimal
+    # point here; the reader folds the European decimal comma "10,5" to "10.5" first).
+    us_to_eu:
+      "3.5": "35.5"
+      "4": "36"
+      "4.5": "36.5"
+      "5": "37.5"
+      "5.5": "38"
+      "6": "38.5"
+      "6.5": "39"
+      "7": "40"
+      "7.5": "40.5"
+      "8": "41"
+      "8.5": "42"
+      "9": "42.5"
+      "9.5": "43"
+      "10": "44"
+      "10.5": "44.5"
+      "11": "45"
+      "11.5": "45.5"
+      "12": "46"
+      "12.5": "47"
+      "13": "47.5"
+      "13.5": "48"
+      "14": "48.5"
