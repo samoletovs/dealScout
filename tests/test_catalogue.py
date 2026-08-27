@@ -256,3 +256,51 @@ def test_a_data_file_can_teach_a_new_brand_without_touching_code(tmp_path):
     assert catalogue is not None
     assert catalogue.classify("Acme Rocket Supreme FG").tier == ADULT_FLAGSHIP
     assert catalogue.classify("Acme Rocket Basic FG").tier == TAKEDOWN
+
+
+# ------------------------------------------------- a generation newer than this file
+
+
+def _gen(title: str, brand: str = "adidas"):
+    return classify(title, CATEGORY, brand, None)
+
+
+def test_a_generation_newer_than_the_catalogue_should_not_be_called_the_oldest_one():
+    """Found in a live email: "Copa Pure IV Elite ... discontinued generation (2022)".
+
+    `copa pure` is listed as the 2022 original, and being a prefix of every later name
+    it answered for all of them. The failure direction is the bad one — it argues the
+    owner out of a current boot — and it arrives silently on the day adidas ships a
+    number this file has not seen.
+    """
+    boot = _gen("adidas Copa Pure IV Elite FG Chaos vs Control Kids")
+
+    assert boot.year is None
+    assert not boot.status
+
+
+def test_that_boot_should_still_be_classified_as_a_flagship():
+    """Only the generation claim is withdrawn; the tier is read from the title and stands."""
+    assert _gen("adidas Copa Pure IV Elite FG Chaos vs Control Kids").tier == JUNIOR_FLAGSHIP
+
+
+def test_a_generation_the_catalogue_does_know_should_be_unaffected():
+    known = _gen("adidas Copa Pure III Elite FG")
+
+    assert str(known.generation) == "3"
+    assert known.year == 2024
+    assert known.status == "current"
+
+
+def test_an_unnumbered_title_should_still_match_the_unnumbered_generation():
+    """The 2022 Copa Pure really is the one with no number, so it must keep answering."""
+    original = _gen("adidas Copa Pure Elite FG")
+
+    assert original.year == 2022
+    assert original.status == "discontinued"
+
+
+def test_a_named_generation_without_a_number_should_still_match():
+    """Regression guard: `predator accuracy` and `phantom gx` are names, not catch-alls."""
+    assert _gen("adidas Predator Accuracy+ FG").year == 2023
+    assert _gen("Nike Phantom GX Elite FG", brand="Nike").year == 2023

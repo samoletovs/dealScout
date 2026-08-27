@@ -582,3 +582,27 @@ cases:
     expected:
       band: reject
       attrs: { silo: future, soleplate: FG }
+
+  - id: boots-generation-newer-than-the-catalogue
+    note: >-
+      Found in a live email: "Copa Pure IV Elite ... discontinued generation (2022)".
+      The unnumbered `copa pure` entry is a prefix of every later name, so it answered
+      for all of them and reported a boot newer than this file as three-year-old
+      clearance. The tier is still read from the title and pinned here; only the
+      generation claim is withdrawn. `generation_status` is absent from the pinned
+      attributes on purpose — the point of the case is that no status is asserted.
+    hunt: boots-junior
+    product:
+      title: "adidas Copa Pure IV Elite FG Chaos vs Control Kids"
+      category: football_boots
+      brand: adidas
+      price: 94
+      reference_price: null
+      currency: EUR
+      url: "https://example.com/adidas-copa-pure-iv-elite-kids"
+      source: example.com
+      sizes: ["@wanted"]
+      sizes_known: true
+    expected:
+      band: good
+      attrs: { tier: junior-flagship, soleplate: FG, silo: copa, generation_status: null, generation_year: null }
