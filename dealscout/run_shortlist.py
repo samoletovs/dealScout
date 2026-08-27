@@ -23,8 +23,10 @@ import sys
 from dataclasses import dataclass, replace
 from pathlib import Path
 
+from . import rrpcache
 from .collector import enrich_all
 from .config import load_config
+from .confirm import newly_readable, plan_confirmations
 from .feedback import downvoted_urls
 from .hunt import judge_hunt
 from .models import Hunt, Product
@@ -63,6 +65,20 @@ def delivery_table(config: dict) -> dict[str, Delivery]:
     return table
 
 
+def size_unreadable_sources(config: dict) -> frozenset[str]:
+    """Sources documented (in SOURCES.md, mirrored here) as unable to state per-size stock.
+
+    A config fact, not a statistic: these shops fill their size table from a separate API
+    the page never carries, so a confirmation slot spent there *for a size* can never pay
+    off. Kept in config rather than code so it is one line to revisit, and paired with a
+    run-time guard (:func:`confirm.newly_readable`) so the day a shop starts publishing
+    sizes is noticed rather than skipped forever.
+    """
+    scrape = config.get("scrape") or {}
+    raw = scrape.get("size_unreadable_sources") or ()
+    return frozenset(str(s).lower().removeprefix("www.") for s in raw if str(s).strip())
+
+
 def _uncapped(hunt: Hunt) -> Hunt:
     """The same hunt with the price ceiling lifted, for comparison rather than alerting.
 
@@ -92,7 +108,12 @@ class ShortlistResult:
 
 
 async def shortlist_for(
-    hunt: Hunt, config: dict, limit: int, per_source: int, rejected: frozenset[str] = frozenset()
+    hunt: Hunt,
+    config: dict,
+    limit: int,
+    per_source: int,
+    rejected: frozenset[str] = frozenset(),
+    rrp_memory: dict[str, float] | None = None,
 ) -> ShortlistResult:
     """Scout, judge without the price ceiling, and rank into two ranked lists."""
     vocab = merge_vocab(config.get("vocabulary"))
@@ -101,24 +122,43 @@ async def shortlist_for(
     # A single-brand shop leaves its own brand out of its product names; restore it before
     # judging, or `brands_only` rejects the entire storefront.
     candidates = stamp_house_brands(candidates, table)
+    # An RRP is a season-scale fact, so a boot confirmed before need not spend a slot
+    # re-learning its list price. Fill missing RRPs from memory first (a live RRP always
+    # wins), which frees confirmation slots for boots that still owe a size.
+    if rrp_memory:
+        candidates = rrpcache.apply(candidates, rrp_memory)
     open_hunt = _uncapped(hunt)
 
     scrape = config.get("scrape") or {}
     delay = float(scrape.get("delay_seconds", 1.0))
     confirm_limit = int(scrape.get("max_confirmations", 25))
+    unreadable = size_unreadable_sources(config)
 
     # Same triage as the hunt: judge on what the listing said, then re-read the product
     # pages of the survivors that still owe us a size or an RRP. A shortlist sorted on
     # unconfirmed sizes would be the wrong list entirely.
-    keep = {p.url for p in candidates if judge_hunt(p, open_hunt, vocab).is_deal}
-    to_confirm = [
-        p for p in candidates if p.url in keep and (not p.sizes_known or p.reference_price is None)
-    ][:confirm_limit]
+    #
+    # Which survivors, and in what order, is the confirmation budget's whole problem: there
+    # are far more unresolved boots than slots. `plan_confirmations` skips a slot a
+    # size-unreadable source could never repay and orders the rest cheapest-first, because
+    # resolving a cheap boot's size is what actually promotes it into the confirmed list.
+    kept_urls = {p.url for p in candidates if judge_hunt(p, open_hunt, vocab).is_deal}
+    keepers = [p for p in candidates if p.url in kept_urls]
+    to_confirm = plan_confirmations(keepers, confirm_limit, unreadable)
     if to_confirm:
         logger.info("hunt %s: confirming %d product(s)", hunt.id, len(to_confirm))
         confirmed_pages = {p.url: p for p in await enrich_all(to_confirm, delay)}
         candidates = [confirmed_pages.get(p.url, p) for p in candidates]
         _log_confirmation_payoff(hunt.id, to_confirm, confirmed_pages)
+        # A skipped-forever source is exactly the silent rot this project fights. If one we
+        # declared unreadable answered a size after all, say so, so the config is revisited.
+        for source in newly_readable(to_confirm, confirmed_pages, unreadable):
+            logger.warning(
+                "hunt %s: %s is marked size-unreadable but returned a size — "
+                "re-check scrape.size_unreadable_sources / SOURCES.md",
+                hunt.id,
+                source,
+            )
 
     kept = [p for p in candidates if judge_hunt(p, open_hunt, vocab).is_deal]
     confirmed, unconfirmed = split_by_size_confidence(kept, hunt)
@@ -257,11 +297,14 @@ async def main(argv: list[str]) -> int:
     if rejected:
         logger.info("%d product(s) previously rejected by 👎 — excluded", len(rejected))
     yield_history = load_yields()
+    rrp_limits = rrpcache.RrpConfig.from_config(config)
+    rrp_stamps = rrpcache.load_stamps(rrp_limits.path)
+    rrp_memory = rrpcache.load(rrp_limits.path)
     sent = 0
     unsent = 0
     for hunt in hunts:
         run = await shortlist_for(
-            hunt, config, DEFAULT_LIMIT, DEFAULT_PER_SOURCE, frozenset(rejected)
+            hunt, config, DEFAULT_LIMIT, DEFAULT_PER_SOURCE, frozenset(rejected), rrp_memory
         )
         confirmed, unconfirmed, checked, coverage = (
             run.confirmed,
@@ -304,6 +347,12 @@ async def main(argv: list[str]) -> int:
             logger.warning("hunt %s: %s", hunt.id, drop.describe())
         yield_history = record(yield_history, seen_now)
 
+        # An RRP the page stated this run is worth keeping: next run, a boot already known
+        # need not spend a confirmation slot re-learning its list price. Re-learning a
+        # cache-filled value is a no-op — `save` preserves each known URL's original
+        # timestamp, so a remembered RRP still expires on its own schedule.
+        rrp_memory = rrpcache.learn(run.kept, rrp_memory)
+
         body = render_shortlist(
             hunt,
             confirmed,
@@ -333,6 +382,9 @@ async def main(argv: list[str]) -> int:
                 unsent += 1
     rewrite_history(prune(history, limits.keep_days, limits.max_points), limits.path)
     save_yields(yield_history)
+    rrpcache.save(
+        rrp_memory, rrp_stamps, keep_days=rrp_limits.keep_days, path=rrp_limits.path
+    )
     logger.info("shortlist complete; %d email(s) sent", sent)
     if unsent:
         # Sending is the point. For the first eight months of this project it was not
