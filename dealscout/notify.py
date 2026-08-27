@@ -42,24 +42,72 @@ def _is_brand_store(brand: str, source: str) -> bool:
     return bool(brand_tokens & source_tokens)
 
 
+_FEEDBACK_UP_STYLE = (
+    "display:inline-block;padding:6px 12px;margin:2px 4px 2px 0;border-radius:16px;"
+    "background:#e7f5ec;color:#0a7d33;text-decoration:none;font-size:13px;font-weight:600;"
+)
+_FEEDBACK_DOWN_STYLE = _FEEDBACK_UP_STYLE.replace("#e7f5ec", "#fdecec").replace("#0a7d33", "#c0392b")
+
+
+def _style_feedback_links(html: str) -> str:
+    """Turn the two feedback anchors on each row into small tappable pills.
+
+    In plain text the 👍/👎 links have to be honest full URLs with readable anchor text —
+    there is no smaller way to say a URL a mail client will linkify. In HTML there is: the
+    URL hides behind a fingertip-sized coloured pill, so the row a man reads is the boot and
+    its price, not two hundred characters of query string twice over. The feedback loop is
+    untouched — same links, same votes — only its rendering shrinks.
+    """
+    html = re.sub(
+        r'<a href="([^"]*\bv=up\b[^"]*)">👍[^<]*</a>',
+        lambda m: f'<a href="{m.group(1)}" style="{_FEEDBACK_UP_STYLE}">👍 more like this</a>',
+        html,
+    )
+    html = re.sub(
+        r'<a href="([^"]*\bv=down\b[^"]*)">👎[^<]*</a>',
+        lambda m: f'<a href="{m.group(1)}" style="{_FEEDBACK_DOWN_STYLE}">👎 never again</a>',
+        html,
+    )
+    return html
+
+
+_EMAIL_STYLE = (
+    "body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.5;"
+    "max-width:640px;margin:0 auto;padding:8px;color:#1a1a1a;}"
+    "h1{font-size:20px;margin:0 0 4px;}"
+    "h2{font-size:16px;margin:20px 0 6px;padding-bottom:4px;border-bottom:1px solid #eee;}"
+    "ul{list-style:none;padding:0;margin:0;}"
+    "li{padding:10px 0;border-bottom:1px solid #f0f0f0;}"
+    "li strong:first-child{font-size:15px;}"
+    "table{border-collapse:collapse;width:100%;font-size:13px;}"
+    "th,td{padding:4px 8px;border-bottom:1px solid #eee;text-align:left;}"
+    "em{color:#666;font-size:13px;}"
+)
+
+
 def markdown_to_html(body: str) -> str | None:
     """Render a markdown email body to HTML, or None if markdown isn't available.
 
-    Attached as an alternative so 👍/👎 feedback links render as clickable buttons —
-    plain-text ``mailto:`` links aren't reliably clickable outside Gmail.
+    The HTML is what the owner actually sees in his mail client, so it earns its own
+    treatment rather than being a bare render of the text. Two things it does that the
+    plain text cannot: it collapses each row's 👍/👎 feedback links — enormous URLs, two
+    per row — into fingertip-sized coloured pills, and it gives the shortlist a card-like
+    stylesheet so the price he decides on leads each row visually. The stylesheet lives in
+    ``<head>`` for the clients that honour it, and the feedback pills carry inline styles
+    besides, because those are the one element that must render tappable everywhere.
 
-    ``tables`` is not on by default in Python-Markdown, and without it a pipe table
-    reaches the reader as a paragraph of literal ``|`` characters — which is how the
-    shortlist's per-source breakdown would arrive on a phone.
+    ``tables`` is not on by default in Python-Markdown, and without it a pipe table reaches
+    the reader as a paragraph of literal ``|`` characters — which is how the shortlist's
+    per-source breakdown would arrive on a phone.
     """
     if _markdown is None:
         return None
     rendered = _markdown.markdown(body, extensions=["tables"])
+    rendered = _style_feedback_links(rendered)
     return (
-        "<!DOCTYPE html><html><body style=\"font-family:system-ui,-apple-system,"
-        "'Segoe UI',Roboto,sans-serif;line-height:1.5;max-width:640px;margin:0 auto;"
-        "padding:8px;\">"
-        f"{rendered}</body></html>"
+        "<!DOCTYPE html><html><head><meta charset=\"utf-8\">"
+        "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
+        f"<style>{_EMAIL_STYLE}</style></head><body>{rendered}</body></html>"
     )
 
 
@@ -126,14 +174,28 @@ _CHANGE_BADGE = {
 
 _ATTR_ORDER = ("tier", "soleplate", "silo", "plate", "fit")
 
-# What each tier means in words the owner can act on. The junior gloss is the reason this
-# exists: a €130 junior Elite and a €280 adult Elite are both truthfully "Elite", and
-# printing that word alone lets the cheaper one read as the bargain of the year.
-_TIER_LABEL = {
-    "adult-flagship": "**adult flagship**",
-    "junior-flagship": "**junior flagship** — top of the junior range, comfort-tuned "
-    "plate, not adult construction",
+# The tier is split in two on purpose. The *label* names which flagship this is and belongs
+# on every row — a €130 junior Elite and a €280 adult Elite are both truthfully "Elite", and
+# printing that word alone lets the cheaper one read as the bargain of the year. The *gloss*
+# is the sentence that says *why* the junior label matters; it is genuinely good writing and
+# genuinely worth reading — once. Repeated on twenty rows it stops being read and becomes
+# 11% of the email saying the same thing over and over, so the shortlist prints it in a
+# legend keyed to the tiers actually present and the rows carry the label alone.
+_TIER_SHORT = {
+    "adult-flagship": "adult flagship",
+    "junior-flagship": "junior flagship",
     "takedown": "takedown — not the flagship",
+}
+
+_TIER_GLOSS = {
+    "junior-flagship": "top of the junior range, comfort-tuned plate, not adult construction",
+}
+
+# Retained with the gloss folded in for the store-grouped hunt report (render_hunt_report),
+# whose rows are few and whose readers rely on the inline explanation.
+_TIER_LABEL = {
+    key: (f"**{short}** — {_TIER_GLOSS[key]}" if key in _TIER_GLOSS else f"**{short}**")
+    for key, short in _TIER_SHORT.items()
 }
 
 _STATUS_LABEL = {
@@ -144,21 +206,57 @@ _STATUS_LABEL = {
 }
 
 
-def tier_phrase(attrs: dict) -> str:
+def tier_phrase(attrs: dict, *, gloss: bool = True) -> str:
     """Say which flagship this is, and how old — or say nothing.
 
     Silent for an unknown tier: the row already carries a "verify on click" caveat in
     that case, and inventing a label would be the confident-wrong answer the catalogue
     exists to prevent.
+
+    With ``gloss=False`` the label alone is used (e.g. "**junior flagship**"), for the
+    shortlist where the explanatory sentence lives once in a legend rather than on every
+    row. ``gloss=True`` folds the sentence in, for the store-grouped hunt report.
+
+    The generation phrase is also tightened here: "current generation (2024)" reads on a
+    phone as just "2024", so a *current* generation is quoted as the bare year, and only a
+    superseded/discontinued one spends words on the qualifier that changes the decision.
     """
-    label = _TIER_LABEL.get(str(attrs.get("tier") or ""))
+    tier = str(attrs.get("tier") or "")
+    label = _TIER_LABEL.get(tier) if gloss else (
+        f"**{_TIER_SHORT[tier]}**" if tier in _TIER_SHORT else None
+    )
     if not label:
         return ""
-    status = _STATUS_LABEL.get(str(attrs.get("generation_status") or ""))
-    if not status:
-        return label
+    status = str(attrs.get("generation_status") or "")
     year = attrs.get("generation_year")
-    return f"{label} · {status}{f' ({year})' if year else ''}"
+    if not gloss:
+        # Compact form for the shortlist row.
+        if status == "current":
+            return f"{label} · {year}" if year else label
+        status_word = _STATUS_LABEL.get(status)
+        if not status_word:
+            return label
+        return f"{label} · {status_word}{f' ({year})' if year else ''}"
+    status_word = _STATUS_LABEL.get(status)
+    if not status_word:
+        return label
+    return f"{label} · {status_word}{f' ({year})' if year else ''}"
+
+
+def tier_legend(attrs_seen: list[dict]) -> str:
+    """The one-time gloss for whatever tiers appeared, or '' when none needs explaining.
+
+    Printed once beneath the shortlist so the label on each row means something the first
+    time it is read, without the sentence being repeated twenty times. Only tiers that are
+    actually present and actually have a gloss are named, so an all-adult week says nothing.
+    """
+    tiers = {str(a.get("tier") or "") for a in attrs_seen}
+    parts = [
+        f"**{_TIER_SHORT[t]}** = {_TIER_GLOSS[t]}"
+        for t in ("junior-flagship", "adult-flagship", "takedown")
+        if t in tiers and t in _TIER_GLOSS
+    ]
+    return " · ".join(parts)
 
 
 def price_memory_phrase(memory: PriceMemory | None) -> str:
@@ -307,6 +405,67 @@ def short_note(note: str) -> str:
     return text[: NOTE_LIMIT - 1].rstrip(" ,;.—-") + "…"
 
 
+def _row_facts(
+    product: Product,
+    hunt: Hunt,
+    table: dict[str, Delivery],
+    attrs: dict,
+    memory: PriceMemory | None,
+) -> dict:
+    """Structured facts for one boot, so plain text and HTML render the same truths.
+
+    The row is reduced to what a man decides on in thirty seconds on a phone: what it is,
+    what it costs him *delivered*, how real the discount is, whether it is his son's size,
+    and where from. The machine attribute chain (silo/fit) is dropped — the tier label and
+    the size already carry the decision, and "f50 · junior" is output nobody buys on.
+    """
+    delivery = delivery_for(product.source, table)
+    total = landed_cost(product, delivery)
+    postage = total - product.price
+
+    if postage > 0:
+        cost_note = f"€{product.price:.0f} + €{postage:.0f} delivery"
+    elif delivery.pickup:
+        cost_note = "collect in Rīga"
+    else:
+        cost_note = ""
+
+    ref = product.reference_price
+    discount = ""
+    if ref and ref > product.price:
+        discount = f"€{ref:.0f} → €{product.price:.0f}, −{round(100 * (1 - product.price / ref))}%"
+
+    sizes = matched_sizes(product, hunt)
+    if sizes:
+        size = f"EU {', '.join(sizes)} in stock"
+        size_confirmed = True
+    elif product.sizes:
+        size = f"lists EU {', '.join(sorted(product.sizes)[:10])}"
+        size_confirmed = False
+    else:
+        size = ""
+        size_confirmed = False
+
+    where = delivery.label or product.source
+    if delivery.pickup:
+        where += " · 🏬 try on"
+    if delivery.note:
+        where += f" · {short_note(delivery.note)}"
+
+    return {
+        "title": product.title,
+        "url": product.url,
+        "total": total,
+        "cost_note": cost_note,
+        "discount": discount,
+        "memory": price_memory_phrase(memory),
+        "tier": tier_phrase(attrs, gloss=False),
+        "size": size,
+        "size_confirmed": size_confirmed,
+        "where": where,
+    }
+
+
 def _shortlist_row(
     product: Product,
     hunt: Hunt,
@@ -316,53 +475,39 @@ def _shortlist_row(
     base_url: str = "",
     memory: PriceMemory | None = None,
 ) -> str:
-    """One shortlist entry: landed cost first, because that is the number being compared."""
-    delivery = delivery_for(product.source, table)
-    total = landed_cost(product, delivery)
-    postage = total - product.price
+    """One shortlist entry in plain text: landed cost first, then only what he decides on.
 
-    head = f"**{rank}. [{product.title}]({product.url}) — €{total:.0f}**"
-    if postage > 0:
-        head += f" _(€{product.price:.0f} + €{postage:.0f} delivery)_"
-    elif delivery.pickup:
-        head += " _(collect in Rīga)_"
+    Two short lines, not five. Line one is the boot and its delivered price; line two is
+    the reason to trust the deal, his son's size, and where from. Feedback stays as honest
+    tappable URLs — plain text has no smaller way to say them — but the facts around them
+    no longer bury them.
+    """
+    f = _row_facts(product, hunt, table, attrs, memory)
+    head = f"**{rank}. [{f['title']}]({f['url']}) — €{f['total']:.0f}**"
+    if f["cost_note"]:
+        head += f" _({f['cost_note']})_"
 
-    facts: list[str] = []
-    ref = product.reference_price
-    if ref and ref > product.price:
-        facts.append(f"RRP €{ref:.0f}, **-{round(100 * (1 - product.price / ref))}%**")
-    # Straight after the retailer's own discount claim, because this is the line that
-    # says whether that claim means anything.
-    remembered = price_memory_phrase(memory)
-    if remembered:
-        facts.append(remembered)
-    said = tier_phrase(attrs)
-    if said:
-        facts.append(said)
-    spec = _spec_bits(attrs, bool(said))
-    if spec:
-        facts.append(" · ".join(spec))
+    what: list[str] = []
+    if f["tier"]:
+        what.append(f["tier"])
+    if f["size"]:
+        what.append(f"**{f['size']}**" if f["size_confirmed"] else f["size"])
+    what.append(f["where"])
 
-    sizes = matched_sizes(product, hunt)
-    if sizes:
-        facts.append(f"in stock: **EU {', '.join(sizes)}**")
-    elif product.sizes:
-        # The unconfirmed list: show what the shop does publish, so the reader can judge.
-        offered = sorted(product.sizes)[:10]
-        facts.append(f"sizes listed: {', '.join(offered)}")
+    deal: list[str] = []
+    if f["discount"]:
+        deal.append(f"**{f['discount']}**")
+    if f["memory"]:
+        deal.append(f["memory"])
 
-    facts.append(delivery.label or product.source)
-    if delivery.pickup:
-        facts.append("🏬 try on before buying")
-    if delivery.note:
-        facts.append(short_note(delivery.note))
-
-    line = f"- {head}\n  - " + " · ".join(facts)
+    lines = [f"- {head}", "  - " + " · ".join(what)]
+    if deal:
+        lines.append("  - " + " · ".join(deal))
     if base_url:
         up = feedback_link(base_url, product.url, "up")
         down = feedback_link(base_url, product.url, "down")
-        line += f" · [👍]({up}) [👎]({down})"
-    return line
+        lines.append(f"  - seen it? [👍 yes, more like this]({up}) · [👎 no, never again]({down})")
+    return "\n".join(lines)
 
 
 def _coverage_block(
@@ -492,10 +637,12 @@ def render_shortlist(
     )
 
     lines.append(f"## ✅ Confirmed in your size — {len(confirmed)}")
+    seen_attrs: list[dict] = []
     if confirmed:
         lines.append("_The shop states these are in stock in a size you want._\n")
         for i, product in enumerate(confirmed, 1):
             attrs = resolve_attrs(product, hunt, vocab)
+            seen_attrs.append(attrs)
             lines.append(
                 _shortlist_row(
                     product,
@@ -516,6 +663,7 @@ def render_shortlist(
         lines.append(_unconfirmed_note(unconfirmed, table) + "\n")
         for i, product in enumerate(unconfirmed, 1):
             attrs = resolve_attrs(product, hunt, vocab)
+            seen_attrs.append(attrs)
             lines.append(
                 _shortlist_row(
                     product,
@@ -530,6 +678,13 @@ def render_shortlist(
     else:
         lines.append("_Nothing to verify this run._")
     lines.append("")
+
+    # The tier gloss, once, keyed to the tiers that actually appeared — so the label on
+    # each row means something the first time it is read, instead of the sentence being
+    # repeated on every one of twenty rows.
+    legend = tier_legend(seen_attrs)
+    if legend:
+        lines.append(f"_{legend}._\n")
 
     if coverage:
         lines.extend(_coverage_block(coverage, fallen))

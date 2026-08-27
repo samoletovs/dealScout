@@ -5,7 +5,13 @@ from __future__ import annotations
 from dataclasses import replace
 
 from dealscout.models import Hunt, Product, Verdict
-from dealscout.notify import feedback_base_url, markdown_to_html, render_report, render_shortlist
+from dealscout.notify import (
+    feedback_base_url,
+    markdown_to_html,
+    render_report,
+    render_shortlist,
+    tier_legend,
+)
 from dealscout.shortlist import Delivery, SourceCoverage
 
 
@@ -337,3 +343,140 @@ def test_the_size_not_published_note_should_say_all_when_every_shop_is_local():
     )
 
     assert "All of them are in Rīga" in body
+
+
+# --- the redesign: a phone-readable row, and the gloss said once --------------------
+#
+# These pin properties, not phrasing. "The gloss appears at most once" survives any
+# rewording of the gloss; "RRP €220, -61% · cheapest…" did not, and broke on the first
+# rewrite. The trap that cost a regression this week was a fixture that restated a value
+# instead of relating two things — so these relate the count of the gloss to the number of
+# rows, and the size of a row to a phone line, rather than asserting an exact sentence.
+
+GLOSS = "top of the junior range"
+
+
+def _tier_boot(title: str, price: float, source: str, tier: str, *, sizes_known: bool = True) -> Product:
+    """A boot the catalogue has classified, so the tier label and its gloss are in play."""
+    return replace(
+        _boot(title, price, source),
+        attrs={
+            "tier": tier,
+            "generation_status": "current",
+            "generation_year": "2024",
+            "soleplate": "FG",
+            "silo": "f50",
+            "fit": "junior",
+        },
+        sizes_known=sizes_known,
+    )
+
+
+def _junior_shortlist() -> str:
+    junior = [
+        _tier_boot(f"adidas F50 Elite {i} FG", 60.0 + 10 * i, "prodirectsport.ie", "junior-flagship")
+        for i in range(8)
+    ]
+    return render_shortlist(SHORTLIST_HUNT, junior, [], SHORTLIST_TABLE)
+
+
+def test_the_tier_gloss_is_said_at_most_once_however_many_rows_carry_the_label():
+    # The measured bloat: the same sentence appeared on all 15 junior rows, ~11% of the
+    # whole email. It is good writing worth reading once; a legend is where it belongs.
+    body = _junior_shortlist()
+
+    assert body.count("junior flagship") >= 8  # the label is still on every row
+    assert body.count(GLOSS) == 1  # the explanation is not
+
+
+def test_the_gloss_is_silent_when_no_row_needs_explaining():
+    # An all-adult week: "adult flagship" is self-describing, so nothing is glossed.
+    adult = [_tier_boot("adidas Predator Elite FG", 120.0, "komanda.lv", "adult-flagship")]
+    body = render_shortlist(SHORTLIST_HUNT, adult, [], SHORTLIST_TABLE)
+
+    assert GLOSS not in body
+    assert tier_legend([{"tier": "adult-flagship"}]) == ""
+
+
+def test_a_row_no_longer_dumps_the_machine_attribute_chain():
+    # "FG · f50 · junior" is engine output nobody buys on; the tier label and the size
+    # already carry the decision. The silo/fit tokens must not reach the reader — checked
+    # on the fact lines, not the whole body, since a URL slug may legitimately contain them.
+    body = _junior_shortlist()
+
+    for line in _fact_lines(body):
+        assert " · f50" not in line and "· f50 ·" not in line
+        assert " · junior" not in line and "· junior ·" not in line
+
+
+def _fact_lines(body: str) -> list[str]:
+    """The human-facing detail lines of a shortlist: the indented facts under each row,
+    excluding the feedback line, whose URLs are an unavoidable cost paid once per row."""
+    return [
+        ln
+        for ln in body.splitlines()
+        if ln.startswith("  - ") and "feedback" not in ln and "seen it?" not in ln
+    ]
+
+
+def test_no_fact_line_wraps_past_a_couple_of_phone_lines():
+    # A phone shows ~40 chars per line. The old detail line averaged 194 and ran to 223 —
+    # five wrapped lines per boot, twenty times. Cap the fact lines (delivery notes aside)
+    # so a row stays glanceable. The feedback URLs are measured separately; they are the
+    # one thing plain text cannot shrink.
+    junior = [
+        _tier_boot(f"adidas F50 Elite {i} FG", 60.0 + 10 * i, "prodirectsport.ie", "junior-flagship")
+        for i in range(6)
+    ]
+    body = render_shortlist(SHORTLIST_HUNT, junior, [], SHORTLIST_TABLE)
+
+    for line in _fact_lines(body):
+        assert len(line) <= 160, line
+
+
+def test_feedback_links_survive_in_both_plain_text_and_html():
+    # Constraint 2: the 👍/👎 loop must not be lost. Plain text keeps the honest URL;
+    # HTML keeps it too, behind a pill — same link, both ways.
+    junior = [_tier_boot("adidas F50 Elite FG", 62.0, "prodirectsport.ie", "junior-flagship")]
+    base = "https://courier.example.com/api/feedback"
+    body = render_shortlist(SHORTLIST_HUNT, junior, [], SHORTLIST_TABLE, feedback_base_url=base)
+
+    assert body.count(f"({base}?p=dealscout&v=up") == 1
+    assert body.count(f"({base}?p=dealscout&v=down") == 1
+
+    html = markdown_to_html(body)
+    assert html.count("v=up") == 1 and html.count("v=down") == 1
+    assert "👍" in html and "👎" in html
+
+
+def test_html_renders_feedback_as_a_compact_styled_pill_not_a_naked_url():
+    # The HTML is what he actually sees; there the giant URL hides behind a tappable pill.
+    junior = [_tier_boot("adidas F50 Elite FG", 62.0, "prodirectsport.ie", "junior-flagship")]
+    base = "https://courier.example.com/api/feedback"
+    body = render_shortlist(SHORTLIST_HUNT, junior, [], SHORTLIST_TABLE, feedback_base_url=base)
+
+    html = markdown_to_html(body)
+
+    # the pill is a styled anchor, and the URL is an href attribute, not visible text
+    assert "border-radius" in html
+    assert 'style="display:inline-block' in html
+
+
+def test_html_keeps_the_honest_caveats_and_coverage_warnings():
+    # Constraint 1: compress caveats, never delete them. A broken-reader alarm and the
+    # size-not-published note must still reach the HTML reader.
+    coverage = [
+        SourceCoverage("prodirectsport.ie", "Pro:Direct (IE)", count=1, cheapest=62.0, found=3),
+        SourceCoverage("futbola-apavi.lv", "futbola-apavi.lv", count=0, scouted=0),
+    ]
+    body = render_shortlist(
+        SHORTLIST_HUNT,
+        [_tier_boot("adidas F50 Elite FG", 62.0, "prodirectsport.ie", "junior-flagship")],
+        [_unsized("Nike Elite", 89.0, "sportland.lv")],
+        {**SHORTLIST_TABLE, "sportland.lv": Delivery(label="Sportland (Rīga)", pickup=True)},
+        coverage=coverage,
+    )
+    html = markdown_to_html(body)
+
+    assert "Nothing at all from futbola-apavi.lv" in html
+    assert "not per-size stock" in html  # the size-not-published honesty survives
