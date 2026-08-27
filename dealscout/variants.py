@@ -21,6 +21,7 @@ import re
 from dataclasses import dataclass
 from html import unescape
 
+from .sizeconvert import US, us_to_eu
 from .spec import is_eu_size, looks_like_eu, normalise_size
 
 logger = logging.getLogger(__name__)
@@ -193,6 +194,116 @@ def read_variants(rows: list[dict]) -> SizeStock:
     return SizeStock(frozenset(available), True, max(rrps) if rrps else None)
 
 
+# Magento 2's swatch renderer hydrates the size picker from a ``jsonConfig`` blob whose
+# shape is fixed across the platform: an ``attributes`` map keyed by attribute id, each
+# entry carrying a ``code`` (``"size"``), a list of ``options``, and — per option — a
+# ``products`` array. That array is the retailer's own statement of stock: **empty means
+# that size is not available, non-empty means it is**. teamsport.lv (Nike's Latvian
+# distributor) is the case in hand.
+#
+# The catch is that teamsport prints those option labels in **US** sizes, under a selector
+# its markup labels ``US izmēri``. Read as EU they are impossible; read as US they are a
+# Nike men's ladder. So the labels are converted to EU here, but only when the page states
+# the system it is using — inferring US vs UK would risk a confident wrong answer about
+# whether a boot fits (see dealscout.sizeconvert).
+_SIZE_SYSTEM_MARKERS = {
+    # substring found on the page -> (system, brand whose conversion ladder to use)
+    "us izmēri": "us",
+    "us izmeri": "us",  # in case the page is served without Latvian diacritics
+}
+_JSONCONFIG_RE = re.compile(r'"jsonConfig"\s*:\s*(?=\{)')
+
+# Nike prints youth sizes with a trailing ``Y`` on this same shop, under the same
+# ``US izmēri`` label (e.g. the Star Runner 4 GS lists ``3,5Y  5,5Y  6,5Y``). Youth US and
+# men's US are *different* ladders that diverge exactly where it matters: youth ``5.5Y`` is
+# ~EU 37.5 but men's ``5.5`` is EU 38 — and EU 37.5 is the owner's son's size. Reading a
+# youth label on the men's table would be a confident wrong answer at precisely that size.
+# We only carry the men's ladder, so a youth-marked label must be refused explicitly here,
+# not left to be dropped by accident because ``normalise_size`` happens to reject a suffix.
+_YOUTH_SIZE_RE = re.compile(r"\d\s*(?:y|c|k)\b", re.IGNORECASE)
+
+
+def _is_youth_size(label: object) -> bool:
+    """True if a size label is Nike's youth/child ladder (a ``Y``/``C``/``K`` suffix).
+
+    These share teamsport's ``US izmēri`` label with men's sizes but are a distinct ladder
+    this engine does not carry, so they must never be placed on the men's one.
+    """
+    return bool(_YOUTH_SIZE_RE.search(str(label or "")))
+
+
+def _declared_size_system(html: str) -> str | None:
+    """The size system the page states it is using ('us'), or None if it states none.
+
+    teamsport renders ``<div class="size-additional-info">US izmēri</div>`` beside the size
+    swatch. That label is the shop's own statement, and it is the only thing that makes the
+    US numbers safe to convert: without it, a bare ``9`` could be US or UK.
+    """
+    low = html.lower()
+    for marker, system in _SIZE_SYSTEM_MARKERS.items():
+        if marker in low:
+            return system
+    return None
+
+
+def read_magento_swatch(html: str, brand: str = "nike") -> SizeStock:
+    """Per-size stock from a Magento ``jsonConfig`` swatch blob, converting US -> EU.
+
+    Returns empty (``known=False``) unless *both* hold: the page names its size system
+    (so the numbers can be trusted as US), and that system has a recorded conversion for
+    ``brand``. A US size the ladder cannot place is dropped rather than guessed, so a boot
+    is never reported present in a size it isn't.
+    """
+    system = _declared_size_system(html)
+    if system != US:
+        # Either the page states no system, or one we have no ladder for. Reading the raw
+        # numbers as EU would be the confident wrong answer this engine refuses to give.
+        return SizeStock()
+
+    match = _JSONCONFIG_RE.search(html)
+    if not match:
+        return SizeStock()
+    blob = _balanced(html, match.end())
+    if not blob:
+        return SizeStock()
+    try:
+        config = json.loads(blob)
+    except (json.JSONDecodeError, ValueError):
+        return SizeStock()
+
+    available: set[str] = set()
+    placed: list[str] = []  # US labels we could convert — the ones we can actually judge
+    for attribute in (config.get("attributes") or {}).values():
+        if not isinstance(attribute, dict):
+            continue
+        if "size" not in str(attribute.get("code") or "").lower():
+            continue
+        for option in attribute.get("options") or []:
+            if not isinstance(option, dict):
+                continue
+            label = option.get("label")
+            if _is_youth_size(label):
+                # A youth ladder shares the ``US izmēri`` label with men's but converts
+                # differently, and we carry only the men's table. Refuse the whole swatch
+                # rather than place some sizes and silently drop the youth ones: a partial
+                # men's reading of a youth boot is the wrong answer at the son's size.
+                return SizeStock()
+            eu = us_to_eu(label, brand)
+            if not eu:
+                # A label outside the recorded ladder (or not a size at all): dropping it
+                # is safer than inventing a nearest EU size.
+                continue
+            placed.append(eu)
+            # In Magento's swatch config a size with no purchasable variant carries an
+            # empty ``products`` array; a non-empty one lists the buyable simple product(s).
+            if option.get("products"):
+                available.add(eu)
+
+    if not placed:
+        return SizeStock()
+    return SizeStock(frozenset(available), True, None)
+
+
 def extract_size_stock(html: str) -> SizeStock:
     """Best per-size stock reading for a product page (empty when the page is silent).
 
@@ -200,6 +311,13 @@ def extract_size_stock(html: str) -> SizeStock:
     reading that labels the most sizes: a page often carries several, and the richest one
     is the size picker.
     """
+    # A Magento swatch blob is checked first: teamsport's states US sizes the generic
+    # readers below would (correctly) reject as non-EU, so without this the shop yields
+    # nothing. It self-guards to the declared-system case, so it is silent elsewhere.
+    swatch = read_magento_swatch(html)
+    if swatch.known:
+        return swatch
+
     best = SizeStock()
     for rows in find_variant_arrays(_deescape(html)):
         found = read_variants(rows)
