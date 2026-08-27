@@ -11,6 +11,7 @@ from dealscout.notify import (
     render_report,
     render_shortlist,
     tier_legend,
+    year_legend,
 )
 from dealscout.shortlist import Delivery, SourceCoverage
 
@@ -370,6 +371,62 @@ def _tier_boot(title: str, price: float, source: str, tier: str, *, sizes_known:
         },
         sizes_known=sizes_known,
     )
+
+
+def _boot_with_generation(status: str, year: str, tier: str = "adult-flagship") -> Product:
+    return replace(
+        _tier_boot(f"adidas Predator {status} FG", 120.0, "komanda.lv", tier),
+        attrs={
+            "tier": tier,
+            "generation_status": status,
+            "generation_year": year,
+            "soleplate": "FG",
+        },
+    )
+
+
+def test_a_current_generation_is_not_rendered_indistinguishably_from_a_superseded_one():
+    # The row prints a *current* generation as the bare year and spells out a superseded
+    # one. Put both in the same email at the same year and two rows read "2024" — one
+    # current, one not. When that can happen, the email must carry the rule that tells
+    # them apart, or the best stock silently reads as two years old and gets skipped.
+    current = replace(
+        _boot_with_generation("current", "2024", "junior-flagship"),
+        url="https://prodirectsport.ie/current",
+    )
+    superseded = replace(
+        _boot_with_generation("superseded", "2024", "adult-flagship"),
+        url="https://komanda.lv/superseded",
+    )
+    body = render_shortlist(SHORTLIST_HUNT, [current, superseded], [], SHORTLIST_TABLE)
+
+    # Both years are on the page...
+    assert "2024" in body
+    # ...so the disambiguating rule must be too: a reader cannot otherwise tell a bare
+    # year (current) from the spelled-out "superseded generation (2024)".
+    assert year_legend([current.attrs, superseded.attrs]) != ""
+    assert year_legend([current.attrs, superseded.attrs]) in body
+
+
+def test_the_year_rule_is_silent_when_no_bare_year_can_appear():
+    # If nothing current-with-a-year is shown, no bare year is emitted, so naming the
+    # rule would spend attention explaining a form the reader never meets.
+    superseded = _boot_with_generation("superseded", "2022")
+    body = render_shortlist(SHORTLIST_HUNT, [superseded], [], SHORTLIST_TABLE)
+
+    assert year_legend([superseded.attrs]) == ""
+    assert "year on its own" not in body
+
+
+def test_the_year_rule_is_said_at_most_once():
+    # Like the tier gloss: it is a legend, not a per-row note.
+    junior = [
+        _tier_boot(f"adidas F50 Elite {i} FG", 60.0 + 10 * i, "prodirectsport.ie", "junior-flagship")
+        for i in range(8)
+    ]
+    body = render_shortlist(SHORTLIST_HUNT, junior, [], SHORTLIST_TABLE)
+
+    assert body.count("year on its own means the current generation") == 1
 
 
 def _junior_shortlist() -> str:

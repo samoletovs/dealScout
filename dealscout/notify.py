@@ -259,6 +259,25 @@ def tier_legend(attrs_seen: list[dict]) -> str:
     return " · ".join(parts)
 
 
+def year_legend(attrs_seen: list[dict]) -> str:
+    """The one-time rule for reading a bare model year, or '' when no bare year appears.
+
+    The shortlist quotes a *current* generation as the bare year and spells out only
+    superseded/discontinued ones. That is unambiguous to the writer and silent to the
+    reader: two rows can show ``2024``, one current and one superseded, and in a later
+    year a bare ``2024`` reads as "two years old" — the opposite of "current" — so the
+    best stock in the list is the row it makes look stale. This names the rule once, but
+    only when a bare year is actually on the page; an all-superseded week says nothing.
+    """
+    has_bare_year = any(
+        str(a.get("generation_status") or "") == "current" and a.get("generation_year")
+        for a in attrs_seen
+    )
+    if not has_bare_year:
+        return ""
+    return "a year on its own means the current generation; older ones say so"
+
+
 def price_memory_phrase(memory: PriceMemory | None) -> str:
     """Where this price sits against what the product has actually sold for — or nothing.
 
@@ -685,6 +704,10 @@ def render_shortlist(
     legend = tier_legend(seen_attrs)
     if legend:
         lines.append(f"_{legend}._\n")
+
+    year_note = year_legend(seen_attrs)
+    if year_note:
+        lines.append(f"_{year_note}._\n")
 
     if coverage:
         lines.extend(_coverage_block(coverage, fallen))
