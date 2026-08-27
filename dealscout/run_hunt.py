@@ -44,6 +44,16 @@ logging.basicConfig(
 )
 logger = logging.getLogger("dealscout.hunt")
 
+
+class EmailNotDelivered(RuntimeError):
+    """Findings were made but could not be sent, so the run reached nobody."""
+
+    def __init__(self, findings: int) -> None:
+        super().__init__(
+            f"{findings} find(s) could not be emailed - the run produced nothing a human sees"
+        )
+        self.findings = findings
+
 Result = tuple[Product, Verdict, Change | None]
 
 
@@ -164,21 +174,31 @@ async def run(config_path: Path, only: str = "") -> dict[str, list[Result]]:
     total = sum(len(v) for v in findings.values())
     if total:
         subject = f"dealScout: {total} new find(s)"
-        await send_email(subject, "\n\n---\n\n".join(sections))
+        if not await send_email(subject, "\n\n---\n\n".join(sections)):
+            # This ran twice a day for months and never reached anybody: the courier
+            # secrets were unset, so `send_email` logged a warning and returned False,
+            # and this line discarded it. The workflow then exited 0 and GitHub drew a
+            # green tick. Finding boots nobody is told about is not a successful run.
+            raise EmailNotDelivered(total)
     else:
         logger.info("nothing new across %d hunt(s) — staying quiet", len(hunts))
     return findings
 
 
-def main() -> None:
+def main() -> int:
     """CLI entrypoint. Uses config.local.yaml if present, else config.example.yaml."""
     config_path = Path("config.local.yaml")
     if not config_path.exists():
         config_path = Path("config.example.yaml")
         logger.info("config.local.yaml not found — using %s", config_path)
     only = sys.argv[1] if len(sys.argv) > 1 else ""
-    asyncio.run(run(config_path, only))
+    try:
+        asyncio.run(run(config_path, only))
+    except EmailNotDelivered as undelivered:
+        logger.error("%s", undelivered)
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

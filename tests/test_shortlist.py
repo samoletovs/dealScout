@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 from dealscout.models import Hunt, Product
 from dealscout.shortlist import (
     Delivery,
@@ -282,3 +284,83 @@ def test_should_fall_back_to_the_default_sizes_for_an_unlisted_brand():
     boot = _boot("Mizuno Morelia Neo", 90.0, "x", sizes=("37", "37.33"), sizes_known=True,
                  brand="Mizuno")
     assert matched_sizes(boot, BRAND_HUNT) == ["37"]
+
+
+# --- repeat colourways of one model should not take two slots --------------------------
+
+
+def _p(title: str, price: float, source: str, url: str) -> Product:
+    """A boot with an explicit url: two colourways share a title but never a url."""
+    return replace(_boot(title, price, source), url=url)
+
+
+def test_the_same_boot_twice_from_one_shop_should_take_one_slot():
+    """Pro:Direct listed `adidas Kids F50 Elite x Messi FG` twice at €62, pink and red.
+
+    The colour is in neither title, only the URL, so the email showed two rows the reader
+    could not tell apart — a fifth of a ten-row list spent offering him one choice.
+    """
+    table = {"a.example": Delivery(label="A")}
+    pink = _p("adidas Kids F50 Elite x Messi FG", 55.0, "a.example", url="https://a.example/pink")
+    red = _p("adidas Kids F50 Elite x Messi FG", 55.0, "a.example", url="https://a.example/red")
+    other = _p("adidas Kids Predator Elite FG", 84.0, "a.example", url="https://a.example/pred")
+
+    picked = pick_diverse([pink, red, other], table, limit=10, per_source=10)
+
+    assert len(picked) == 2
+    assert {p.title for p in picked} == {
+        "adidas Kids F50 Elite x Messi FG",
+        "adidas Kids Predator Elite FG",
+    }
+
+
+def test_the_surviving_row_should_be_the_cheaper_of_the_two():
+    table = {"a.example": Delivery(label="A")}
+    dear = _p("adidas F50 Elite FG", 90.0, "a.example", url="https://a.example/dear")
+    cheap = _p("adidas F50 Elite FG", 55.0, "a.example", url="https://a.example/cheap")
+
+    picked = pick_diverse([dear, cheap], table, limit=10, per_source=10)
+
+    assert [p.url for p in picked] == ["https://a.example/cheap"]
+
+
+def test_the_same_model_at_two_different_shops_should_keep_both():
+    """Not a duplicate: he is choosing between shops on landed cost and pickup, not colour."""
+    table = {"a.example": Delivery(label="A"), "b.example": Delivery(label="B", shipping=7.0)}
+    here = _p("adidas F50 Elite FG", 55.0, "a.example", url="https://a.example/x")
+    there = _p("adidas F50 Elite FG", 55.0, "b.example", url="https://b.example/x")
+
+    picked = pick_diverse([here, there], table, limit=10, per_source=10)
+
+    assert len(picked) == 2
+
+
+def test_boots_that_differ_only_in_a_lacing_word_should_both_survive():
+    """The guard against over-merging: these share brand, silo, generation and tier, and
+    are three different boots — laced, fold-over tongue, and laceless."""
+    table = {"a.example": Delivery(label="A")}
+    boots = [
+        _p("adidas Predator Elite FG", 130.0, "a.example", url="https://a.example/1"),
+        _p("adidas Predator Elite FT FG", 130.0, "a.example", url="https://a.example/2"),
+        _p("adidas Predator Elite LL FG", 130.0, "a.example", url="https://a.example/3"),
+    ]
+
+    assert len(pick_diverse(boots, table, limit=10, per_source=10)) == 3
+
+
+def test_a_freed_slot_should_go_to_another_boot():
+    """The point of collapsing: the list stays ten long and gains an option."""
+    table = {"a.example": Delivery(label="A")}
+    dupes = [
+        _p("adidas F50 Elite FG", 55.0, "a.example", url=f"https://a.example/dup{i}")
+        for i in range(3)
+    ]
+    others = [
+        _p(f"adidas Boot {i} Elite FG", 60.0 + i, "a.example", url=f"https://a.example/o{i}")
+        for i in range(9)
+    ]
+
+    picked = pick_diverse([*dupes, *others], table, limit=10, per_source=10)
+
+    assert len(picked) == 10
+    assert len({p.title for p in picked}) == 10, "ten rows, ten distinct boots"
