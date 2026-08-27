@@ -118,6 +118,7 @@ async def shortlist_for(
         logger.info("hunt %s: confirming %d product(s)", hunt.id, len(to_confirm))
         confirmed_pages = {p.url: p for p in await enrich_all(to_confirm, delay)}
         candidates = [confirmed_pages.get(p.url, p) for p in candidates]
+        _log_confirmation_payoff(hunt.id, to_confirm, confirmed_pages)
 
     kept = [p for p in candidates if judge_hunt(p, open_hunt, vocab).is_deal]
     confirmed, unconfirmed = split_by_size_confidence(kept, hunt)
@@ -144,6 +145,53 @@ async def shortlist_for(
         checked=len(candidates),
         coverage=coverage,
         kept=kept,
+    )
+
+
+def confirmation_payoff(
+    asked: list[Product], answered: dict[str, Product]
+) -> dict[str, tuple[int, int]]:
+    """Per source, ``(requests spent, requests that learned something)``. Pure.
+
+    The confirmation budget is capped and spent in candidate order, so it is possible for
+    every slot to go to pages that answer nothing — which is exactly what happened while
+    teamsport's reader was broken: roughly 22 of 25 requests a run, every run, learning
+    nothing. Zero yield is invisible from the outside, because a page that says nothing
+    and a page we never fetched produce the same silence downstream.
+
+    This counts the difference so a decision about ordering the budget can be made on
+    measurement rather than on a guess about which sources are worth asking. It reports
+    and changes nothing: what to *do* about a source that never answers depends on
+    numbers that do not exist yet.
+    """
+    tally: dict[str, tuple[int, int]] = {}
+    for product in asked:
+        source = product.source or "unknown"
+        spent, useful = tally.get(source, (0, 0))
+        after = answered.get(product.url)
+        learned = after is not None and (
+            (after.sizes_known and not product.sizes_known)
+            or (after.reference_price is not None and product.reference_price is None)
+        )
+        tally[source] = (spent + 1, useful + (1 if learned else 0))
+    return tally
+
+
+def _log_confirmation_payoff(
+    hunt_id: str, asked: list[Product], answered: dict[str, Product]
+) -> None:
+    """Report what the confirmation budget bought, worst-paying source first."""
+    tally = confirmation_payoff(asked, answered)
+    if not tally:
+        return
+    spent = sum(s for s, _ in tally.values())
+    useful = sum(u for _, u in tally.values())
+    detail = ", ".join(
+        f"{source}={u}/{s}"
+        for source, (s, u) in sorted(tally.items(), key=lambda kv: (kv[1][1] / kv[1][0], kv[0]))
+    )
+    logger.info(
+        "hunt %s: confirmations paid off %d/%d — %s", hunt_id, useful, spent, detail
     )
 
 
