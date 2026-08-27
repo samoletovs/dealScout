@@ -226,3 +226,66 @@ def test_a_page_that_failed_to_load_should_count_as_spent_and_unhelpful():
     asked = [_unsized("https://d.example/1", "broken.example")]
 
     assert run_shortlist.confirmation_payoff(asked, {})["broken.example"] == (1, 0)
+
+
+# --- a run that cannot send has not succeeded -----------------------------------------
+
+
+def _stub_run(monkeypatch, tmp_path, boots, send_email):
+    """Wire main() to a fixed set of boots and a controllable send."""
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(run_shortlist, "scout", _stub_scout(boots))
+    monkeypatch.setattr(run_shortlist, "load_config", lambda _p: CONFIG)
+    monkeypatch.setattr(run_shortlist, "config_path", lambda: Path("config.example.yaml"))
+    monkeypatch.setattr(run_shortlist, "load_hunts", lambda _c, _o="": [HUNT])
+    monkeypatch.setattr(run_shortlist, "append", lambda _obs, _path: None)
+    monkeypatch.setattr(run_shortlist, "send_email", send_email)
+
+    async def _no_feedback():
+        return []
+
+    monkeypatch.setattr(run_shortlist, "read_feedback", _no_feedback)
+
+
+def test_a_shortlist_that_could_not_be_sent_should_fail_the_run(monkeypatch, tmp_path):
+    """This shipped silent for months.
+
+    COURIER_URL/COURIER_KEY/DEALSCOUT_EMAIL_TO were never set as repository secrets, so
+    every scheduled run scraped seven retailers, judged them, wrote the markdown, logged
+    "courier not configured - skipping send" and exited 0. GitHub drew a green tick twice
+    a day and the owner never got an email. A warning is not enough, because nobody reads
+    the log of a run that passed.
+    """
+    boots = [_boot("adidas Predator Elite FG", "https://shop.example/a")]
+
+    async def _refuses_to_send(_subject, _body):
+        return False
+
+    _stub_run(monkeypatch, tmp_path, boots, send_email=_refuses_to_send)
+
+    assert asyncio.run(run_shortlist.main([])) == 1
+
+
+def test_a_shortlist_that_was_sent_should_succeed(monkeypatch, tmp_path):
+    boots = [_boot("adidas Predator Elite FG", "https://shop.example/a")]
+
+    async def _sends(_subject, _body):
+        return True
+
+    _stub_run(monkeypatch, tmp_path, boots, send_email=_sends)
+
+    assert asyncio.run(run_shortlist.main([])) == 0
+
+
+def test_no_email_should_stay_a_success_because_not_sending_was_the_request(
+    monkeypatch, tmp_path
+):
+    """`--no-email` is how you say you meant it, which is what makes the failure above safe."""
+    boots = [_boot("adidas Predator Elite FG", "https://shop.example/a")]
+
+    async def _must_not_be_called(_subject, _body):  # pragma: no cover - the point is it isn't
+        raise AssertionError("--no-email must not attempt a send")
+
+    _stub_run(monkeypatch, tmp_path, boots, send_email=_must_not_be_called)
+
+    assert asyncio.run(run_shortlist.main(["--no-email"])) == 0

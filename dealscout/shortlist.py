@@ -143,6 +143,37 @@ def _as_float(size: str) -> float:
         return 0.0
 
 
+def _dedupe_colourways(ranked: list[Product]) -> list[Product]:
+    """Keep one row per model per shop, the cheapest, dropping repeat colourways.
+
+    Pro:Direct listed the same boot twice at €62 — `adidas Kids F50 Elite x Messi FG`
+    in pink and in red — and the colour is in neither title, only the URL. Two rows the
+    reader cannot tell apart, taking a fifth of a ten-row list to offer him one choice.
+
+    Sameness is deliberately narrow: identical title, identical shop. It is not "looks
+    like the same model", because the boot the owner buys turns on exactly the words a
+    looser rule would discard. `Predator Elite`, `Predator Elite FT` and `Predator Elite
+    LL` share brand, silo, generation and tier, and are laced, folded-tongue and laceless
+    — three different boots at one price. Collapsing those would hide a real choice while
+    looking like tidying, and it would do it silently.
+
+    So this only removes rows a reader could not have distinguished anyway. Where a shop
+    does put the colour in the title, both rows survive — he can see what he is choosing
+    between, which was the whole complaint.
+    """
+    seen: set[tuple[str, str]] = set()
+    kept: list[Product] = []
+    for product in ranked:  # already cheapest-first, so the first of a group is the one to keep
+        signature = (" ".join(product.title.split()).casefold(), product.source.casefold())
+        if signature in seen:
+            continue
+        seen.add(signature)
+        kept.append(product)
+    if len(kept) < len(ranked):
+        logger.debug("collapsed %d repeat colourway(s)", len(ranked) - len(kept))
+    return kept
+
+
 def pick_diverse(
     products: list[Product],
     table: dict[str, Delivery],
@@ -163,6 +194,7 @@ def pick_diverse(
     rows still come off the top of each shop in turn instead of all off the deepest one.
     """
     ranked = sorted(products, key=lambda p: (landed_cost(p, delivery_for(p.source, table)), p.price))
+    ranked = _dedupe_colourways(ranked)
     by_source: dict[str, list[Product]] = {}
     for product in ranked:
         by_source.setdefault(product.source, []).append(product)
