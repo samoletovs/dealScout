@@ -106,11 +106,15 @@ class CaseResult:
     @property
     def attr_misses(self) -> tuple[str, ...]:
         """Attributes the case pinned that the engine read differently."""
-        return tuple(
-            f"{name}={self.predicted_attrs.get(name) or '(unstated)'}, wanted {wanted}"
-            for name, wanted in sorted(self.case.expected_attrs.items())
-            if self.predicted_attrs.get(name) != wanted
-        )
+        misses: list[str] = []
+        for name, wanted in sorted(self.case.expected_attrs.items()):
+            got = str(self.predicted_attrs.get(name) or "")
+            if wanted is None or wanted == UNSET:
+                if got:
+                    misses.append(f"{name}={got}, wanted nothing asserted")
+            elif got != wanted:
+                misses.append(f"{name}={got or '(unstated)'}, wanted {wanted}")
+        return tuple(misses)
 
     @property
     def attr_ok(self) -> bool | None:
@@ -280,13 +284,24 @@ def _build_product(raw: dict[str, Any], case_id: str) -> Product:
         raise ValueError(f"golden case {case_id!r}: invalid product ({exc})") from exc
 
 
+UNSET = "\x00unset"  # expected.attrs value meaning "the engine must not assert this"
+
+
 def _expected_attrs(raw: object, case_id: str) -> dict[str, str]:
-    """Coerce an ``expected.attrs`` mapping into plain strings."""
+    """Coerce an ``expected.attrs`` mapping into plain strings.
+
+    A YAML ``null`` becomes ``UNSET``: the case then asserts the engine says *nothing*
+    for that attribute. Declining to answer is a first-class outcome throughout this
+    engine, so it has to be pinnable — without it, a case covering a withdrawn claim can
+    only pin the attributes that did not move, and passes just as happily when the claim
+    comes back. That is exactly what happened to the Copa Pure IV case: it went green
+    with the bug reinstated.
+    """
     if raw is None:
         return {}
     if not isinstance(raw, dict):
         raise ValueError(f"golden case {case_id!r}: expected.attrs must be a mapping")
-    return {str(k): str(v) for k, v in raw.items()}
+    return {str(k): UNSET if v is None else str(v) for k, v in raw.items()}
 
 
 def load_golden(path: Path = DEFAULT_GOLDEN) -> list[GoldenCase]:
