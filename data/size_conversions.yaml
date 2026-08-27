@@ -24,8 +24,15 @@
 # The Nike ladder below is Nike's own, lifted from the size chart embedded in
 # https://www.nike.com/size-fit/mens-footwear (the `mens_footwear_us` and `size_eu` rows
 # of its __NEXT_DATA__ payload), 2026-08-27. It is the men's footwear ladder — the one
-# teamsport's football boots use — and it decides the owner's son's size: Nike EU 37.5 is
-# US 5, the smallest rung, which is why teamsport's ladders bottom out there.
+# teamsport's football boots use — and it places the owner's son's size: Nike EU 37.5 is
+# US 5, the lowest rung teamsport lists.
+#
+# That last fact is a consistency check, not evidence, and it is worth being clear which.
+# The ladder bottoms out at US 5 because that is where Nike's men's range ends, not
+# because of anything about this owner; his size landing on the bottom rung is a
+# coincidence. It is a useful one — a floor of EU 41 would have meant the reading was
+# wrong — but the case for "these numbers are US" rests entirely on the shop saying
+# `US izmēri` and on the ladder above being Nike's own. Do not reason from the floor.
 #
 # The men's ladder is NOT the only one on the shop, only the only one on the boots
 # ----------------------------------------------------------------------------------

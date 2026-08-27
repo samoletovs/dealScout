@@ -176,3 +176,53 @@ def test_the_run_should_log_a_price_for_every_boot_it_judged(monkeypatch, tmp_pa
     asyncio.run(run_shortlist.main([]))
 
     assert len(logged) == 14, "every boot that qualified is remembered, not only the ten shown"
+
+
+# --- what the confirmation budget actually bought -------------------------------------
+
+
+def _unsized(url: str, source: str) -> Product:
+    """A listing-stage product still owing both a size and an RRP."""
+    return replace(_boot("adidas Predator Elite FG", url), source=source, sizes=frozenset(),
+                   sizes_known=False, reference_price=None)
+
+
+def test_a_source_that_answers_nothing_should_be_counted_separately_from_one_that_does():
+    """Zero yield is invisible downstream: a page that says nothing and a page never
+    fetched produce the same silence. While teamsport's reader was broken it consumed
+    ~22 of 25 slots a run, every run, and nothing reported it."""
+    asked = [_unsized("https://a.example/1", "mute.example"),
+             _unsized("https://a.example/2", "mute.example"),
+             _unsized("https://b.example/1", "helpful.example")]
+    answered = {
+        "https://a.example/1": _unsized("https://a.example/1", "mute.example"),
+        "https://a.example/2": _unsized("https://a.example/2", "mute.example"),
+        "https://b.example/1": replace(
+            _unsized("https://b.example/1", "helpful.example"),
+            sizes=frozenset({"37.33"}), sizes_known=True,
+        ),
+    }
+
+    payoff = run_shortlist.confirmation_payoff(asked, answered)
+
+    assert payoff["mute.example"] == (2, 0)
+    assert payoff["helpful.example"] == (1, 1)
+
+
+def test_gaining_only_an_rrp_should_still_count_as_learning_something():
+    """A size is not the only thing worth a request: an RRP is what makes -58% sayable."""
+    asked = [_unsized("https://c.example/1", "rrp.example")]
+    answered = {
+        "https://c.example/1": replace(
+            _unsized("https://c.example/1", "rrp.example"), reference_price=130.0
+        )
+    }
+
+    assert run_shortlist.confirmation_payoff(asked, answered)["rrp.example"] == (1, 1)
+
+
+def test_a_page_that_failed_to_load_should_count_as_spent_and_unhelpful():
+    """enrich_all drops what it could not read, so the url is simply absent."""
+    asked = [_unsized("https://d.example/1", "broken.example")]
+
+    assert run_shortlist.confirmation_payoff(asked, {})["broken.example"] == (1, 0)
