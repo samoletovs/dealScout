@@ -16,6 +16,7 @@ stock in the wanted size — still applies.
 
 from __future__ import annotations
 
+import argparse
 import asyncio
 import logging
 import sys
@@ -136,11 +137,39 @@ def config_path() -> Path:
     return Path("config.example.yaml")
 
 
+def parse_args(argv: list[str]) -> argparse.Namespace:
+    """Parse the entrypoint's arguments, rejecting anything unrecognised.
+
+    This replaced ``[a for a in argv if not a.startswith("-")]``, which treated every
+    flag as noise. That made ``--help`` not a help flag but a full live run that
+    scraped seven retailers for six minutes and then emailed the owner — and a
+    mistyped ``--no-emails`` silently sent the mail it was meant to suppress. An
+    entrypoint whose safety switch fails open is the wrong way round: the run is the
+    side-effecting thing, so an argument it cannot understand must stop it.
+    """
+    parser = argparse.ArgumentParser(
+        prog="python -m dealscout.run_shortlist",
+        description="Scout every source for one hunt, rank by landed cost, and email the shortlist.",
+    )
+    parser.add_argument(
+        "hunt",
+        nargs="?",
+        default="",
+        help="id of the hunt to run; overrides `enabled`. Defaults to every enabled hunt.",
+    )
+    parser.add_argument(
+        "--no-email",
+        action="store_true",
+        help="write the markdown to out/ but do not send it.",
+    )
+    return parser.parse_args(argv)
+
+
 async def main(argv: list[str]) -> int:
-    args = [a for a in argv if not a.startswith("-")]
-    send = "--no-email" not in argv
+    opts = parse_args(argv)
+    send = not opts.no_email
     config = load_config(config_path())
-    hunts = load_hunts(config, args[0] if args else "")
+    hunts = load_hunts(config, opts.hunt)
     if not hunts:
         logger.error("no hunt to run")
         return 1

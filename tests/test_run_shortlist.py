@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import asyncio
 
+import pytest
+
 import dealscout.run_shortlist as run_shortlist
 from dealscout.models import Hunt, Product
 
@@ -75,3 +77,36 @@ def test_uncapped_should_lift_the_ceiling_without_clearing_every_band():
     assert opened.never_above is None
     assert opened.must_buy == 70.0
     assert opened.good_offer == float("inf")
+
+
+# --- argument parsing: the run is the side effect, so an unknown flag must stop it ---
+
+
+def test_help_should_print_help_rather_than_run_and_email():
+    """`--help` used to be a six-minute live scrape that emailed the owner.
+
+    main() filtered out anything starting with "-", so no flag was ever recognised and
+    every flag was silently a default run with sending on.
+    """
+    with pytest.raises(SystemExit) as exit_info:
+        run_shortlist.parse_args(["--help"])
+
+    assert exit_info.value.code == 0
+
+
+def test_a_mistyped_no_email_flag_should_refuse_rather_than_send():
+    """The dangerous half: --no-emails used to send the email it was meant to suppress."""
+    with pytest.raises(SystemExit) as exit_info:
+        run_shortlist.parse_args(["--no-emails"])
+
+    assert exit_info.value.code != 0
+
+
+def test_no_email_should_still_suppress_sending():
+    assert run_shortlist.parse_args(["--no-email"]).no_email is True
+    assert run_shortlist.parse_args([]).no_email is False
+
+
+def test_a_named_hunt_should_still_be_honoured():
+    assert run_shortlist.parse_args(["boots-junior"]).hunt == "boots-junior"
+    assert run_shortlist.parse_args([]).hunt == ""

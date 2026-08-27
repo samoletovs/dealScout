@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 from dealscout.models import Hunt, Product, Verdict
 from dealscout.notify import feedback_base_url, markdown_to_html, render_report, render_shortlist
 from dealscout.shortlist import Delivery, SourceCoverage
@@ -272,3 +274,66 @@ def test_render_shortlist_says_nothing_about_yield_when_nothing_fell():
     )
 
     assert "Yield fell" not in body
+
+
+# --- the size-not-published note must describe the shops actually in it ------------
+
+
+def _unsized(title: str, price: float, source: str) -> Product:
+    """A product a shop priced but published no per-size stock for."""
+    return replace(_boot(title, price, source), sizes=frozenset(), sizes_known=False)
+
+
+def test_the_size_not_published_note_should_not_call_a_spanish_shop_riga():
+    """The sentence was hardcoded as "Both are in Rīga" and went false when sources grew.
+
+    Caught in a live run: the section led with Fútbol Emotion, in Spain, under a
+    sentence telling the owner he could go and visit it.
+    """
+    table = {**SHORTLIST_TABLE, "futbolemotion.com": Delivery(label="Fútbol Emotion (ES)")}
+
+    body = render_shortlist(
+        SHORTLIST_HUNT,
+        [],
+        [_unsized("A Elite", 64.0, "futbolemotion.com")],
+        table,
+    )
+
+    assert "in Rīga" not in body
+    assert "phoned or visited" not in body
+
+
+def test_the_size_not_published_note_should_count_the_riga_shops_that_are_there():
+    table = {
+        **SHORTLIST_TABLE,
+        "futbolemotion.com": Delivery(label="Fútbol Emotion (ES)"),
+        "sportland.lv": Delivery(label="Sportland (Rīga)", pickup=True),
+    }
+
+    body = render_shortlist(
+        SHORTLIST_HUNT,
+        [],
+        [
+            _unsized("A Elite", 64.0, "futbolemotion.com"),
+            _unsized("B Elite", 104.0, "sportland.lv"),
+        ],
+        table,
+    )
+
+    assert "One is in Rīga, so it can also be phoned or visited." in body
+
+
+def test_the_size_not_published_note_should_say_all_when_every_shop_is_local():
+    table = {
+        "sportland.lv": Delivery(label="Sportland (Rīga)", pickup=True),
+        "teamsport.lv": Delivery(label="teamsport.lv (Rīga)", pickup=True),
+    }
+
+    body = render_shortlist(
+        SHORTLIST_HUNT,
+        [],
+        [_unsized("A Elite", 104.0, "sportland.lv"), _unsized("B Elite", 120.0, "teamsport.lv")],
+        table,
+    )
+
+    assert "All of them are in Rīga" in body
