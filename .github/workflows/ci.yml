@@ -12,3 +12,36 @@ jobs:
           python-version: "3.11"
       - run: pip install -r requirements.txt -r requirements-dev.txt
       - run: pytest -q
+
+  # The price log is the one asset that cannot be rebuilt -- a day not observed is gone.
+  # The script that persists it is shell, and shell is not covered by pytest, so a typo in
+  # it would fail at 06:00 in a cron nobody is watching rather than in review. These are
+  # the cheapest checks that would catch that.
+  scripts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Shell syntax
+        run: |
+          shopt -s nullglob
+          for f in .github/scripts/*.sh; do
+            echo "bash -n $f"
+            bash -n "$f"
+          done
+      - name: Shellcheck
+        run: |
+          shopt -s nullglob
+          files=(.github/scripts/*.sh)
+          if [ ${#files[@]} -gt 0 ]; then
+            sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+            shellcheck "${files[@]}"
+          fi
+      - name: Workflow YAML parses
+        run: |
+          python -c "
+          import sys, glob, yaml
+          for path in sorted(glob.glob('.github/workflows/*.yml')):
+              with open(path, encoding='utf-8') as fh:
+                  yaml.safe_load(fh)
+              print('ok', path)
+          "
