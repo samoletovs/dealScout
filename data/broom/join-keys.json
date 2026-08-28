@@ -1,0 +1,332 @@
+{
+  "_note": "Derived from data/football_boots.yaml — never edit by hand. Published so a consumer in another repository can verify it only names boots this classifier knows, and does not restate year/status/launch_rrp_eur, which the catalogue owns. If this disagrees with the catalogue, the catalogue is right.",
+  "last_verified": "2026-08",
+  "generated_from": "sha256:47ea85ab585a9bd19cb2f7746b86626624822d2ef4a82de6d731389ee05a936b",
+  "generations": [
+    {
+      "brand": "adidas",
+      "line": "copa",
+      "tokens": [
+        "2",
+        "copa pure 2"
+      ],
+      "year": 2024,
+      "status": "superseded",
+      "launch_rrp_eur": 255
+    },
+    {
+      "brand": "adidas",
+      "line": "copa",
+      "tokens": [
+        "3",
+        "copa pure 3"
+      ],
+      "year": 2024,
+      "status": "superseded",
+      "launch_rrp_eur": 250
+    },
+    {
+      "brand": "adidas",
+      "line": "copa",
+      "tokens": [
+        "4",
+        "copa pure 4"
+      ],
+      "year": 2026,
+      "status": "current",
+      "launch_rrp_eur": 240
+    },
+    {
+      "brand": "adidas",
+      "line": "copa",
+      "tokens": [
+        "copa pure",
+        "pure"
+      ],
+      "year": 2022,
+      "status": "discontinued",
+      "launch_rrp_eur": 250
+    },
+    {
+      "brand": "adidas",
+      "line": "copa mundial",
+      "tokens": [
+        "copa mundial",
+        "mundial"
+      ],
+      "year": 1979,
+      "status": "evergreen",
+      "launch_rrp_eur": 140
+    },
+    {
+      "brand": "adidas",
+      "line": "f50",
+      "tokens": [
+        "crazyfast",
+        "x crazyfast"
+      ],
+      "year": 2023,
+      "status": "discontinued",
+      "launch_rrp_eur": 265
+    },
+    {
+      "brand": "adidas",
+      "line": "f50",
+      "tokens": [
+        "f50"
+      ],
+      "year": 2024,
+      "status": "current",
+      "launch_rrp_eur": 270
+    },
+    {
+      "brand": "adidas",
+      "line": "f50",
+      "tokens": [
+        "speedportal",
+        "x speedportal"
+      ],
+      "year": 2022,
+      "status": "discontinued",
+      "launch_rrp_eur": 260
+    },
+    {
+      "brand": "adidas",
+      "line": "predator",
+      "tokens": [
+        "24",
+        "predator 24"
+      ],
+      "year": 2024,
+      "status": "superseded",
+      "launch_rrp_eur": 280
+    },
+    {
+      "brand": "adidas",
+      "line": "predator",
+      "tokens": [
+        "25",
+        "predator 25"
+      ],
+      "year": 2025,
+      "status": "superseded",
+      "launch_rrp_eur": 280
+    },
+    {
+      "brand": "adidas",
+      "line": "predator",
+      "tokens": [
+        "26",
+        "bonner",
+        "predator 26",
+        "wales bonner"
+      ],
+      "year": 2026,
+      "status": "current",
+      "launch_rrp_eur": 280
+    },
+    {
+      "brand": "adidas",
+      "line": "predator",
+      "tokens": [
+        "accuracy",
+        "predator accuracy"
+      ],
+      "year": 2023,
+      "status": "discontinued",
+      "launch_rrp_eur": 270
+    },
+    {
+      "brand": "adidas",
+      "line": "predator",
+      "tokens": [
+        "edge",
+        "predator edge"
+      ],
+      "year": 2022,
+      "status": "discontinued",
+      "launch_rrp_eur": 265
+    },
+    {
+      "brand": "nike",
+      "line": "mercurial superfly",
+      "tokens": [
+        "10",
+        "superfly 10"
+      ],
+      "year": 2024,
+      "status": "superseded",
+      "launch_rrp_eur": 310
+    },
+    {
+      "brand": "nike",
+      "line": "mercurial superfly",
+      "tokens": [
+        "11",
+        "superfly 11"
+      ],
+      "year": 2026,
+      "status": "current",
+      "launch_rrp_eur": 295
+    },
+    {
+      "brand": "nike",
+      "line": "mercurial superfly",
+      "tokens": [
+        "9",
+        "superfly 9"
+      ],
+      "year": 2022,
+      "status": "discontinued",
+      "launch_rrp_eur": 290
+    },
+    {
+      "brand": "nike",
+      "line": "mercurial vapor",
+      "tokens": [
+        "15",
+        "vapor 15"
+      ],
+      "year": 2022,
+      "status": "discontinued",
+      "launch_rrp_eur": 275
+    },
+    {
+      "brand": "nike",
+      "line": "mercurial vapor",
+      "tokens": [
+        "16",
+        "vapor 16"
+      ],
+      "year": 2024,
+      "status": "superseded",
+      "launch_rrp_eur": 310
+    },
+    {
+      "brand": "nike",
+      "line": "mercurial vapor",
+      "tokens": [
+        "17",
+        "vapor 17"
+      ],
+      "year": 2026,
+      "status": "current",
+      "launch_rrp_eur": 260
+    },
+    {
+      "brand": "nike",
+      "line": "phantom",
+      "tokens": [
+        "1",
+        "gx",
+        "phantom gx"
+      ],
+      "year": 2023,
+      "status": "discontinued",
+      "launch_rrp_eur": 290
+    },
+    {
+      "brand": "nike",
+      "line": "phantom",
+      "tokens": [
+        "2",
+        "gx2",
+        "phantom gx 2",
+        "phantom gx2"
+      ],
+      "year": 2024,
+      "status": "superseded",
+      "launch_rrp_eur": 290
+    },
+    {
+      "brand": "nike",
+      "line": "phantom",
+      "tokens": [
+        "2",
+        "gt2",
+        "phantom gt 2",
+        "phantom gt2"
+      ],
+      "year": 2022,
+      "status": "discontinued",
+      "launch_rrp_eur": 280
+    },
+    {
+      "brand": "nike",
+      "line": "phantom",
+      "tokens": [
+        "6",
+        "phantom 6"
+      ],
+      "year": 2025,
+      "status": "current",
+      "launch_rrp_eur": 265
+    },
+    {
+      "brand": "nike",
+      "line": "phantom",
+      "tokens": [
+        "gt",
+        "phantom gt"
+      ],
+      "year": 2021,
+      "status": "discontinued",
+      "launch_rrp_eur": 280
+    },
+    {
+      "brand": "nike",
+      "line": "tiempo",
+      "tokens": [
+        "10",
+        "legend 10"
+      ],
+      "year": 2023,
+      "status": "superseded",
+      "launch_rrp_eur": 240
+    },
+    {
+      "brand": "nike",
+      "line": "tiempo",
+      "tokens": [
+        "7",
+        "legend 7"
+      ],
+      "year": 2018,
+      "status": "discontinued",
+      "launch_rrp_eur": 230
+    },
+    {
+      "brand": "nike",
+      "line": "tiempo",
+      "tokens": [
+        "8",
+        "legend 8"
+      ],
+      "year": 2019,
+      "status": "discontinued",
+      "launch_rrp_eur": 210
+    },
+    {
+      "brand": "nike",
+      "line": "tiempo",
+      "tokens": [
+        "9",
+        "legend 9"
+      ],
+      "year": 2021,
+      "status": "discontinued",
+      "launch_rrp_eur": 225
+    },
+    {
+      "brand": "nike",
+      "line": "tiempo",
+      "tokens": [
+        "maestro",
+        "tiempo maestro"
+      ],
+      "year": 2026,
+      "status": "current",
+      "launch_rrp_eur": 240
+    }
+  ]
+}
