@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import functools
 import logging
 import sys
 from dataclasses import dataclass, replace
@@ -28,7 +29,7 @@ from .collector import enrich_all
 from .config import load_config
 from .confirm import newly_readable, plan_confirmations
 from .feedback import downvoted_urls
-from .hunt import judge_hunt
+from .hunt import judge_hunt, product_identity
 from .models import Hunt, Product
 from .notify import feedback_base_url, read_feedback, render_shortlist, send_email
 from .pricehistory import HistoryConfig, append, extend, load_history, observe, prune
@@ -289,7 +290,7 @@ async def main(argv: list[str]) -> int:
     vocab = merge_vocab(config.get("vocabulary"))
     limits = HistoryConfig.from_config(config)
     history = load_history(limits.path)
-    logged: set[str] = set()  # config ships several hunts; a shared product logs once
+    logged: set[tuple[str, str]] = set()  # config ships several hunts; a shared product logs once
     # A 👎 in a previous email is the owner saying "not this one". The shortlist emits
     # those rating links, so it must also honour them — otherwise a rejected boot returns
     # every single run and the feedback loop is decorative. run_hunt already does this.
@@ -328,11 +329,16 @@ async def main(argv: list[str]) -> int:
         # appearing for the first time at a startling price, was exactly the moment it
         # had nothing to say. A boot sitting in the €130 pool for a month and dropping to
         # €62 is now recognised on the run it drops, rather than three runs later.
-        fresh = [o for o in observe(run.kept, hunt.sizes) if o.url not in logged]
-        logged.update(o.url for o in fresh)
+        identify = functools.partial(product_identity, hunt=hunt, vocab=vocab)
+        fresh = [
+            o
+            for o in observe(run.kept, hunt.sizes, identify=identify)
+            if (o.key, o.source) not in logged
+        ]
+        logged.update((o.key, o.source) for o in fresh)
         append(fresh, limits.path)
         history = extend(history, fresh)
-        memory = summarise_all(shown, history, limits=limits)
+        memory = summarise_all(shown, history, limits=limits, identify=identify)
 
         # Compare this run's per-source yield against that source's own recent history,
         # *before* recording today's number — otherwise the baseline already contains the
