@@ -7,7 +7,10 @@ import json
 
 from dealscout.collector import (
     _ROBOTS,
+    BROWSER_HEADERS,
+    HONEST_USER_AGENT,
     enrich,
+    headers_for,
     parse_ldjson_links,
     _money,
     collect,
@@ -841,14 +844,10 @@ def test_collect_page_should_not_fetch_when_robots_forbids_it(monkeypatch):
 
 
 def test_an_ordinary_retailer_should_still_get_the_browser_headers():
-    from dealscout.collector import BROWSER_HEADERS, headers_for
-
     assert headers_for("https://www.11teamsports.com/de-de/x") == BROWSER_HEADERS
 
 
 def test_a_fingerprinting_host_should_be_told_the_truth_instead():
-    from dealscout.collector import HONEST_USER_AGENT, headers_for
-
     sent = headers_for("https://www.sportsdirect.lv/football/football-boots")
 
     assert sent["User-Agent"] == HONEST_USER_AGENT
@@ -856,29 +855,21 @@ def test_a_fingerprinting_host_should_be_told_the_truth_instead():
 
 def test_that_host_should_not_be_sent_a_chrome_user_agent():
     """The specific thing measured to fail: a UA claiming to be a browser."""
-    from dealscout.collector import headers_for
-
     assert "Chrome" not in headers_for("https://www.sportsdirect.lv/football")["User-Agent"]
 
 
 def test_the_honest_agent_should_say_who_to_contact():
     """A bot UA that names no owner is not honest, it is merely unusual."""
-    from dealscout.collector import HONEST_USER_AGENT
-
     assert "dealScout" in HONEST_USER_AGENT
     assert "github.com" in HONEST_USER_AGENT
 
 
 def test_the_policy_should_match_on_the_registrable_host_not_a_substring():
     """A lookalike domain must not inherit the policy of the host it imitates."""
-    from dealscout.collector import BROWSER_HEADERS, headers_for
-
     assert headers_for("https://www.sportsdirect.lv.evil.example/x") == BROWSER_HEADERS
 
 
 def test_sibling_frasers_locales_should_share_the_policy():
     """One CDN configuration across one estate — .lt and .ee behave as .lv does."""
-    from dealscout.collector import HONEST_USER_AGENT, headers_for
-
     for host in ("https://www.sportsdirect.lt/f", "https://www.sportsdirect.ee/f"):
         assert headers_for(host)["User-Agent"] == HONEST_USER_AGENT

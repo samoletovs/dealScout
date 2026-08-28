@@ -11,6 +11,17 @@ in both directions, and expensively so:
 * Puma's flagship is **Ultimate**. A Puma boot saying "Elite" is not the top line.
 * A junior Elite (€120–140) is a **different boot** from an adult Elite (€250–295):
   softer plate, thicker upper, wider last. Not the same boot in small sizes.
+* adidas did not always use the word at all. Until mid-2024 it marked the tier with a
+  **number** — `Predator 20.1`, `X Ghosted.1`, `Copa Sense.1` — where `+` (laceless) and
+  `.1` (laced) were the *same* top tier and `.2`/`.3`/`.4` were Pro/League/Club. adidas
+  renamed the lot to Elite/Pro/League/Club precisely because `+` versus `.1` read as a
+  ranking to everyone who saw it. Clearance shelves are still full of the numbered ones.
+
+Retailers add a second layer of the same problem: they do not all write a name the way the
+brand does. SportsDirect truncates "Copa Pure 3 Elite" to ``CopaP3Elt``, and spells grounds
+out in words — so Nike's ``SG-Pro`` *soleplate* arrives as a bare "Pro" sitting after
+"Elite", where the later-word-wins rule reads it as a tier and demotes a flagship.
+``title_rewrites`` in the data file repairs those before anything is matched.
 
 Substring matching cannot reach any of this, and it could not be fixed by adding words
 to the vocabulary: :func:`dealscout.spec.extract_attrs` returns the first match in
