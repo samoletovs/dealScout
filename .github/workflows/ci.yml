@@ -12,6 +12,10 @@ jobs:
           python-version: "3.11"
       - run: pip install -r requirements.txt -r requirements-dev.txt
       - run: pytest -q
+      # The join-key manifest is fetched by another repository, which trusts it to say which
+      # boots exist. A catalogue edit that forgets to regenerate it would publish a stale key
+      # set that nothing else notices, so staleness fails here rather than downstream.
+      - run: python -m dealscout.export_join_keys --check
 
   # The price log is the one asset that cannot be rebuilt -- a day not observed is gone.
   # The script that persists it is shell, and shell is not covered by pytest, so a typo in
