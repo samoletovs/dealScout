@@ -110,6 +110,36 @@ The general lesson, which cost this project its best shop for months: **an infer
 a source has to be labelled as one.** "CI will be blocked too" reads exactly like the
 measured half of the sentence it was attached to, and so was never retested.
 
+**Its "was" prices are not RRPs, and this matters more than the fetching did.** Which?
+analysed 160 Sports Direct products in 2025, found **58 whose reference price no retailer
+anywhere was charging**, and reported the company to the CMA under the Consumer Protection
+from Unfair Trading Regulations. The practice is visible in this shop's own football
+listings: a `Predator Accuracy Injection+ Childrens Elite` in **EU 28.5** — a small child's
+boot — carries a reference price of **€300**, which is the *adult* RRP for that boot. The
+genuine junior RRP is about €130. The same shape appears across its junior range: `Pred Elt
+Predator SG` at €264, `CopaP3Elt SG` at €252, `Predator Elite Juniors` at €260.
+
+Two consequences, and the first is live today:
+
+1. **Every discount computed from this source is overstated.** A junior boot at €60 against
+   a €300 "was" reports as 80% off; against its real €130 RRP it is 54% off. The judge
+   ranks on that number, so this shop's finds will crowd out better ones from shops that
+   publish an honest reference price — and `min_reference_price: 110`, which exists to
+   prove a boot is a flagship, is trivially cleared by an inflated one. `pricehistory.py`
+   already says the right thing about this — *"the retailer's RRP is its own claim; this is
+   the one that can be checked"* — and its observed-price log is the answer here, since a
+   claim this shop makes about the past can be replaced by what this tool watched it charge.
+   **Not yet wired to the judge. This is the next piece of work on this source.**
+2. **It defeats an inference that otherwise looks obvious.** Both brands' adult Elite ranges
+   start at EU 35–36 (measured: 116 adult Nike Elites span EU 35–49, 84 adult adidas Elites
+   span EU 36–48), so retailers shelve small sizes of the adult flagship under "Kids" — this
+   shop lists `Kids' Superfly 10 Elite SG`, EU 36–39, at €317.99, which is a real adult RRP
+   for a real adult boot. It is tempting to read an adult-band reference price as proof that
+   a "Kids" label is about the shelf rather than the boot. It is not proof, because the same
+   shop puts adult reference prices on genuine children's boots, and title plus price cannot
+   tell the two apart. `tests/test_catalogue.py` records that reasoning against the day
+   someone tries it again.
+
 **komanda.lv** is the official adidas dealer for the Baltics and the only source with a
 shop the boots can be tried on in. It sells at RRP, so `compare_at_price` is always null:
 qualify it on absolute price, not on discount. A harness that demands a "was" price will
