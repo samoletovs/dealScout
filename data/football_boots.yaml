@@ -110,9 +110,28 @@ brands:
   nike:
     flagship: [elite]
     takedown: [pro, academy, club, league, match, play, essential]
+    # Nike's CURRENT Elite is effectively adult-only, and the adult range starts small:
+    # measured 2026-08-28 on prodirectsport.ie, 116 adult Nike Elites span EU 35-49 at RRP
+    # €250-300. So a listing saying both "Kids" and "Elite" is usually the adult flagship
+    # in a small size, shelved under Kids because EU 36-39 fits a child — sportsdirect.lv
+    # lists "Kids' Superfly 10 Elite SG", EU 36-39, reference price €317.99, which is the
+    # adult RRP.
+    #
+    # This is deliberately NOT encoded as "Nike makes no junior Elite". That claim traces
+    # to Nike's kids' fit guide, which could not be fetched directly to confirm — and the
+    # same measurement argues against it as a blanket rule: 11 junior-marked Nike Elites
+    # (Superfly VI/VII, Phantom VSN/VNM, Hypervenom III) sit at RRP €150-175, far below
+    # the adult boots of their own era, which is what a genuine junior product looks like.
+    # Those are clearance-shelf boots, exactly what this tool hunts, and a blanket rule
+    # would relabel every one of them. The discrimination is done per listing by RRP
+    # instead (`_priced_as_adult`), which needs no claim about what Nike does or does not
+    # manufacture.
     rrp_bands:
+      # RRP from `compare_at_price`, never a selling price — an earlier pass read the sale
+      # price and put the adult floor at €210 because a Tiempo was discounted to that. A
+      # band built from sale prices drifts down with every sale.
       adult-flagship: [250, 320]
-      junior-flagship: [110, 150]
+      junior-flagship: [110, 175]
       takedown: [40, 190]
     lines:
       mercurial superfly:
@@ -242,8 +261,22 @@ brands:
       takedown: ['(?<=[a-z0-9])\.[234](?![0-9])']
     takedown: [pro, league, club, academy, match, play, essential]
     rrp_bands:
-      adult-flagship: [250, 350]
-      junior-flagship: [120, 140]
+      # RRP, read from `compare_at_price` — never from today's selling price. Measured
+      # 2026-08-28 across 84 adult and 34 junior adidas Elites on prodirectsport.ie, and
+      # corroborated against adidas.co.uk's own kids Predator Elite pages (£110-120).
+      #
+      # The adult floor is €240, not 250: Copa is adidas's cheapest flagship silo (Copa
+      # Pure III/IV Elite FG, AG and SG all list at €240), and a band starting at 250
+      # excluded every Copa there is.
+      #
+      # UNLIKE NIKE, adidas really does make a junior Elite — Predator/F50/Copa Elite Kids
+      # exist as their own products, EU 28-39.5, RRP €110-150. They are genuinely
+      # de-specced against the adult boot (TPU plate rather than the carbon POWERSPINE, no
+      # Strikeskin fins, laced only), which is why an adidas junior Elite and a Nike Elite
+      # are not the same class of boot even though both say "Elite". That asymmetry is the
+      # single most useful thing this file knows for a buyer at EU 37.
+      adult-flagship: [240, 350]
+      junior-flagship: [110, 150]
       takedown: [40, 180]
     lines:
       predator:
@@ -302,11 +335,22 @@ brands:
       copa:
         patterns: [copa pure, copa]
         generations:
+          # Copa Pure 4 launched Jan 2026 ("Born For Goals"), so the 3 is now superseded.
+          # Measured 2026-08-28 on komanda.lv, adidas's own Baltic dealer: Copa Pure IV
+          # Elite FG and SG both €240 across a full 39–44 grid, while the Copa Pure 2
+          # Elite is down to a single size at €184 — a current boot and a clearing one.
+          # Reported to be the LAST Copa: adidas is bringing the Adipure name back for
+          # 2027, at which point this line needs a new entry rather than another number.
+          - gen: 4
+            patterns: [copa pure 4]
+            year: 2026
+            launch_rrp_eur: 240
+            status: current
           - gen: 3
             patterns: [copa pure 3]
             year: 2024
             launch_rrp_eur: 250
-            status: current
+            status: superseded
           - gen: 2
             patterns: [copa pure 2]
             year: 2024
