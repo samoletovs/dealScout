@@ -11,7 +11,7 @@
 #
 # Two cautions the sources and PR #30 make explicit:
 #   * Junior Elite is a DIFFERENT construction, not "the adult boot in small sizes". adidas
-#     genuinely makes junior Elite boots (TPU plate, no rubber fins, laced only); Nike's
+#     genuinely makes junior Elite boots (TPU plate, fewer rubber fins, commonly laced); Nike's
 #     "junior Elite" is often closer to the adult article. Both say Elite.
 #   * Adult Elite starts at EU 35–36. A small size is not proof of a junior boot; retailers
 #     shelve adult flagships in EU 36–39 under "Kids". Title + price cannot settle it — only
@@ -87,7 +87,7 @@ tiers:
         De-specced from the adult plate for durability and cost. On adidas junior Elite this
         is a genuine TPU plate, not the adult carbon/Comfort Frame.
     upper:
-      material: "The silo's upper, simplified; adidas junior Elite is laced only."
+      material: "The silo's upper, simplified; adidas junior Elite is commonly laced."
       plain: "Same look and often the same upper family, built for growing feet."
     fit_last: "Roomier and more forgiving than the adult last — built on a junior last for growing feet."
     fit_last_confidence: directional   # junior boots run roomier (Pro:Direct, buying guides); no measured width delta
@@ -99,8 +99,16 @@ tiers:
         - {feature: "plate stiffness", value: "softer / more flexible than adult", confidence: directional,
            note: "genuine TPU/Pebax on junior, not adult carbon; draw a visibly less rigid plate"}
         - {feature: "profile", value: "slightly fuller than adult", confidence: directional}
-        - {feature: "adidas junior closure", value: "LACED (never laceless)", confidence: measured,
-           note: "adidas junior Elite is laced only, even where the adult is laceless — a concrete, drawable difference. Draw laces on the junior adidas card. Source: Pro:Direct kids-elite; footyheadlines junior launches."}
+        - {feature: "adidas junior closure", value: "COMMONLY laced; laceless junior SKUs exist", confidence: directional,
+           note: "adidas junior Elite is usually laced, but 'never laceless' is FALSE and must not be
+                  drawn as a tier difference. Counter-example measured on sportsdirect.lv 2026-08-28 and
+                  recorded in data/football_boots.yaml: 'Predator Elite Laceless Juniors Firm Ground
+                  Football Boots' EUR 63.00. The catalogue also treats `laceless` as NOISE — a closure
+                  variant WITHIN a tier, not a marker of one — and records that Predator+ (laceless) and
+                  Predator.1 (laced) were the SAME tier. Closure therefore cannot distinguish adult from
+                  junior. Draw laces if the specific boot has them; never as a tier signal.
+                  Sources: Pro:Direct kids-elite and footyheadlines describe the COMMON configuration,
+                  which is a tendency, not the absolute this field previously claimed."}
         - {feature: "grip fins", value: "fewer / simplified vs adult", confidence: directional,
            note: "junior Elite de-specs the adult's grip elements; draw a plainer strike face than the adult"}
       do_not_draw:
