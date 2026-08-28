@@ -144,8 +144,15 @@ tiers:
         - {feature: "plate stiffness", value: "least stiff — injected TPU/plastic, no carbon", confidence: directional,
            note: "draw as the thickest, most rigid-looking BUT least responsive plate; injected not carbon"}
         - {feature: "profile", value: "bulkier upper and lining than Elite", confidence: directional}
-        - {feature: "closure", value: "LACED", confidence: measured,
-           note: "the tier below is laced (adidas League is never laceless); draw laces. Source: thesoccerfactory Predator-buying-guide; motionwears review."}
+        - {feature: "closure", value: "LACED", confidence: directional,
+           note: "the tier below is commonly laced, and laceless is a premium feature that
+                  usually stays on the top tier — so draw laces. But NOT an absolute: adidas
+                  has sold laceless boots below Elite in the past (the numbered era's
+                  Predator 20.3 Laceless sat at what is now League), and this repo treats
+                  `laceless` as NOISE — a closure variant WITHIN a tier, not a marker of one.
+                  Draw laces because they are typical here, never to signal the tier.
+                  Sources: thesoccerfactory Predator-buying-guide; motionwears review — both
+                  describe the common configuration, not exclusivity."}
         - {feature: "grip fins / strike elements", value: "fewer or none vs Elite", confidence: measured,
            note: "Predator League has fewer/no rubber grip fins vs Elite's full set — draw a plainer strike face. Source: thesoccerfactory; motionwears."}
         - {feature: "collar", value: "lower-profile mesh, not premium knit", confidence: directional,
