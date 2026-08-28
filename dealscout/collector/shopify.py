@@ -9,11 +9,47 @@ wherever a retailer runs on it (prodirectsport.ie, komanda.lv).
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from urllib.parse import urlsplit
 
 from ..models import Product
 from ..spec import looks_like_eu, normalise_size
 from .ldjson import _to_float
+
+
+def _now_utc_iso() -> str:
+    """The current instant as ISO-8601 UTC (e.g. '2026-08-28T14:03:11Z').
+
+    Stamped onto every image URL captured from a feed, because merchant CDNs rotate image
+    URLs (Shopify appends a ``?v=`` cache-buster) and a stored link is only trustworthy
+    relative to when it was last seen served.
+    """
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _image_urls(node: dict) -> tuple[str, ...]:
+    """Every product image URL a Shopify product node carries, in the feed's own order.
+
+    Shopify's ``/products.json`` always includes an ``images`` array (each entry a dict with
+    a ``src``); some payloads also repeat the primary as ``featured_image``. We read the URLs
+    only — retrieval is not a licence to republish, so what we keep is fit for an internal
+    design spike and for public display only once an affiliate (or other) licence covers the
+    image. The primary is placed first so a caller wanting one representative shot can take
+    ``images[0]``.
+    """
+    urls: list[str] = []
+    seen: set[str] = set()
+
+    def add(value: object) -> None:
+        src = value.get("src") if isinstance(value, dict) else value
+        if isinstance(src, str) and src.strip() and src not in seen:
+            seen.add(src)
+            urls.append(src.strip())
+
+    add(node.get("featured_image"))
+    for image in node.get("images") or []:
+        add(image)
+    return tuple(urls)
 
 
 def parse_shopify_products(payload: str, url: str, category: str) -> list[Product]:
@@ -63,6 +99,7 @@ def parse_shopify_products(payload: str, url: str, category: str) -> list[Produc
         was = [p for p in (_to_float(v.get("compare_at_price")) for v in variants) if p]
         reference = max(was, default=None)
         known = bool(labelled) and looks_like_eu(labelled)
+        images = _image_urls(node)
         products.append(
             Product(
                 title=title,
@@ -75,6 +112,8 @@ def parse_shopify_products(payload: str, url: str, category: str) -> list[Produc
                 source=source,
                 sizes=frozenset(sizes) if known else frozenset(),
                 sizes_known=known,
+                images=images,
+                image_seen_at=_now_utc_iso() if images else "",
             )
         )
     return products
