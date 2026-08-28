@@ -787,7 +787,8 @@ boots:
       tech: "Fusionskin (junior construction)"
       plain: >-
         The junior Copa Pure 4 Elite is genuinely de-specced: a TPU plate rather than the
-        adult Comfort Frame, simplified upper, laced only. Same name, a different boot.
+        adult Comfort Frame, and a simplified upper. Same name, a different boot. (Closure is
+        not the tell — laceless junior Elite SKUs exist in other silos; see tiers.yaml.)
       source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
     plate:
       material: "TPU plate (not the adult Comfort Frame)"
