@@ -13,7 +13,10 @@ no source is exactly what bRoom exists to be more trustworthy than.
 Every test here fails without ``data/broom/`` present — the dataset is the thing under test.
 """
 
+
 from __future__ import annotations
+
+import re
 
 from pathlib import Path
 
@@ -285,9 +288,15 @@ def test_no_drawable_claims_an_absolute_it_cannot_support():
             if item.get("confidence") != "measured":
                 continue
             value = str(item.get("value", "")).lower()
-            hits = [word for word in absolutes if word in value.split() or f"({word}" in value]
+            # The note is checked as well as the value. The first version of this guard
+            # read `value` only, and a second absolute walked straight past it: an item
+            # whose value was a mild "LACED" carried "adidas League is never laceless"
+            # in its note. The note is what a human reads before drawing, so it makes
+            # exactly the same promise to the illustrator that the value does.
+            text = value + " " + str(item.get("note", "")).lower()
+            hits = sorted({w for w in absolutes if re.search(r"\b" + w + r"\b", text)})
             if hits:
-                offenders.append(f"{tier['tier']}/{item.get('feature')}: {item.get('value')!r} uses {hits}")
+                offenders.append(f"{tier['tier']}/{item.get('feature')}: uses {hits}")
 
     assert not offenders, (
         "A `measured` drawable states an absolute. One counter-example destroys an "
