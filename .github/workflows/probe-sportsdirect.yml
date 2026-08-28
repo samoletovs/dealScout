@@ -1,0 +1,27 @@
+name: probe sportsdirect (temporary)
+
+# TEMPORARY measurement. SOURCES.md asserts that GitHub's datacentre IPs are blocked by
+# sportsdirect.lv's Akamai edge. That was an inference, never a measurement. This job
+# settles it. Delete once the answer is recorded in SOURCES.md.
+
+on:
+  push:
+    branches: [samoletovs-sportsdirect-source-adidas-tiers]
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bare canonical category URL (robots-allowed)
+        run: |
+          curl -sS -o page.html -w "http=%{http_code} time=%{time_total} size=%{size_download}\n" \
+            --max-time 45 \
+            -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" \
+            -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" \
+            -H "Accept-Language: en-GB,en;q=0.9,lv;q=0.8" \
+            "https://www.sportsdirect.lv/football/football-boots/kids-football-boots" || echo "CURL FAILED $?"
+          echo "--- ecommerceData present? ---"
+          grep -c "ecommerceData" page.html || echo "NOT FOUND"
+          echo "--- product count ---"
+          grep -o '"name":"[^"]*"' page.html | head -30 || true
