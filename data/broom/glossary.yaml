@@ -1,0 +1,137 @@
+# bRoom technology glossary — plain-language boot tech.
+#
+# One entry per technology named in scope. The `plain` field answers the only question the
+# site's reader actually has: *what does this change about the boot on my foot?* — not what
+# the marketing says. Every entry cites a source; where a term is a brand's own, the brand
+# page is preferred, corroborated by an independent review.
+#
+# `brand` groups terms; `also` lists the boots (in scope) that use it, so the site can link
+# a glossary term to the dataset rows. Unverifiable specifics are written UNVERIFIED.
+
+last_verified: "2026-08"
+category: broom_glossary
+
+terms:
+  # ---------------- Nike ----------------
+  - term: Flyknit
+    brand: nike
+    what: "A one-piece knitted upper."
+    plain: >-
+      Instead of stitching panels of material together, the upper is knitted as a single
+      sock-like piece. On your foot that means fewer seams to rub, a snugger wrap, and less
+      weight — the base idea behind every modern Nike knit upper.
+    source: "https://www.unisportstore.com/guides/nike-mercurial-superfly-11-elite-fg-breakout-review/"
+
+  - term: Vaporposite
+    brand: nike
+    what: "Nike's speed upper: a thin knit over a grippy textured skin and a foam layer."
+    plain: >-
+      Three thin layers working together — a knit for fit, a micro-textured skin for grip on
+      the ball, and a slim foam for a bit of touch. It keeps the foot locked to the boot at
+      speed without adding bulk. Used on the Mercurial Superfly/Vapor before the 2026 knits.
+    also: ["Mercurial Superfly 10/9", "Mercurial Vapor 16/15"]
+    source: "https://www.unisportstore.com/guides/nike-mercurial-superfly-11-elite-fg-breakout-review/"
+
+  - term: Zoom Air
+    brand: nike
+    what: "A pressurised air-and-fibre cushioning unit set into the forefoot of the soleplate."
+    plain: >-
+      A small springy air pocket under the ball of your foot that compresses and snaps back
+      on each push-off, so a bit of the energy you put in comes back — Nike's claim to
+      'explosive' acceleration in the Mercurial. It also sits under your foot, so you feel it.
+    also: ["Mercurial Superfly 11", "Mercurial Superfly 10"]
+    source: "https://www.footyheadlines.com/2026/01/blog-post_27.html"
+
+  - term: Gripknit
+    brand: nike
+    what: "A tacky, coated knit upper on the Phantom control silo."
+    plain: >-
+      A knit treated to be slightly sticky, so the ball grips the upper on first touch and
+      when you strike it — built for players whose game is control and precision rather than
+      pace. The Phantom 6's 'Tuned Gripknit' spreads it across more of the boot.
+    also: ["Phantom 6", "Phantom GX 2", "Phantom GX", "Phantom Luna 2"]
+    source: "https://cleatshub.com/review/nike-phantom-6-elite"
+
+  - term: Cyclone 360
+    brand: nike
+    what: "The Phantom's soleplate with a circular/conical stud layout."
+    plain: >-
+      A stud pattern arranged for turning: conical studs that let the foot rotate and pivot
+      quickly in any direction, rather than the bladed studs of a speed boot built for
+      straight-line acceleration. Suits the Phantom's stop-start, creative playmaker.
+    also: ["Phantom 6", "Phantom Luna 2"]
+    source: "https://about.nike.com/en/newsroom/releases/nike-phantom-6-official-images"
+
+  - term: ACC
+    brand: nike
+    what: "All Conditions Control — a surface treatment for consistent grip wet or dry."
+    plain: >-
+      A coating on the strike zone of the upper meant to give the same grip on the ball in
+      the rain as in the dry, so first touch and swerve don't change when the pitch is wet.
+      A claim about consistency rather than a structural part of the boot.
+    source: "https://www.prodirectsport.com/blogs/football/nike-mercurial-vapor-17-first-look"
+
+  # ---------------- adidas ----------------
+  - term: Primeknit
+    brand: adidas
+    what: "adidas's one-piece knitted upper, and its knitted ankle collar."
+    plain: >-
+      adidas's answer to Flyknit: a knitted upper (and often a knitted collar that hugs the
+      ankle on laceless boots) for a sock-like, seamless fit. On the Predator it forms the
+      collar of the laceless version.
+    also: ["Predator 26 (laceless)"]
+    source: "https://www.prodirectsport.com/blogs/football/adidas-predator-26"
+
+  - term: Hybridtouch
+    brand: adidas
+    what: "A synthetic 'leather' control upper on the Predator."
+    plain: >-
+      A synthetic material tuned to feel soft and controlled like leather but lighter and
+      more weatherproof — the base upper of the Predator control boot, onto which the rubber
+      grip elements are added.
+    also: ["Predator 26/25/24", "Predator Accuracy", "Predator Edge"]
+    source: "https://www.worldsoccershop.com/guide/adidas-predator-soccer-cleat-guide"
+
+  - term: Demonskin
+    brand: adidas
+    what: "Rubber spike/fin elements moulded across the Predator's strike zone."
+    plain: >-
+      Small rubber spikes covering the front of the boot that bite the ball, so you can put
+      more spin and grip on a pass or shot. The signature Predator feature; its heir on the
+      Predator 26 is called NanoStrike+.
+    also: ["Predator 24", "Predator Accuracy"]
+    source: "https://www.worldsoccershop.com/guide/adidas-predator-soccer-cleat-guide"
+
+  - term: Sprintframe
+    brand: adidas
+    what: "The lightweight soleplate on adidas's speed silo (F50 / X)."
+    plain: >-
+      A thin, light soleplate shaped for acceleration and quick changes of direction — the
+      plate under the F50 speed boot, where every gram is cut. 'Sprintframe 360' is the
+      current F50 version.
+    also: ["F50", "X Crazyfast", "X Speedportal"]
+    source: "https://cleatshub.com/review/adidas-predator-26-pro"
+
+  - term: Fibertouch
+    brand: adidas
+    what: "A thin engineered synthetic upper on the F50 speed silo."
+    plain: >-
+      A light synthetic upper with support built in only where it's needed, kept as thin as
+      possible for a close, fast feel. The speed-boot counterpart to the Predator's softer
+      Hybridtouch control upper.
+    also: ["F50", "X Crazyfast", "X Speedportal"]
+    source: "https://cleatshub.com/review/adidas-predator-26-pro"
+
+  # ---------------- cross-brand material ----------------
+  - term: Carbitex
+    brand: cross-brand
+    what: "A directional carbon-fibre composite that is stiff one way and flexible the other."
+    plain: >-
+      A carbon material engineered to bend easily as your foot flexes forward but stay stiff
+      against twisting, so a boot can be springy underfoot without feeling like a plank.
+      Used in high-end plates and inserts across brands.
+    also: []
+    source: UNVERIFIED
+    note: >-
+      Named in scope for the glossary; not confirmed in any specific in-scope Nike/adidas
+      Elite plate as of 2026-08. Left UNVERIFIED for its in-scope usage rather than guessed.

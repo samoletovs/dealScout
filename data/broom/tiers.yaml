@@ -1,0 +1,164 @@
+# bRoom tier explainer — "same name, three boots, three price bands".
+#
+# THE SITE'S MOST IMPORTANT SCREEN, and the one that must be factually exact. The teaching
+# moment: "Superfly Elite", "Superfly Elite (junior)" and "Superfly Academy" are three
+# different boots that a retailer's title barely distinguishes, priced €280 / €150 / €70.
+# This file states what physically differs, feature by feature.
+#
+# RRP bands here are the MEASURED bands from PR #30 (compare_at_price on prodirectsport.ie,
+# 2026-08-28) — the same numbers the classifier's rrp_bands carry. They are a corroboration
+# aid, never a filter; a discounted adult Elite is exactly what dealScout hunts.
+#
+# Two cautions the sources and PR #30 make explicit:
+#   * Junior Elite is a DIFFERENT construction, not "the adult boot in small sizes". adidas
+#     genuinely makes junior Elite boots (TPU plate, no rubber fins, laced only); Nike's
+#     "junior Elite" is often closer to the adult article. Both say Elite.
+#   * Adult Elite starts at EU 35–36. A small size is not proof of a junior boot; retailers
+#     shelve adult flagships in EU 36–39 under "Kids". Title + price cannot settle it — only
+#     the size grid can, which is why this file teaches rather than filters.
+#
+# ON THE `draw:` BLOCKS — READ BEFORE ILLUSTRATING.
+# The three tier stickers are rendered as OWNED ARTWORK drawn from this data, not photos. A
+# physical claim here becomes a shape on the page: "wider last" draws a wider boot. So each
+# tier carries a `draw` block separating what may be shown as a REAL geometric/material
+# difference (`show`, with `confidence`) from what must NOT be drawn as a hard delta
+# (`do_not_draw`). `confidence: directional` means the DIRECTION is sourced (junior plate is
+# softer than adult) but the MAGNITUDE is not measured — render a modest, clearly-relative
+# difference, never a dramatic one. `confidence: measured` means a specific figure is sourced.
+# No per-silo Nike/adidas Elite LAST-WIDTH figure was found for any tier: last width is
+# `do_not_draw` everywhere. A confident wrong width is the exact failure the brief names.
+
+last_verified: "2026-08"
+category: broom_tiers
+
+# The general rule, then the per-brand specifics. `source` on every row.
+overview:
+  plain: >-
+    A boot's silo name (Superfly, Predator, Copa) tells you what it is FOR — speed, control,
+    leather touch. Its TIER word (Elite, Pro, Academy, League, Club) tells you how much of
+    the real technology you are getting. The same silo is sold across tiers that look almost
+    identical in a listing photo but differ in plate, upper, weight, fit and price by a
+    factor of three or four.
+  source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+
+tiers:
+  - tier: adult-flagship
+    label: "Adult Elite"
+    audience: adult
+    rrp_band_eur:
+      nike: [250, 300]        # PR #30 measured, prodirectsport.ie 2026-08-28, n=116
+      adidas: [240, 350]      # PR #30 measured, n=84 (Copa is the €240 floor)
+    rrp_band_source: "PR #30 — measured compare_at_price on prodirectsport.ie, 2026-08-28"
+    plate:
+      material: "Carbon-fibre / Pebax composite — the stiffest, most responsive plates."
+      plain: "Maximum energy return and snap; the exact plate pros wear."
+    upper:
+      material: "Top knit / Gripknit / Hybridtouch / Fusionskin — the silo's signature tech."
+      plain: "The real upper technology the boot is marketed on."
+    fit_last: "Narrow, anatomical (Nike especially); tightest, most locked-in fit."
+    fit_last_confidence: directional   # widely reported for Nike Elite; no measured last-width figure
+    weight_g_range: [150, 230]
+    weight_plain: "Lightest in the range — every gram cut from upper and plate."
+    lining: "Thin performance mesh, minimal foam — a near-barefoot touch."
+    draw:
+      show:
+        - {feature: "plate stiffness", value: "stiffest of the three", confidence: directional,
+           note: "carbon/Pebax composite; draw as the most rigid plate"}
+        - {feature: "profile", value: "lowest, thinnest upper and lining", confidence: directional}
+        - {feature: "adidas Predator closure", value: "LACELESS on Predator Elite", confidence: measured,
+           note: "adult Predator Elite is laceless with a Primeknit collar — a clean, no-lace strike face. Drawable. Source: adidas.com IF8860 / thesoccerfactory."}
+      drawable_by_silo:
+        - {feature: "collar", note: "Nike Superfly Elite = high knit Dynamic Fit collar; Nike Vapor Elite = low-cut, laced. adidas Predator Elite = Primeknit collar. Collar is a SILO trait, not a tier trait — draw per silo, not per tier. Source: thesoccerfactory Superfly-vs-Vapor; adidas.com."}
+      do_not_draw:
+        - {feature: "last width", reason: "no measured Nike/adidas adult-Elite last-width figure sourced"}
+        - {feature: "exact weight", reason: "range is silo-wide (150–230 g), not a per-boot spec"}
+    source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+
+  - tier: junior-flagship
+    label: "Junior Elite"
+    audience: junior
+    rrp_band_eur:
+      nike: [150, 175]        # PR #30 measured, n=11
+      adidas: [110, 150]      # PR #30 measured, n=34
+    rrp_band_source: "PR #30 — measured compare_at_price on prodirectsport.ie, 2026-08-28"
+    plate:
+      material: "Pebax or TPU — rarely full carbon."
+      plain: >-
+        De-specced from the adult plate for durability and cost. On adidas junior Elite this
+        is a genuine TPU plate, not the adult carbon/Comfort Frame.
+    upper:
+      material: "The silo's upper, simplified; adidas junior Elite is laced only."
+      plain: "Same look and often the same upper family, built for growing feet."
+    fit_last: "Roomier and more forgiving than the adult last — built on a junior last for growing feet."
+    fit_last_confidence: directional   # junior boots run roomier (Pro:Direct, buying guides); no measured width delta
+    weight_g_range: UNVERIFIED
+    weight_plain: "Slightly heavier than the adult Elite, trading grams for durability."
+    lining: "A little more lining than the adult Elite."
+    draw:
+      show:
+        - {feature: "plate stiffness", value: "softer / more flexible than adult", confidence: directional,
+           note: "genuine TPU/Pebax on junior, not adult carbon; draw a visibly less rigid plate"}
+        - {feature: "profile", value: "slightly fuller than adult", confidence: directional}
+        - {feature: "adidas junior closure", value: "LACED (never laceless)", confidence: measured,
+           note: "adidas junior Elite is laced only, even where the adult is laceless — a concrete, drawable difference. Draw laces on the junior adidas card. Source: Pro:Direct kids-elite; footyheadlines junior launches."}
+        - {feature: "grip fins", value: "fewer / simplified vs adult", confidence: directional,
+           note: "junior Elite de-specs the adult's grip elements; draw a plainer strike face than the adult"}
+      do_not_draw:
+        - {feature: "last width", reason: "junior runs roomier directionally, but no measured width figure — draw only a MODEST difference, never a wide-boot silhouette"}
+        - {feature: "exact weight", reason: "UNVERIFIED"}
+    caution: >-
+      A junior Elite is a DIFFERENT boot from the adult Elite, not the adult boot in small
+      sizes. It is still a legitimate top-of-range find for a child — the point is to know
+      which one you are being offered. (See README: dealScout classifies, never filters.)
+    source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+
+  - tier: takedown
+    label: "The tier below Elite (Nike Academy / adidas League — also Pro, Club)"
+    audience: adult
+    rrp_band_eur:
+      nike: [40, 190]         # catalogue takedown band
+      adidas: [40, 180]       # catalogue takedown band
+    rrp_band_source: "data/football_boots.yaml rrp_bands.takedown"
+    plate:
+      material: "Basic TPU / plastic — no carbon, no Pebax."
+      plain: "Less spring, heavier, but durable and far cheaper."
+    upper:
+      material: "Synthetic / textile — no Gripknit, no rubber grip fins, no Fusionskin."
+      plain: "The silo name without the silo's actual technology."
+    fit_last: "Roomier, more forgiving; less locked-in."
+    fit_last_confidence: directional
+    weight_g_range: UNVERIFIED
+    weight_plain: "Typically 30–60 g heavier than the Elite of the same silo."
+    weight_plain_confidence: directional   # widely reported; not a per-silo measured figure
+    lining: "Thicker textile/foam lining — comfier, less precise on the ball."
+    draw:
+      show:
+        - {feature: "plate stiffness", value: "least stiff — injected TPU/plastic, no carbon", confidence: directional,
+           note: "draw as the thickest, most rigid-looking BUT least responsive plate; injected not carbon"}
+        - {feature: "profile", value: "bulkier upper and lining than Elite", confidence: directional}
+        - {feature: "closure", value: "LACED", confidence: measured,
+           note: "the tier below is laced (adidas League is never laceless); draw laces. Source: thesoccerfactory Predator-buying-guide; motionwears review."}
+        - {feature: "grip fins / strike elements", value: "fewer or none vs Elite", confidence: measured,
+           note: "Predator League has fewer/no rubber grip fins vs Elite's full set — draw a plainer strike face. Source: thesoccerfactory; motionwears."}
+        - {feature: "collar", value: "lower-profile mesh, not premium knit", confidence: directional,
+           note: "simpler mesh collar than Elite's Primeknit; draw a plainer ankle opening"}
+      do_not_draw:
+        - {feature: "last width", reason: "no measured figure"}
+        - {feature: "exact weight", reason: "30–60 g heavier is directional, not measured per silo"}
+    note: >-
+      Nike's ladder below Elite is Pro / Academy / Club; adidas's is Pro / League / Club.
+      'Academy' and 'League' are the tier immediately below Elite for their respective brands.
+    source: "https://www.sportsdirect.com/the-zone/football/football-boot-tiers-explained"
+
+# The worked example the site leads with, so the abstract table lands.
+worked_example:
+  silo: "Nike Mercurial Superfly"
+  rows:
+    - {tier: "Adult Elite", note: "carbon plate, Air Zoom, FlyWeave Ultra, ~180 g", band_eur: [250, 300]}
+    - {tier: "Junior Elite", note: "same look, Pebax/TPU plate, roomier last", band_eur: [150, 175]}
+    - {tier: "Academy (tier below)", note: "TPU plate, synthetic upper, heavier", band_eur: [40, 190]}
+  plain: >-
+    Three boots, one name. A listing that just says "Superfly Elite" at €96 could be a genuine
+    adult flagship at 65% off — or a small-size adult boot, or a junior boot with an inflated
+    was-price. The size grid decides; the title alone never does.
+  source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
