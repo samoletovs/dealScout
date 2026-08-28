@@ -303,3 +303,41 @@ def test_no_drawable_claims_an_absolute_it_cannot_support():
         "absolute, and this artwork is taught to readers as fact. Either source the "
         "exclusivity properly or restate it as `directional`:\n  " + "\n  ".join(offenders)
     )
+
+
+def test_closure_is_never_drawn_as_a_tier_property():
+    """Laced vs laceless is a SKU variant within a tier, so it can never be a tier drawable.
+
+    This is a second failure mode, distinct from the absolutes guard above and invisible to
+    it. `LACELESS on Predator Elite` contains no "never"/"only"/"always", so it passed that
+    check — while still asserting a within-tier SKU variant as a property of the tier, marked
+    `measured`, aimed at an illustrator.
+
+    It is false in both directions:
+
+      * adidas sells `Predator Elite FG` (laced) AND `Predator Elite Laceless FG` at the
+        same tier, so a card labelled only "Predator Elite FG" must not be drawn laceless;
+      * a laceless JUNIOR Elite exists -- `Predator Elite Laceless Juniors FG`, EUR 63.00,
+        sportsdirect.lv 2026-08-28 -- so closure cannot separate adult from junior either.
+
+    `data/football_boots.yaml` already encodes the rule: `laceless` sits in `noise`, stripped
+    before tier is read, and Predator+ (laceless) and Predator.1 (laced) are recorded as the
+    same Elite tier.
+
+    Closure may still be described per silo or per named SKU. It may never be a `draw.show`
+    item, because that is where the tier explainer reads its differences from.
+    """
+    closure_words = ("laceless", "laced", "closure", "lace")
+    offenders = []
+    for tier in _load(BROOM / "tiers.yaml")["tiers"]:
+        for item in tier.get("draw", {}).get("show", []):
+            text = " ".join(str(item.get(k, "")) for k in ("feature", "value")).lower()
+            if any(re.search(r"\b" + w + r"\b", text) for w in closure_words):
+                offenders.append(f"{tier['tier']}/{item.get('feature')}: {item.get('value')!r}")
+
+    assert not offenders, (
+        "Closure appears as a tier drawable. Laced and laceless coexist at every tier this "
+        "dataset covers, so drawing either as a tier difference teaches something the "
+        "catalogue disproves. Move it to `drawable_by_silo`, or name the specific SKU:\n  "
+        + "\n  ".join(offenders)
+    )
