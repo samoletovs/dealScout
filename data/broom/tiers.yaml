@@ -65,11 +65,20 @@ tiers:
         - {feature: "plate stiffness", value: "stiffest of the three", confidence: directional,
            note: "carbon/Pebax composite; draw as the most rigid plate"}
         - {feature: "profile", value: "lowest, thinnest upper and lining", confidence: directional}
-        - {feature: "adidas Predator closure", value: "LACELESS on Predator Elite", confidence: measured,
-           note: "adult Predator Elite is laceless with a Primeknit collar — a clean, no-lace strike face. Drawable. Source: adidas.com IF8860 / thesoccerfactory."}
       drawable_by_silo:
         - {feature: "collar", note: "Nike Superfly Elite = high knit Dynamic Fit collar; Nike Vapor Elite = low-cut, laced. adidas Predator Elite = Primeknit collar. Collar is a SILO trait, not a tier trait — draw per silo, not per tier. Source: thesoccerfactory Superfly-vs-Vapor; adidas.com."}
+        - {feature: "closure", note: "Closure is a within-tier SKU VARIANT, never a tier
+             property. adidas sells `Predator Elite FG` (laced) and `Predator Elite Laceless
+             FG` at the SAME tier, and data/football_boots.yaml encodes exactly this: it
+             lists `laceless` in `noise` (stripped before tier is read) and records that
+             Predator+ (laceless) and Predator.1 (laced) were the same Elite tier. A card
+             labelled only `Predator Elite FG` must therefore NOT be drawn laceless — that
+             card names the laced SKU. Draw closure only when the card names the specific
+             SKU, and never to signal a tier."}
       do_not_draw:
+        - {feature: "closure as a tier property", reason: "laceless and laced coexist at every
+             tier this dataset covers; drawing either as a tier difference teaches something
+             the catalogue disproves"}
         - {feature: "last width", reason: "no measured Nike/adidas adult-Elite last-width figure sourced"}
         - {feature: "exact weight", reason: "range is silo-wide (150–230 g), not a per-boot spec"}
     source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
@@ -99,19 +108,18 @@ tiers:
         - {feature: "plate stiffness", value: "softer / more flexible than adult", confidence: directional,
            note: "genuine TPU/Pebax on junior, not adult carbon; draw a visibly less rigid plate"}
         - {feature: "profile", value: "slightly fuller than adult", confidence: directional}
-        - {feature: "adidas junior closure", value: "COMMONLY laced; laceless junior SKUs exist", confidence: directional,
-           note: "adidas junior Elite is usually laced, but 'never laceless' is FALSE and must not be
-                  drawn as a tier difference. Counter-example measured on sportsdirect.lv 2026-08-28 and
-                  recorded in data/football_boots.yaml: 'Predator Elite Laceless Juniors Firm Ground
-                  Football Boots' EUR 63.00. The catalogue also treats `laceless` as NOISE — a closure
-                  variant WITHIN a tier, not a marker of one — and records that Predator+ (laceless) and
-                  Predator.1 (laced) were the SAME tier. Closure therefore cannot distinguish adult from
-                  junior. Draw laces if the specific boot has them; never as a tier signal.
-                  Sources: Pro:Direct kids-elite and footyheadlines describe the COMMON configuration,
-                  which is a tendency, not the absolute this field previously claimed."}
         - {feature: "grip fins", value: "fewer / simplified vs adult", confidence: directional,
            note: "junior Elite de-specs the adult's grip elements; draw a plainer strike face than the adult"}
       do_not_draw:
+        - {feature: "closure as a tier property", reason: "adidas junior Elite is COMMONLY laced,
+             but that is a tendency and not a tier signal. Counter-example measured on
+             sportsdirect.lv 2026-08-28 and recorded in data/football_boots.yaml: 'Predator Elite
+             Laceless Juniors Firm Ground Football Boots' EUR 63.00 — a laceless JUNIOR Elite. The
+             catalogue also lists `laceless` in `noise`, stripped before tier is read, and records
+             Predator+ (laceless) and Predator.1 (laced) as the SAME tier. Closure therefore cannot
+             distinguish adult from junior. Draw laces if the specific SKU has them; never to
+             signal the tier. Pro:Direct kids-elite and footyheadlines describe the common
+             configuration, which is a tendency rather than the absolute once claimed here."}
         - {feature: "last width", reason: "junior runs roomier directionally, but no measured width figure — draw only a MODEST difference, never a wide-boot silhouette"}
         - {feature: "exact weight", reason: "UNVERIFIED"}
     caution: >-
@@ -144,20 +152,18 @@ tiers:
         - {feature: "plate stiffness", value: "least stiff — injected TPU/plastic, no carbon", confidence: directional,
            note: "draw as the thickest, most rigid-looking BUT least responsive plate; injected not carbon"}
         - {feature: "profile", value: "bulkier upper and lining than Elite", confidence: directional}
-        - {feature: "closure", value: "LACED", confidence: directional,
-           note: "the tier below is commonly laced, and laceless is a premium feature that
-                  usually stays on the top tier — so draw laces. But NOT an absolute: adidas
-                  has sold laceless boots below Elite in the past (the numbered era's
-                  Predator 20.3 Laceless sat at what is now League), and this repo treats
-                  `laceless` as NOISE — a closure variant WITHIN a tier, not a marker of one.
-                  Draw laces because they are typical here, never to signal the tier.
-                  Sources: thesoccerfactory Predator-buying-guide; motionwears review — both
-                  describe the common configuration, not exclusivity."}
         - {feature: "grip fins / strike elements", value: "fewer or none vs Elite", confidence: measured,
            note: "Predator League has fewer/no rubber grip fins vs Elite's full set — draw a plainer strike face. Source: thesoccerfactory; motionwears."}
         - {feature: "collar", value: "lower-profile mesh, not premium knit", confidence: directional,
            note: "simpler mesh collar than Elite's Primeknit; draw a plainer ankle opening"}
       do_not_draw:
+        - {feature: "closure as a tier property", reason: "the tier below is COMMONLY laced, and
+             laceless is a premium feature that usually stays near the top — but that is a
+             tendency, not a rule. adidas has sold laceless boots below Elite (the numbered era's
+             Predator 20.3 Laceless sat at what is now League), and this repo lists `laceless` in
+             `noise` as a closure variant WITHIN a tier. Draw laces here because they are typical,
+             never to signal the tier. Sources: thesoccerfactory Predator-buying-guide;
+             motionwears review — both describe the common configuration, not exclusivity."}
         - {feature: "last width", reason: "no measured figure"}
         - {feature: "exact weight", reason: "30–60 g heavier is directional, not measured per silo"}
     note: >-
