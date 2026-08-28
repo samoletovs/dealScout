@@ -255,3 +255,42 @@ def test_heritage_notes_are_dated_and_sourced_per_silo():
     for note in doc["notes"]:
         assert note.get("dated"), f"heritage note '{note.get('title')}' is undated"
         assert note.get("sources"), f"heritage note '{note.get('title')}' has no sources"
+
+
+def test_no_drawable_claims_an_absolute_it_cannot_support():
+    """An absolute is destroyed by one counter-example, so `measured` must never be
+    spent on words like "never", "only" or "always".
+
+    This exists because it happened. `adidas junior closure` shipped as
+    `LACED (never laceless)` with `confidence: measured`, instructing the illustrator
+    to draw laces on the junior card as a *taught tier difference*. It is false:
+    `data/football_boots.yaml` records a real listing measured on sportsdirect.lv on
+    2026-08-28 —
+
+        "Predator Elite Laceless Juniors Firm Ground Football Boots"   EUR 63.00
+
+    — and the same file treats `laceless` as NOISE, a closure variant WITHIN a tier
+    rather than a marker of one, noting that Predator+ (laceless) and Predator.1
+    (laced) were the SAME tier. So closure cannot separate adult from junior at all.
+
+    The sources behind the original claim were describing the COMMON configuration.
+    That is a tendency, and a tendency phrased as an absolute is a wrong fact. A
+    tendency may still be drawn, as `directional`; an absolute may not, unless a
+    source genuinely establishes exclusivity.
+    """
+    absolutes = ("never", "only", "always", "exclusively")
+    offenders = []
+    for tier in _load(BROOM / "tiers.yaml")["tiers"]:
+        for item in tier.get("draw", {}).get("show", []):
+            if item.get("confidence") != "measured":
+                continue
+            value = str(item.get("value", "")).lower()
+            hits = [word for word in absolutes if word in value.split() or f"({word}" in value]
+            if hits:
+                offenders.append(f"{tier['tier']}/{item.get('feature')}: {item.get('value')!r} uses {hits}")
+
+    assert not offenders, (
+        "A `measured` drawable states an absolute. One counter-example destroys an "
+        "absolute, and this artwork is taught to readers as fact. Either source the "
+        "exclusivity properly or restate it as `directional`:\n  " + "\n  ".join(offenders)
+    )
