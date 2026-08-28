@@ -1,14 +1,11 @@
 name: probe sportsdirect (temporary)
 
 # TEMPORARY measurement. Delete once the answer is recorded in SOURCES.md.
-#
-# Round 1: browser headers, HTTP/2  -> http=000, curl exit 92 in 0.26s (framing refusal)
-# Round 2: plain curl, NO User-Agent -> http=200, 812KB, ecommerceData PRESENT in 0.7s
-#
-# So the block is not on the IP at all: Akamai tarpits a request that CLAIMS to be Chrome
-# while having a non-Chrome TLS/HTTP fingerprint, and serves an honest `curl/8.x` at once.
-# Round 3 asks the only question that matters for the fix: does AIOHTTP -- the client the
-# collector actually uses, with a different TLS fingerprint again -- also get through?
+# Round 3 settled reachability: an honest self-identifying UA is served, HTTP 200, 812 KB.
+# Round 4 asks the next question — once the bytes arrive, how many PRODUCTS do this repo's
+# own parsers actually recover from them? SOURCES.md claims "the parser is not the
+# problem", but nothing in the tree reads the `ecommerceData` block, so that needs testing
+# rather than believing. Also saves the page as an artifact to build a fixture from.
 
 on:
   push:
@@ -23,45 +20,51 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
-      - run: pip install -q aiohttp
+      - run: pip install -q -r requirements.txt
 
-      - name: aiohttp variants
+      - name: What do our parsers recover?
         run: |
           python - <<'PY'
-          import asyncio, aiohttp, re
+          import asyncio, re, pathlib
+          from dealscout import collector
 
           URL = "https://www.sportsdirect.lv/football/football-boots/kids-football-boots"
-          BROWSER = {
-              "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                             "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"),
-              "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-              "Accept-Language": "en-GB,en;q=0.9,lv;q=0.8",
-              "Sec-Fetch-Dest": "document",
-              "Sec-Fetch-Mode": "navigate",
-              "Sec-Fetch-Site": "none",
-              "Upgrade-Insecure-Requests": "1",
-          }
-
-          async def probe(label, headers):
-              print(f"=== {label} ===", flush=True)
-              try:
-                  async with aiohttp.ClientSession(headers=headers) as s:
-                      async with s.get(URL, timeout=aiohttp.ClientTimeout(total=40)) as r:
-                          body = await r.text()
-                  names = re.findall(r'"name":"([^"]{0,60})"', body)
-                  print(f"  HTTP {r.status}  bytes={len(body)}  ecommerceData="
-                        f"{'PRESENT' if 'ecommerceData' in body else 'absent'}  products={len(names)}")
-                  for n in names[:5]:
-                      print("   *", n)
-              except Exception as exc:
-                  print(f"  FAILED: {type(exc).__name__}: {exc}")
-              print(flush=True)
 
           async def main():
-              await probe("A. current BROWSER_HEADERS", BROWSER)
-              await probe("B. no headers at all (aiohttp default UA)", None)
-              await probe("C. minimal, honest UA", {"User-Agent": "dealScout/1.0 (+https://github.com/samoletovs/dealScout)"})
-              await probe("D. Accept only, no UA override", {"Accept": "text/html,*/*;q=0.8"})
+              html = await collector.fetch(URL, timeout=40)
+              if not html:
+                  print("FETCH FAILED"); return
+              print(f"fetched {len(html)} bytes")
+              pathlib.Path("page.html").write_text(html, encoding="utf-8")
+
+              print("\n--- parse_html_links ---")
+              links = collector.parse_html_links(html, URL)
+              print(f"  {len(links)} links")
+              for n, u in links[:8]:
+                  print(f"   * {n!r} -> {u[:90]}")
+
+              print("\n--- parse_product_tiles ---")
+              tiles = collector.parse_product_tiles(html, URL)
+              print(f"  {len(tiles)} tiles")
+              for p in tiles[:8]:
+                  print(f"   * {p.name!r} {p.price} {p.brand!r}")
+
+              print("\n--- parse_ldjson_products ---")
+              lds = collector.parse_ldjson_products(html, URL)
+              print(f"  {len(lds)} ld+json products")
+
+              print("\n--- raw ecommerceData impressions (what IS in the page) ---")
+              m = re.search(r"var ecommerceData\s*=\s*(\{.*?\});", html, re.S)
+              print(f"  block present: {bool(m)}")
+              if m:
+                  print(f"  impressions: {len(re.findall(r'\"id\":\"', m.group(1)))}")
 
           asyncio.run(main())
           PY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sportsdirect-page
+          path: page.html
+          if-no-files-found: ignore

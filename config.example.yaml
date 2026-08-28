@@ -253,12 +253,25 @@ hunts:
       # €139.95, above every junior Elite. The `tier` requirement is what rejects it.
       min_reference_price: 110
     watch:                       # retailer listing pages, already sorted by discount
-      # Known-good, previously bought from. Behind Akamai bot protection: it answers a
-      # complete browser header set and silently tarpits anything less, so keep the
-      # request rate low — see collector.BROWSER_HEADERS. Query string, not a #fragment:
-      # a fragment never reaches the server, so the discount sort simply did not apply.
-      - "https://www.sportsdirect.lv/football/football-boots/kids-football-boots?dcp=1&dppp=60&OrderBy=discountvalue_desc"
-      - "https://www.sportsdirect.lv/football/football-boots?dcp=1&dppp=60&OrderBy=discountvalue_desc"
+      # sportsdirect.lv — the owner's MAIN shop, the one he actually orders from, and for
+      # months the one thing this list could not read. It was recorded as unreachable
+      # ("an IP-level Akamai tarpit … CI runners are datacentre IPs and will be blocked
+      # too"). Measured on a runner on 2026-08-28, that was wrong in its cause: Akamai is
+      # fingerprinting, not IP-blocking. A client claiming to be Chrome while its TLS
+      # handshake says otherwise is tarpitted; one that honestly identifies itself is
+      # served in under a second. `collector.headers_for` now sends this host an honest
+      # dealScout UA, and the page yields 71 products.
+      #
+      # NO QUERY STRING, deliberately, and this is not the same point as the old comment
+      # about #fragments. The sort DOES work as `?dcp=1&dppp=60&OrderBy=discountvalue_desc`
+      # — but the shop's own robots.txt says `Disallow: *dppp` and `Disallow: *OrderBy*`,
+      # so fetching it that way is scraping a page we have been asked not to. (Python's
+      # RobotFileParser ignores a rule that doesn't start with "/", so nothing would have
+      # stopped us — which is exactly why it has to be a decision here rather than an
+      # accident there.) Nothing is lost: the bare canonical URL returns the same catalogue,
+      # and this engine sorts by its own judge, not by the retailer's discount order.
+      - "https://www.sportsdirect.lv/football/football-boots/kids-football-boots"
+      - "https://www.sportsdirect.lv/football/football-boots"
       # Unisport (DK) — ships to LV for €7. Publishes full per-size stock AND RRP in the
       # page, so a find here can be confirmed in the size before you click.
       - "https://www.unisportstore.com/kids-boot-sale/"
