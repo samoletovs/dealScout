@@ -32,9 +32,16 @@ from .feedback import downvoted_urls
 from .hunt import judge_hunt, product_identity
 from .models import Hunt, Product
 from .notify import feedback_base_url, read_feedback, render_shortlist, send_email
-from .pricehistory import HistoryConfig, append, extend, load_history, observe, prune
-from .pricehistory import rewrite as rewrite_history
-from .pricehistory import summarise_all
+from .pricehistory import (
+    HistoryConfig,
+    append_dir,
+    extend,
+    load_history_dir,
+    observe,
+    prune,
+    rewrite_dir,
+    summarise_all,
+)
 from .run_hunt import load_hunts
 from .scout import scout
 from .shortlist import (
@@ -289,7 +296,7 @@ async def main(argv: list[str]) -> int:
     table = delivery_table(config)
     vocab = merge_vocab(config.get("vocabulary"))
     limits = HistoryConfig.from_config(config)
-    history = load_history(limits.path)
+    history = load_history_dir(limits.dir, limits.path)
     logged: set[tuple[str, str]] = set()  # config ships several hunts; a shared product logs once
     # A 👎 in a previous email is the owner saying "not this one". The shortlist emits
     # those rating links, so it must also honour them — otherwise a rejected boot returns
@@ -336,7 +343,7 @@ async def main(argv: list[str]) -> int:
             if (o.key, o.source) not in logged
         ]
         logged.update((o.key, o.source) for o in fresh)
-        append(fresh, limits.path)
+        append_dir(fresh, limits.dir)
         history = extend(history, fresh)
         memory = summarise_all(shown, history, limits=limits, identify=identify)
 
@@ -386,7 +393,7 @@ async def main(argv: list[str]) -> int:
                 sent += 1
             else:
                 unsent += 1
-    rewrite_history(prune(history, limits.keep_days, limits.max_points), limits.path)
+    rewrite_dir(prune(history, limits.keep_days, limits.max_points), limits.dir)
     save_yields(yield_history)
     rrpcache.save(
         rrp_memory, rrp_stamps, keep_days=rrp_limits.keep_days, path=rrp_limits.path

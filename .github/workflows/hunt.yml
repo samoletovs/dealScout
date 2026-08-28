@@ -18,6 +18,8 @@ on:
 jobs:
   hunt:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # to push the accumulated price log to the price-history branch
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -29,7 +31,9 @@ jobs:
       # an email means something actually changed. That requires last run's ledger: with a
       # cold state every boot looks NEW and the hunt mails the same list every morning
       # until it is ignored. Restore-keys let a run start from the most recent state even
-      # though the primary key is unique per run.
+      # though the primary key is unique per run. This cache holds ONLY the monitor's
+      # "already reported" ledger — losing it costs one noisy email, not price depth. The
+      # price log lives on a durable branch instead (see below).
       - name: Restore monitor state
         uses: actions/cache/restore@v4
         with:
@@ -38,12 +42,28 @@ jobs:
           restore-keys: |
             dealscout-hunt-state-
 
+      # The price log is the one artefact that must survive across every run of BOTH
+      # workflows and be readable when the public site is built — so it lives in git, on a
+      # dedicated orphan branch, not in an evictable per-run cache. hunt.yml and
+      # shortlist.yml check out the SAME branch into the SAME directory, so they accumulate
+      # into one log rather than two split-brain caches. A first run before the branch
+      # exists simply starts empty; the commit step creates it.
+      - name: Restore price history
+        uses: actions/checkout@v5
+        with:
+          ref: price-history
+          path: price-history
+        continue-on-error: true # the branch may not exist yet on the very first run
+
       - run: python -m dealscout.run_hunt ${{ github.event.inputs.hunt }}
         env:
           COURIER_URL: ${{ secrets.COURIER_URL }}
           COURIER_KEY: ${{ secrets.COURIER_KEY }}
           DEALSCOUT_EMAIL_TO: ${{ secrets.DEALSCOUT_EMAIL_TO }}
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          # Point the durable store at the checked-out branch. The legacy flat file under
+          # state/ is still read once, so whatever the old cache holds is migrated in.
+          DEALSCOUT_PRICE_HISTORY_DIR: price-history/prices
 
       - name: Save monitor state
         if: always()
@@ -51,6 +71,14 @@ jobs:
         with:
           path: state
           key: dealscout-hunt-state-${{ github.run_id }}
+
+      # Persist the accumulated price log back to its branch. Nothing to commit is the
+      # normal case on a quiet run and must not fail the job.
+      - name: Save price history
+        if: always()
+        run: bash .github/scripts/commit-price-history.sh
+        env:
+          PRICE_HISTORY_DIR: price-history
 
       # The rendered report, kept so a run can be inspected after the fact — useful when
       # the answer is "nothing", which is the expected answer most days.

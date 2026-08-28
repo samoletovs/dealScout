@@ -34,9 +34,16 @@ from .monitor import (
     save_state,
 )
 from .notify import feedback_base_url, read_feedback, render_hunt_report, send_email
-from .pricehistory import HistoryConfig, append, extend, load_history, observe, prune
-from .pricehistory import rewrite as rewrite_history
-from .pricehistory import summarise_all
+from .pricehistory import (
+    HistoryConfig,
+    append_dir,
+    extend,
+    load_history_dir,
+    observe,
+    prune,
+    rewrite_dir,
+    summarise_all,
+)
 from .scout import scout
 from .spec import merge_vocab
 
@@ -140,7 +147,7 @@ async def run(
     state_path = Path(monitor_conf.get("state_path") or DEFAULT_STATE_PATH)
     state = load_state(state_path)
     limits = HistoryConfig.from_config(config)
-    history = load_history(limits.path)
+    history = load_history_dir(limits.dir, limits.path)
 
     entries = await read_feedback()
     rejected = downvoted_urls(entries)  # never re-surface a deal you 👎'd
@@ -162,7 +169,7 @@ async def run(
             if (o.key, o.source) not in logged
         ]
         logged.update((o.key, o.source) for o in fresh)
-        append(fresh, limits.path)
+        append_dir(fresh, limits.dir)
         history = extend(history, fresh)
         memory = summarise_all(
             [p for p, _, _ in results], history, limits=limits, identify=identify
@@ -180,7 +187,7 @@ async def run(
 
     state = forget_stale(state, int(monitor_conf.get("forget_after_days", DEFAULT_FORGET_AFTER_DAYS)))
     save_state(state, state_path)
-    rewrite_history(prune(history, limits.keep_days, limits.max_points), limits.path)
+    rewrite_dir(prune(history, limits.keep_days, limits.max_points), limits.dir)
 
     total = sum(len(v) for v in findings.values())
     if total and send:

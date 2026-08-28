@@ -22,6 +22,8 @@ on:
 jobs:
   shortlist:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # to push the accumulated price log to the price-history branch
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -32,14 +34,15 @@ jobs:
       # The price memory is the only thing that lets a row say "cheapest seen in 45 days"
       # instead of repeating the retailer's own "was" price. It is built one observation
       # per run, so without carrying state between runs it would never reach the minimum
-      # history the claim requires, and every shortlist would stay silent forever.
+      # history the claim requires, and every shortlist would stay silent forever. It lives
+      # on the durable `price-history` branch — the SAME branch and directory hunt.yml
+      # uses — so both workflows accumulate into one log rather than two split caches.
       - name: Restore price history
-        uses: actions/cache/restore@v4
+        uses: actions/checkout@v5
         with:
-          path: state
-          key: dealscout-shortlist-state-${{ github.run_id }}
-          restore-keys: |
-            dealscout-shortlist-state-
+          ref: price-history
+          path: price-history
+        continue-on-error: true # the branch may not exist yet on the very first run
 
       - name: Build the shortlist
         run: |
@@ -50,13 +53,13 @@ jobs:
           COURIER_KEY: ${{ secrets.COURIER_KEY }}
           DEALSCOUT_EMAIL_TO: ${{ secrets.DEALSCOUT_EMAIL_TO }}
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          DEALSCOUT_PRICE_HISTORY_DIR: price-history/prices
 
       - name: Save price history
         if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: state
-          key: dealscout-shortlist-state-${{ github.run_id }}
+        run: bash .github/scripts/commit-price-history.sh
+        env:
+          PRICE_HISTORY_DIR: price-history
 
       # Uploaded unconditionally: if the courier secrets are not set the run still
       # produces the shortlist, and downloading it beats re-running the scan.

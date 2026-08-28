@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -66,6 +67,31 @@ logger = logging.getLogger(__name__)
 _IDENTITY_ATTRS: tuple[str, ...] = ("brand", "silo", "generation", "tier", "soleplate")
 
 DEFAULT_HISTORY_PATH = Path("state/prices.jsonl")
+# Where the durable log lives: a directory of monthly shards (``prices/2026-08.jsonl``),
+# committed to a dedicated ``price-history`` git branch by the workflows rather than kept in
+# ``actions/cache``. This is the storage decision, and it has a reversal condition written
+# down so a later reader can see when it stops being right:
+#
+#   Why a git data branch, not Azure Blob/Table. The price log's whole purpose is to be
+#   readable when the public site is *built*, not only by the cron that writes it. A git
+#   branch satisfies that for free: the site's build already checks out the repo, so it can
+#   read the JSONL with no credentials and no Azure dependency at launch — which matters
+#   because deployment is currently gated on a personal Azure login, and a storage design
+#   that needed Azure would put the price history behind that same blocker. Blob/Table would
+#   add an auth dependency to the one artefact that most needs to be trivially readable.
+#
+#   Why monthly shards, and what bounds them. A single ever-growing file would make every
+#   daily commit rewrite the whole log and would eventually be unreasonable to check out.
+#   Sharding by month keeps each file small and each commit a small append; ``prune`` at
+#   ``DEFAULT_KEEP_DAYS`` (180) then drops whole months once they age out, so the branch
+#   holds roughly six monthly files, not an unbounded history.
+#
+#   What would change the answer. Move off the git branch to Blob/Table when either the log
+#   outgrows what is sane to commit — order tens of megabytes, i.e. the point where a fresh
+#   checkout of the branch is a cost in itself — or the site needs *server-side queries*
+#   over the history (filtering, aggregation per boot on demand) rather than a static read
+#   of the whole log at build time. Both are post-launch problems; neither is true today.
+DEFAULT_HISTORY_DIR = Path("prices")
 DEFAULT_KEEP_DAYS = 180
 DEFAULT_MAX_POINTS = 200
 # The floor below which the honest answer is "not enough history yet". Three observations
@@ -225,6 +251,7 @@ class HistoryConfig:
     """Where the history lives, how much of it is kept, and when it may be quoted."""
 
     path: Path = DEFAULT_HISTORY_PATH
+    dir: Path = DEFAULT_HISTORY_DIR
     keep_days: int = DEFAULT_KEEP_DAYS
     max_points: int = DEFAULT_MAX_POINTS
     min_observations: int = DEFAULT_MIN_OBSERVATIONS
@@ -232,10 +259,18 @@ class HistoryConfig:
 
     @classmethod
     def from_config(cls, config: dict) -> HistoryConfig:
-        """Read the limits from the existing ``monitor:`` block, defaulting silently."""
+        """Read the limits from the existing ``monitor:`` block, defaulting silently.
+
+        ``DEALSCOUT_PRICE_HISTORY_DIR`` in the environment overrides the configured
+        directory, so a workflow can point the durable store at the branch it has just
+        checked out without editing config. Env wins because it is the deployment's fact
+        about where the log physically lives, not the user's preference about limits.
+        """
         block = config.get("monitor") or {}
+        env_dir = os.getenv("DEALSCOUT_PRICE_HISTORY_DIR")
         return cls(
             path=Path(block.get("price_history_path") or DEFAULT_HISTORY_PATH),
+            dir=Path(env_dir or block.get("price_history_dir") or DEFAULT_HISTORY_DIR),
             keep_days=_positive_int(block.get("price_history_days"), DEFAULT_KEEP_DAYS),
             max_points=_positive_int(block.get("price_history_max_points"), DEFAULT_MAX_POINTS),
             min_observations=_positive_int(
@@ -403,6 +438,104 @@ def rewrite(history: dict[str, list[Observation]], path: Path = DEFAULT_HISTORY_
     path.write_text("".join(p.to_json() + "\n" for p in points), encoding="utf-8")
     logger.info("price history: %d observation(s) -> %s", len(points), path)
     return path
+
+
+# ------------------------------------------------------------ the durable monthly store
+#
+# The functions above operate on one flat file — the shape the log had when it lived in a
+# per-run cache. The ones below operate on a *directory of monthly shards*, the shape it
+# takes on the durable git branch. They are deliberately a thin layer over the same
+# ``Observation`` serialisation: a shard is just a flat log for one month, so ``load`` /
+# ``append`` / ``rewrite`` on one file remain the primitives and stay unit-testable.
+
+
+def _month_of(at: datetime) -> str:
+    """The shard a timestamp belongs to: ``YYYY-MM`` in UTC, so a shard never straddles a
+    day boundary differently on two machines."""
+    return at.astimezone(UTC).strftime("%Y-%m")
+
+
+def _shard_path(directory: Path, month: str) -> Path:
+    return directory / f"{month}.jsonl"
+
+
+def load_history_dir(
+    directory: Path = DEFAULT_HISTORY_DIR,
+    legacy_path: Path | None = DEFAULT_HISTORY_PATH,
+) -> dict[str, list[Observation]]:
+    """Read the whole log from a directory of monthly shards, oldest first.
+
+    Every ``*.jsonl`` shard in ``directory`` is read and merged. This is also where the
+    one-time migration happens: if ``legacy_path`` (the old flat ``state/prices.jsonl`` that
+    the two caches used to hold) still exists, its observations are folded in too, so the
+    move to the durable store *merges* the history the caches hold rather than starting from
+    empty. Once a run has read the legacy file and written the shards, the workflow removes
+    the legacy file; until then, reading both is idempotent because ``rewrite_dir`` dedupes.
+    """
+    merged: dict[str, list[Observation]] = {}
+
+    sources: list[Path] = sorted(directory.glob("*.jsonl")) if directory.exists() else []
+    if legacy_path is not None and legacy_path.exists():
+        # The old flat file is read *first* so that, on a tie, a shard's copy (already
+        # migrated) is indistinguishable from it and dedupe collapses the pair.
+        sources.insert(0, legacy_path)
+
+    for source in sources:
+        for key, points in load_history(source).items():
+            merged.setdefault(key, []).extend(points)
+
+    # A boot may appear in the legacy file and in a shard once migration has run once. Two
+    # observations of the same boot, source and moment are the same sighting logged twice,
+    # never two prices — collapse them so the median is not skewed by the migration.
+    for key, points in merged.items():
+        deduped = {(p.at, p.source, round(p.price, 4)): p for p in points}
+        merged[key] = sorted(deduped.values(), key=lambda o: o.at)
+    return merged
+
+
+def append_dir(
+    observations: Sequence[Observation], directory: Path = DEFAULT_HISTORY_DIR
+) -> Path:
+    """Append this run's observations to their month's shard(s).
+
+    A run happens in one instant, so in practice every fresh observation lands in the same
+    monthly shard; the grouping is defensive, for a run that straddles midnight on the last
+    day of a month. Returns the directory.
+    """
+    if not observations:
+        return directory
+    by_month: dict[str, list[Observation]] = {}
+    for observation in observations:
+        by_month.setdefault(_month_of(observation.at), []).append(observation)
+    for month, group in by_month.items():
+        append(group, _shard_path(directory, month))
+    return directory
+
+
+def rewrite_dir(
+    history: dict[str, list[Observation]], directory: Path = DEFAULT_HISTORY_DIR
+) -> Path:
+    """Replace the shards with exactly this history, re-sharded by month.
+
+    This is how the log is bounded on the durable store: ``prune`` drops aged-out
+    observations, and rewriting re-shards what remains, so a month that has fallen entirely
+    outside ``keep_days`` leaves no shard behind. Any existing shard not written this pass is
+    removed, so the branch never keeps a stale month.
+    """
+    directory.mkdir(parents=True, exist_ok=True)
+    by_month: dict[str, dict[str, list[Observation]]] = {}
+    for key, points in history.items():
+        for point in points:
+            by_month.setdefault(_month_of(point.at), {}).setdefault(key, []).append(point)
+
+    written: set[Path] = set()
+    for month, shard_history in by_month.items():
+        written.add(rewrite(shard_history, _shard_path(directory, month)))
+
+    for stale in set(directory.glob("*.jsonl")) - written:
+        stale.unlink()
+        logger.info("price history: dropped aged-out shard %s", stale)
+    return directory
 
 
 def summarise(
