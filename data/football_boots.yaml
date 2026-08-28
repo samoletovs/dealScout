@@ -31,8 +31,46 @@ source: >-
 # Junior markers. These decide adult-flagship vs junior-flagship and nothing else: a
 # junior boot is not a lesser tier, it is a different construction at the top of its own
 # range.
+#
+# PLURALS ARE LISTED SEPARATELY AND MUST STAY THAT WAY. Tokens match on a word boundary
+# (`_token`), so `junior` does NOT match "Juniors" — the trailing "s" defeats it. That is
+# not academic: sportsdirect.lv puts the audience LAST and in the plural, and every one of
+# these was being read as an ADULT flagship until 2026-08-28 —
+#   "Predator Elite Juniors Firm Ground Football Boots"          €61.20
+#   "Predator Elite Laceless Juniors Firm Ground Football Boots" €63.00
+#   "Predator Accuracy Injection+ Childrens Elite FG Boots"      €60.00
+# which is the exact error this catalogue exists to prevent: a €60 junior boot presented
+# as though it were a €280 adult one.
 junior_markers:
-  [kids, kid, junior, jr, j, youth, "(gs)", "(ps)", "(td)", children, child, boys, girls]
+  [kids, kid, junior, juniors, jr, j, youth, youths, "(gs)", "(ps)", "(td)",
+   children, childrens, child, boys, girls, infant, infants]
+
+# --- Retailer title rewrites, applied at the end of normalisation ---------------------
+#
+# Retailers do not all write a boot's name the way the brand does. Each rule here repairs
+# a way of writing it that silently cost this tool a real find; all were measured on
+# sportsdirect.lv — the owner's main shop — on 2026-08-28. Applied in order.
+title_rewrites:
+  # SportsDirect truncates long names to a fixed width: "Predator Elite" becomes
+  # "Pred Elt", "Copa Pure 3 Elite" becomes "CopaP3Elt". Unexpanded these carry no tier
+  # word at all and classify as `unknown`, which `require_stated: [tier]` then rejects —
+  # so the owner's main shop silently drops its own cheapest genuine Elite boots.
+  # Measured: "Unisex Kids CopaP3Elt Soft Ground Football Boots", €70.20.
+  - {pattern: 'copap(\d)elt', replace: 'copa pure \1 elite'}
+  - {pattern: '\bpred\s+elt\b', replace: 'predator elite'}
+  - {pattern: '\belt\b', replace: 'elite'}
+  # SportsDirect renders Nike's "SG-Pro"/"AG-Pro" SOLEPLATE with the ground spelled out in
+  # words, which orphans the "Pro": "Superfly 10 Elite SG-Pro" is listed as "Kids' Superfly
+  # 10 Elite Pro Soft Ground Football Boot". `soleplate_suffixes` cannot catch it, because
+  # the "SG" it needs to anchor on is gone. Left alone the stray "Pro" falls LATER than
+  # "Elite", so the later-word-wins rule demotes a genuine €96 junior Elite to a takedown.
+  #
+  # The spelled-out ground is REQUIRED, and only the two grounds whose Nike soleplate is
+  # actually named "-Pro" (soft ground = SG-Pro, artificial = AG-Pro) count. Without that
+  # guard the rule eats a real one: Diadora's "B-Elite Pro FG" is a genuine Pro takedown
+  # whose range is called "B-Elite", and rewriting it promoted a €70 boot to a flagship.
+  # "Elite Pro" is only ever a soleplate when the ground it names is standing right there.
+  - {pattern: '\belite\s+pro\b(?=\s+(?:soft\s+ground|artificial|astro))', replace: 'elite'}
 
 # Soleplate suffixes are stripped BEFORE tier keywords are read, or "SG-Pro" and "AG-Pro"
 # are read as the Pro tier and every soft-ground flagship is demoted. Longest first, so
@@ -176,6 +214,32 @@ brands:
     # Predator+, Copa Pure+, X Crazyfast+. Still on clearance shelves.
     flagship_patterns: ['predator\s*\+', 'copa\s+pure\s*\+', 'x\s+crazyfast\s*\+',
                         'x\s+speedportal\s*\+', 'crazyfast\s*\+']
+    # THE NUMBERED ERA (~2018 – mid-2024), and the thing most often got wrong about adidas.
+    #
+    # Before the Elite/Pro/League/Club names, adidas marked the tier with a NUMBER:
+    # Predator 20.1, X Ghosted.1, Copa Sense.1, Nemeziz 19.4. The ladder was:
+    #
+    #     Predator+   (laceless)  -> Elite      "+" beat ".1", despite the 1
+    #     Predator.1  (laced)     -> Elite      SAME tier as "+", not below it
+    #     Predator.2              -> Pro
+    #     Predator.3              -> League
+    #     Predator.4              -> Club
+    #
+    # adidas replaced it in Jan 2024 (fully by July 2024) with names deliberately aligned
+    # to Nike's — Elite / Pro / League / Club against Elite / Pro / Academy / Club — for
+    # the stated reason that "+" vs ".1" had led people to think one outranked the other.
+    # That retired system is why an adidas boot is sometimes described as having numbered
+    # Elite tiers. It does not: today "Elite" is one tier, and it is the top one, exactly
+    # level with Nike Elite. "Elite LL" / "Elite FT" / "Elite Knitted" are CLOSURE
+    # variants at that same tier, not a ranking, and are handled by `noise`.
+    #
+    # Read against the RAW title, because the DOT is the entire signal and `normalise`
+    # turns it into a space. Without the dot "Copa Pure 3" — a GENERATION, and a current
+    # one — is indistinguishable from ".3", a League takedown. Misreading it that way
+    # would argue the owner out of exactly the boot this tool hunts, so the dot is required.
+    legacy_numbered:
+      flagship: ['(?<=[a-z0-9])\.1(?![0-9])']
+      takedown: ['(?<=[a-z0-9])\.[234](?![0-9])']
     takedown: [pro, league, club, academy, match, play, essential]
     rrp_bands:
       adult-flagship: [250, 350]

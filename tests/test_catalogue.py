@@ -304,3 +304,128 @@ def test_a_named_generation_without_a_number_should_still_match():
     """Regression guard: `predator accuracy` and `phantom gx` are names, not catch-alls."""
     assert _gen("adidas Predator Accuracy+ FG").year == 2023
     assert _gen("Nike Phantom GX Elite FG", brand="Nike").year == 2023
+
+
+# ------------------------------------- how sportsdirect.lv writes a name (the main shop)
+#
+# Every title in this block is verbatim from
+# www.sportsdirect.lv/football/football-boots/kids-football-boots, read 2026-08-28. They
+# are here because that shop is the one the owner actually orders from, and until it was
+# wired in nothing was reading them.
+
+
+def test_a_plural_junior_marker_should_still_mark_a_boot_as_junior():
+    # "Juniors", not "Junior" — and tokens match on a word boundary, so the trailing "s"
+    # defeated the marker. This €61.20 boot was being reported as an ADULT flagship, the
+    # single error the catalogue exists to prevent.
+    assert _tier("Predator Elite Juniors Firm Ground Football Boots", "adidas") == JUNIOR_FLAGSHIP
+
+
+def test_the_plural_of_children_should_be_read_the_same_way():
+    assert (
+        _tier("Predator Accuracy Injection+ Childrens Elite Firm Ground Football Boots", "adidas")
+        == JUNIOR_FLAGSHIP
+    )
+
+
+def test_a_soleplate_pro_orphaned_from_its_ground_should_not_demote_a_flagship():
+    # SportsDirect spells the ground out in words, which strands the "Pro" of "SG-Pro":
+    # "Superfly 10 Elite SG-Pro" is listed as "Elite Pro … Soft Ground". `soleplate_suffixes`
+    # cannot catch it — the "SG" it anchors on is gone — so the stray Pro fell later than
+    # "Elite" and the later-word-wins rule demoted a genuine €96 junior Elite to a takedown.
+    assert (
+        _tier("Kids' Superfly 10 Elite Pro Soft Ground Football Boot", "Nike") == JUNIOR_FLAGSHIP
+    )
+
+
+def test_an_elite_pro_with_no_ground_named_should_stay_a_takedown():
+    """The guard on the rule above, and the reason it insists on the spelled-out ground.
+
+    Diadora's range really is called "B-Elite" and its tier really is "Pro", so here the
+    later word is the truth. Rewriting every "Elite Pro" promoted this €70 boot to a
+    flagship — caught by the existing suite, and kept caught by this.
+    """
+    assert _tier("Diadora Kids B-Elite Pro FG") == TAKEDOWN
+    assert _tier("Diadora Kids B-Elite Pro Firm Ground") == TAKEDOWN
+
+
+def test_a_truncated_tier_word_should_still_be_read_as_the_tier():
+    # SportsDirect truncates to a fixed width: "Pred Elt" is Predator Elite.
+    assert (
+        _tier("Unisex Kids' Pred Elt Predator Soft Ground Football Boots", "adidas")
+        == JUNIOR_FLAGSHIP
+    )
+
+
+def test_a_name_truncated_without_spaces_should_still_be_read():
+    # "CopaP3Elt" is Copa Pure 3 Elite — a genuine junior Elite at €70.20 that carried no
+    # recognisable tier word at all, so `require_stated: [tier]` dropped it every run.
+    assert (
+        _tier("Unisex Kids CopaP3Elt Soft Ground Football Boots", "adidas") == JUNIOR_FLAGSHIP
+    )
+
+
+def test_the_truncated_name_should_also_recover_its_generation():
+    """Expanding the abbreviation must restore the model line too, not just the tier."""
+    read = classify("Unisex Kids CopaP3Elt Soft Ground Football Boots", CATEGORY, "adidas")
+
+    assert read.line == "copa"
+    assert str(read.generation) == "3"
+
+
+# ----------------------------------------------- adidas before it renamed its tiers (2024)
+#
+# Until mid-2024 adidas marked the tier with a NUMBER: Predator 20.1, X Ghosted.1,
+# Copa Sense.1. "+" (laceless) and ".1" (laced) were the SAME top tier — the confusion
+# adidas renamed to Elite to end. ".2" was Pro, ".3" League, ".4" Club. These boots are
+# exactly what a clearance shelf is full of, and every one of them read as `unknown`,
+# which `require_stated: [tier]` then rejected in silence.
+
+
+def test_a_legacy_dot_one_should_be_read_as_a_flagship():
+    assert _tier("adidas Predator Accuracy.1 FG", "adidas") == ADULT_FLAGSHIP
+
+
+def test_a_legacy_year_numbered_dot_one_should_be_read_the_same_way():
+    assert _tier("adidas Predator 20.1 FG", "adidas") == ADULT_FLAGSHIP
+
+
+def test_a_legacy_dot_one_on_a_retired_silo_should_be_read_too():
+    assert _tier("adidas X Ghosted.1 FG", "adidas") == ADULT_FLAGSHIP
+
+
+def test_a_legacy_dot_one_with_a_junior_marker_should_be_the_junior_flagship():
+    assert _tier("adidas Copa Sense.1 Kids FG", "adidas") == JUNIOR_FLAGSHIP
+
+
+@pytest.mark.parametrize(
+    "title",
+    [
+        "adidas Predator Edge.2 FG",
+        "adidas X Speedflow.3 FG",
+        "adidas Nemeziz 19.4 FG",
+    ],
+)
+def test_the_legacy_numbers_below_one_should_be_takedowns(title: str):
+    assert _tier(title, "adidas") == TAKEDOWN
+
+
+def test_a_generation_number_must_not_be_mistaken_for_a_legacy_tier():
+    """The whole reason the legacy read insists on the dot.
+
+    `Copa Pure 3` is a current GENERATION; `.3` was a League takedown. Normalisation turns
+    the dot into a space, after which the two are the same characters — so reading the
+    number off the normalised title would demote a current flagship, which is the worst
+    direction to be wrong in.
+    """
+    assert _tier("adidas Copa Pure 3 Elite FG", "adidas") == ADULT_FLAGSHIP
+
+
+def test_a_word_tier_should_outrank_the_legacy_number_reading():
+    """A title that names its tier in words is never second-guessed by the number rules."""
+    assert _tier("adidas Predator League FG", "adidas") == TAKEDOWN
+
+
+def test_a_brand_with_no_legacy_numbering_should_not_borrow_adidas_rules():
+    # Nike never used the dotted system, so a stray number must not invent a tier for it.
+    assert _tier("Nike Phantom 6.3 FG", "Nike") == UNKNOWN
