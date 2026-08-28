@@ -110,13 +110,21 @@ brands:
   nike:
     flagship: [elite]
     takedown: [pro, academy, club, league, match, play, essential]
-    # Lower bound measured, not estimated: on prodirectsport.ie, 2026-08-28, the cheapest
-    # ADULT Elite is the Tiempo Maestro at €210 and the Vapor at €215 — both genuine
-    # flagships. A band starting at 250 called them out-of-band and reported no band at
-    # all for the two cheapest silos.
+    # Bands are RRP, so they must be read from `compare_at_price` — NOT from what a shop
+    # is charging today. Measured on prodirectsport.ie 2026-08-28 across 116 adult Nike
+    # Elites: RRP €250–300. (A first pass at this read the *selling* price instead and
+    # concluded the floor was €210, because a Tiempo Maestro was discounted to that. A
+    # band built from sale prices would drift down every sale and eventually call a
+    # genuine adult flagship a junior one, which is the error this file exists to stop.)
+    #
+    # The junior band runs to 175, which is higher than adidas's, and the reason is worth
+    # knowing: Nike has STOPPED making a junior Elite. All 11 junior Nike Elites in that
+    # 1,711-product catalogue are discontinued generations — Superfly VI/VII, Phantom
+    # VSN/VNM, Hypervenom III, RRP €150–175. Nike's CURRENT junior range tops out at
+    # `Pro` (Vapor XVII Pro, Phantom 6 Pro) at €130–140, which lands as a takedown here.
     rrp_bands:
-      adult-flagship: [210, 320]
-      junior-flagship: [110, 150]
+      adult-flagship: [250, 320]
+      junior-flagship: [110, 175]
       takedown: [40, 190]
     lines:
       mercurial superfly:
@@ -246,16 +254,25 @@ brands:
       takedown: ['(?<=[a-z0-9])\.[234](?![0-9])']
     takedown: [pro, league, club, academy, match, play, essential]
     rrp_bands:
-      # Measured on komanda.lv (adidas's Baltic dealer, which sells at RRP) 2026-08-28.
-      # The adult floor is the Copa silo at €240, not 250 — Copa is adidas's cheapest
-      # flagship line and a band starting at 250 excluded every current Copa Pure IV.
-      # The junior band is the sharpest signal in this file and is measured, not guessed:
-      # every €130 Elite on that shop grades EU 34–38, and every Elite at €162 or more
-      # grades 39–46. There is nothing priced in between and no size overlap, which is
-      # what makes `_priced_as_junior` safe on a title that says nothing — such as
-      # "adidas Predator Elite LL FG", €130, sizes 36–38, with no junior marker at all.
+      # RRP, read from `compare_at_price` — never from today's selling price. Measured
+      # 2026-08-28 across 84 adult and 34 junior adidas Elites on prodirectsport.ie, and
+      # corroborated on komanda.lv (adidas's Baltic dealer, which sells at RRP).
+      #
+      # The adult floor is €240, not 250: Copa is adidas's cheapest flagship silo (Copa
+      # Pure III/IV Elite FG, AG and SG all list at €240), and a band starting at 250
+      # excluded every Copa there is.
+      #
+      # The junior band is 110–150, measured: Copa Pure IV Elite Kids at €110 at the
+      # bottom, Predator Elite Tongue Kids at €150 at the top. The old 120–140 missed
+      # both ends. Unlike Nike, adidas still makes a junior Elite across all three silos
+      # — which is why an adidas junior flagship is a real thing to hunt and a current
+      # Nike one is not.
+      #
+      # The 150→240 gap between the bands is what keeps `_priced_as_junior` honest: it
+      # fires only inside the junior band, so a superseded adult flagship sitting in that
+      # gap (€162–216 on komanda) is left alone rather than demoted.
       adult-flagship: [240, 350]
-      junior-flagship: [120, 140]
+      junior-flagship: [110, 150]
       takedown: [40, 180]
     lines:
       predator:

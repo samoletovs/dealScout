@@ -478,12 +478,40 @@ def test_an_adult_copa_flagship_should_fall_inside_the_adult_band():
 
 
 def test_the_cheapest_adult_nike_flagship_should_fall_inside_its_band():
-    # Tiempo Maestro Elite, €210 on prodirectsport.ie — a genuine adult flagship.
-    read = classify("Nike Tiempo Maestro Elite FG", CATEGORY, "Nike", rrp=210.0)
+    # €250 is the measured RRP floor across 116 adult Nike Elites (Tiempo Legend X Elite
+    # FG/AG-Pro). NOT €210 — that was the same boot's discounted selling price, and an
+    # earlier version of this test enshrined it. Bands are RRP.
+    read = classify("Nike Tiempo Legend X Elite FG", CATEGORY, "Nike", rrp=250.0)
 
     assert read.tier == ADULT_FLAGSHIP
     assert read.rrp_band is not None
-    assert read.rrp_band[0] <= 210.0 <= read.rrp_band[1]
+    assert read.rrp_band[0] <= 250.0 <= read.rrp_band[1]
+
+
+def test_a_discounted_adult_flagship_must_not_be_read_as_a_junior_one():
+    """The trap the band floors are built to survive.
+
+    A Tiempo Legend X Elite sells at €210 while its RRP stays €250. Only the RRP is ever
+    passed here, but if a band floor were ever set from selling prices it would drift
+    down every sale until an adult flagship fell inside the junior band. Nike's junior
+    band tops out at €175 and the adult floor is €250, so there is 75 euros of daylight.
+    """
+    assert _tier("Nike Tiempo Legend X Elite FG", "Nike", rrp=250.0) == ADULT_FLAGSHIP
+
+
+def test_a_junior_nike_elite_at_its_real_rrp_should_be_caught():
+    """Nike's junior Elites are all discontinued generations at €150-175.
+
+    The old junior band stopped at 150 and so could not infer a junior from any of them.
+    A Superfly VI Elite at €175 is unambiguously a kids boot — it is the only thing that
+    price means for that model.
+    """
+    assert _tier("Nike Superfly VI Elite FG", "Nike", rrp=175.0) == JUNIOR_FLAGSHIP
+
+
+def test_an_adidas_junior_elite_at_the_bottom_of_its_range_should_be_caught():
+    """Copa Pure IV Elite Kids lists at €110 — below the old 120 floor, so it was missed."""
+    assert _tier("adidas Copa Pure IV Elite FG", "adidas", rrp=110.0) == JUNIOR_FLAGSHIP
 
 
 def test_lowering_the_adult_floor_must_not_stop_a_silent_junior_being_caught():
