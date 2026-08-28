@@ -99,6 +99,41 @@ def resolve_attrs(product: Product, hunt: Hunt, vocab: dict | None = None) -> di
     return {**derived, **product.attrs}  # collector wins over both
 
 
+def product_identity(
+    product: Product, hunt: Hunt, vocab: dict | None = None
+) -> tuple[str, str]:
+    """Resolve a product to ``(boot_key, size)`` for the price log.
+
+    The price log must key on the *boot*, not the retailer's URL, or "cheapest seen" is a
+    claim about one listing rather than about the boot at every shop. The boot key comes
+    from the same catalogue/vocabulary reading the judge uses, so the log can never call a
+    boot something the judge would not. ``size`` is the one wanted size this product is
+    confirmed in — the price log is per-size, because a junior EU 37 and an adult EU 44 of
+    the "same" model are different products at different prices. It is empty when the shop
+    never stated sizes (``unknown``, not ``out of stock``) or the boot is confirmed in more
+    than one wanted size, since a single line cannot honestly stand for several.
+
+    The brand read by the catalogue is folded back in, because a single-brand shop leaves
+    its own brand out of the title and the boot key needs it to be stable across retailers.
+    """
+    from .pricehistory import boot_key  # local import: pricehistory imports models only
+
+    attrs = resolve_attrs(product, hunt, vocab)
+    attrs.setdefault("brand", product.brand)
+    if not attrs.get("brand") and hunt.brands:
+        low = product.title.lower()
+        attrs["brand"] = next((b for b in hunt.brands if b.strip().lower() in low), "")
+    key = boot_key(attrs)
+
+    size = ""
+    if product.sizes_known:
+        wanted = normalise_sizes(hunt.sizes_for(product.brand, product.title))
+        matched = sorted(wanted & normalise_sizes(product.sizes))
+        if len(matched) == 1:
+            size = matched[0]
+    return key, size
+
+
 def known_values(category: str, vocab: dict | None = None) -> dict[str, frozenset[str]]:
     """Every value the engine can produce per attribute, for validating a hunt."""
     table = (vocab if vocab is not None else merge_vocab(None)).get(category, {})

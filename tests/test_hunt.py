@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dealscout.hunt import judge_hunt, resolve_attrs
+from dealscout.hunt import judge_hunt, product_identity, resolve_attrs
 from dealscout.models import Hunt, Product
 
 OWNED_URL = (
@@ -242,6 +242,37 @@ def test_collector_supplied_attributes_should_beat_a_guess_from_the_title():
     product = _product(title="Nike Jr. Mercurial Superfly 10 Elite", attrs={"soleplate": "AG"})
     assert resolve_attrs(product, _hunt())["soleplate"] == "AG"
     assert judge_hunt(product, _hunt()).band == "must-buy"
+
+
+def test_product_identity_should_put_the_soleplate_in_the_boot_key():
+    # End-to-end through the real resolver (not a stub): the FG and SG of one boot must get
+    # different keys, so the price log can never quote a soft-ground price for a firm-ground
+    # boot. Same boot, same soleplate, two shops -> the *same* key, so their prices pool.
+    firm = _product(
+        title="Nike Mercurial Superfly 10 Elite FG",
+        url="https://komanda.lv/superfly-fg",
+        attrs={"soleplate": "FG"},
+    )
+    soft = _product(
+        title="Nike Mercurial Superfly 10 Elite SG",
+        url="https://unisportstore.com/superfly-sg",
+        attrs={"soleplate": "SG"},
+    )
+    firm_elsewhere = _product(
+        title="Nike Mercurial Superfly 10 Elite FG",
+        url="https://unisportstore.com/superfly-fg",
+        attrs={"soleplate": "FG"},
+    )
+    hunt = _hunt()
+
+    firm_key, _ = product_identity(firm, hunt)
+    soft_key, _ = product_identity(soft, hunt)
+    firm_elsewhere_key, _ = product_identity(firm_elsewhere, hunt)
+
+    assert firm_key != soft_key  # firm ground is not a substitute for soft ground
+    assert "/fg/" in firm_key
+    assert "/sg/" in soft_key
+    assert firm_key == firm_elsewhere_key  # same boot at two shops shares one identity
 
 
 def test_an_empty_requirement_should_gate_nothing():

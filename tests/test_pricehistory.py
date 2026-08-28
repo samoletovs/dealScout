@@ -14,6 +14,7 @@ from dealscout.pricehistory import (
     HistoryConfig,
     Observation,
     append,
+    boot_key,
     extend,
     load_history,
     observe,
@@ -338,3 +339,224 @@ def test_a_fortnight_of_runs_should_turn_into_a_claim_two_runs_could_not_support
     assert memory.enough_history is True
     assert memory.is_lowest is True
     assert memory.span_days == 14.0
+
+
+# ---------------------------------------------------------------------- boot identity
+#
+# The Scout's promise is "cheapest this *boot* has been", not "cheapest this listing has
+# been". A boot is a different URL at every shop, so keying price memory on the URL can
+# never answer the cross-retailer question. These tie an observation to a resolved boot
+# identity instead — the change that must be right before months of data accumulate.
+
+
+def _identify(boot: str, size: str = ""):
+    """A stand-in identity resolver: every product maps to one boot key and size."""
+    return lambda _product: (boot, size)
+
+
+def test_observe_should_key_on_the_boot_when_an_identity_is_supplied():
+    boot = "adidas/predator//adult-flagship/adult"
+
+    observation = observe([_product()], ("37.33",), now=NOW, identify=_identify(boot, "37.33"))[0]
+
+    assert observation.boot_key == boot
+    assert observation.size == "37.33"
+    assert observation.key == boot  # the boot, not the URL
+
+
+def test_observe_should_fall_back_to_the_url_when_the_boot_is_unclassified():
+    # An empty boot key is the catalogue's honest "unknown": the observation must keep its
+    # own URL rather than merge with every other unclassified boot.
+    observation = observe([_product()], ("37.33",), now=NOW, identify=_identify(""))[0]
+
+    assert observation.boot_key == ""
+    assert observation.key == URL
+
+
+def test_observe_should_keep_the_same_boot_at_two_shops_as_two_observations():
+    # The cheaper of two shops is the whole point of a cross-retailer low; collapsing them
+    # would discard it. One boot, two sources -> two observations.
+    boot = "adidas/predator//adult-flagship/adult"
+    komanda = _product(url=URL, source="komanda.lv", price=95.0)
+    unisport = _product(url="https://unisportstore.com/predator", source="unisportstore.com", price=88.0)
+
+    observations = observe([komanda, unisport], ("37.33",), now=NOW, identify=_identify(boot))
+
+    assert sorted(o.price for o in observations) == [88.0, 95.0]
+    assert {o.source for o in observations} == {"komanda.lv", "unisportstore.com"}
+
+
+def test_the_same_boot_at_two_retailers_should_share_one_price_history(tmp_path):
+    """The behaviour bRoom needs, impossible under URL keying.
+
+    Two shops sell one boot: one has logged it for weeks at €120, the other appears today
+    at €88. The honest claim is that €88 is the lowest this *boot* has been anywhere — a
+    claim only a boot-keyed history can make. Under the old URL keying the fresh listing
+    would have no history at all and could say nothing.
+    """
+    boot = "adidas/predator//adult-flagship/adult"
+    path = tmp_path / "prices.jsonl"
+
+    # komanda.lv has three weeks of history at a higher price.
+    for day, price in enumerate([120.0, 118.0, 120.0]):
+        at = NOW - timedelta(days=14 - day * 7)
+        append(observe([_product(url=URL, source="komanda.lv", price=price)], now=at,
+                       identify=_identify(boot)), path)
+
+    # unisportstore.com appears today, cheaper, at a URL never seen before.
+    fresh = _product(url="https://unisportstore.com/predator", source="unisportstore.com", price=88.0)
+    history = extend(load_history(path), observe([fresh], now=NOW, identify=_identify(boot)))
+
+    memory = summarise_all([fresh], history, NOW, identify=_identify(boot))[
+        "https://unisportstore.com/predator"
+    ]
+
+    assert memory.enough_history is True
+    assert memory.low == 88.0
+    assert memory.is_lowest is True  # cheapest this boot has been, across both shops
+
+
+def test_a_boot_keyed_line_should_read_back_from_the_log_with_its_identity(tmp_path):
+    boot = "adidas/predator//adult-flagship/adult"
+    path = tmp_path / "prices.jsonl"
+
+    append(observe([_product()], ("37.33",), now=NOW, identify=_identify(boot, "37.33")), path)
+    [loaded] = load_history(path)[boot]
+
+    assert loaded.boot_key == boot
+    assert loaded.size == "37.33"
+
+
+def test_a_log_written_before_the_identity_fields_existed_should_still_read(tmp_path):
+    # Backward compatibility: an old line has no boot_key/size. It must parse and key on
+    # its URL exactly as it always did, not vanish.
+    path = tmp_path / "prices.jsonl"
+    path.write_text(json.dumps({"url": URL, "price": 95.0, "at": NOW.isoformat()}) + "\n",
+                    encoding="utf-8")
+
+    history = load_history(path)
+
+    assert [o.price for o in history[URL]] == [95.0]
+    assert history[URL][0].boot_key == ""
+
+
+def test_boot_key_should_return_empty_when_the_tier_is_unknown():
+    # No honest identity without a tier — the signal to fall back to the URL.
+    assert boot_key({"brand": "adidas", "silo": "predator"}) == ""
+    assert boot_key({"brand": "adidas", "tier": "unknown"}) == ""
+
+
+def test_boot_key_should_separate_a_junior_flagship_from_an_adult_one():
+    adult = boot_key({"brand": "nike", "silo": "mercurial", "tier": "adult-flagship"})
+    junior = boot_key({"brand": "nike", "silo": "mercurial", "tier": "junior-flagship"})
+
+    assert adult != junior
+    assert adult.endswith("/adult")
+    assert junior.endswith("/junior")
+
+
+# --------------------------------------------------------------------- soleplate
+#
+# The FG and SG of one boot are different SKUs at different prices and are not substitutes:
+# a firm-ground player cannot wear soft-ground studs on turf. Quoting an SG clearance as
+# the low for an FG boot is the confident-and-wrong price claim this project exists to
+# refuse, so the soleplate is part of the identity — and an *unstated* soleplate is its own
+# "unknown" bucket, never a silent merge into a stated one.
+
+
+def test_boot_key_should_separate_the_firm_ground_boot_from_the_soft_ground_one():
+    base = {"brand": "adidas", "silo": "predator", "tier": "adult-flagship"}
+    firm = boot_key({**base, "soleplate": "FG"})
+    soft = boot_key({**base, "soleplate": "SG"})
+
+    assert firm != soft
+    assert firm.endswith("/adult")  # audience stays the trailing segment
+    assert "/fg/" in firm
+    assert "/sg/" in soft
+
+
+def test_an_unstated_soleplate_should_not_merge_into_a_stated_one():
+    base = {"brand": "adidas", "silo": "predator", "tier": "adult-flagship"}
+    stated = boot_key({**base, "soleplate": "FG"})
+    silent = boot_key(base)  # the listing never said
+
+    # The silent listing is honestly "unknown", not quietly folded into the FG history.
+    assert stated != silent
+    assert "/unknown/" in silent
+
+
+def test_two_shops_of_one_boot_with_the_same_soleplate_still_share_history(tmp_path):
+    # The pooling we *do* want: same boot, same soleplate, two shops -> one history, so the
+    # cheaper shop's price is recognised as the boot's low.
+    boot = boot_key(
+        {"brand": "adidas", "silo": "predator", "tier": "adult-flagship", "soleplate": "FG"}
+    )
+    path = tmp_path / "prices.jsonl"
+    for day, price in enumerate([120.0, 118.0, 120.0]):
+        at = NOW - timedelta(days=14 - day * 7)
+        append(observe([_product(url=URL, source="komanda.lv", price=price)], now=at,
+                       identify=_identify(boot)), path)
+    fresh = _product(url="https://unisportstore.com/p", source="unisportstore.com", price=88.0)
+    history = extend(load_history(path), observe([fresh], now=NOW, identify=_identify(boot)))
+
+    memory = summarise_all([fresh], history, NOW, identify=_identify(boot))[
+        "https://unisportstore.com/p"
+    ]
+
+    assert memory.enough_history is True
+    assert memory.is_lowest is True
+
+
+# ----------------------------------------------------------- surviving the store fix
+#
+# Step 2 moves the log to durable storage and, in doing so, restarts it near-empty. Two
+# things must hold across that transition: a log written in the *old* schema must still
+# load and answer sanely, and a freshly-restarted log must keep saying "not enough history
+# yet" rather than reporting the first three days as a meaningful low.
+
+
+def test_an_old_schema_fixture_should_load_and_answer_sanely(tmp_path):
+    """A real old-schema log — lines with no boot_key/size — must still produce a memory.
+
+    This is the exact shape ``prices.jsonl`` had before boot identity existed. It must key
+    on its URL as it always did and, with enough spread, still answer the price question,
+    so the store migration never silently discards the depth already collected.
+    """
+    path = tmp_path / "prices.jsonl"
+    lines = [
+        {"url": URL, "price": 120.0, "at": (NOW - timedelta(days=20)).isoformat()},
+        {"url": URL, "price": 110.0, "at": (NOW - timedelta(days=10)).isoformat()},
+        {"url": URL, "price": 118.0, "at": NOW.isoformat()},
+    ]
+    path.write_text("\n".join(json.dumps(line) for line in lines) + "\n", encoding="utf-8")
+
+    history = load_history(path)
+    # No identity resolver: an old caller keys on the URL, exactly as before.
+    memory = summarise_all([_product()], history, NOW)[URL]
+
+    assert [o.boot_key for o in history[URL]] == ["", "", ""]  # genuinely old lines
+    assert memory.enough_history is True
+    assert memory.low == 110.0
+
+
+def test_a_freshly_restarted_log_should_still_say_not_enough_history(tmp_path):
+    """After the store fix the log restarts near-empty; it must not over-claim.
+
+    Three observations over three days is below the span floor. The honest answer is
+    ``enough_history=False`` with no low — a three-day dip is not "the cheapest it has
+    been", and saying so is exactly the confident-and-wrong claim the module refuses.
+    """
+    boot = boot_key(
+        {"brand": "adidas", "silo": "predator", "tier": "adult-flagship", "soleplate": "FG"}
+    )
+    path = tmp_path / "prices.jsonl"
+    for day, price in enumerate([120.0, 100.0, 110.0]):  # a tempting three-day low
+        at = NOW - timedelta(days=2 - day)
+        append(observe([_product(price=price)], now=at, identify=_identify(boot)), path)
+
+    history = load_history(path)
+    memory = summarise_all([_product()], history, NOW, identify=_identify(boot))[URL]
+
+    assert memory.enough_history is False
+    assert memory.low is None
+    assert memory.is_lowest is None

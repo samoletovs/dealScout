@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import functools
 import logging
 import sys
 from pathlib import Path
@@ -20,7 +21,7 @@ from pathlib import Path
 from .collector import enrich_all
 from .config import load_config
 from .feedback import downvoted_urls
-from .hunt import judge_hunt, validate_hunt
+from .hunt import judge_hunt, product_identity, validate_hunt
 from .models import Change, Hunt, Product, Verdict
 from .monitor import (
     DEFAULT_FORGET_AFTER_DAYS,
@@ -147,18 +148,25 @@ async def run(
 
     findings: dict[str, list[Result]] = {}
     sections: list[str] = []
-    logged: set[str] = set()  # config ships several hunts; a shared product logs once
+    logged: set[tuple[str, str]] = set()  # config ships several hunts; a shared product logs once
     for hunt in hunts:
         results, candidates = await run_hunt(hunt, config, state, vocab, rejected)
         findings[hunt.id] = results
 
         # Log this run's prices before rendering, so "cheapest seen" is a claim about the
         # price in front of the reader rather than about the previous run's.
-        fresh = [o for o in observe(candidates, hunt.sizes) if o.url not in logged]
-        logged.update(o.url for o in fresh)
+        identify = functools.partial(product_identity, hunt=hunt, vocab=vocab)
+        fresh = [
+            o
+            for o in observe(candidates, hunt.sizes, identify=identify)
+            if (o.key, o.source) not in logged
+        ]
+        logged.update((o.key, o.source) for o in fresh)
         append(fresh, limits.path)
         history = extend(history, fresh)
-        memory = summarise_all([p for p, _, _ in results], history, limits=limits)
+        memory = summarise_all(
+            [p for p, _, _ in results], history, limits=limits, identify=identify
+        )
 
         body = render_hunt_report(hunt, results, base, vocab, memory)
         out = Path("out") / f"hunt-{hunt.id}.md"
