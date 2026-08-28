@@ -244,7 +244,25 @@ def test_the_pre_filter_should_still_discard_a_title_that_contradicts_the_tier()
 def test_the_pre_filter_should_keep_a_title_the_catalogue_cannot_read():
     # Unknown is not a contradiction. This is why the bug only bit titles the vocabulary
     # was confident about — silence always survived.
-    assert title_plausible("adidas Kids Copa 19.4 FG", _hunt()) is True
+    #
+    # The example used to be "adidas Kids Copa 19.4 FG", which stopped being unreadable
+    # once the catalogue learned adidas's retired .1/.2/.3/.4 tiers — ".4" is Club, so
+    # that title is now correctly *discarded* rather than passed through (see below).
+    # Copa Mundial is the durable example: kangaroo leather, outside the tier ladder
+    # altogether, so it genuinely states no tier and never will.
+    assert title_plausible("adidas Kids Copa Mundial FG", _hunt()) is True
+
+
+def test_a_legacy_numbered_takedown_should_now_be_discarded_rather_than_passed_through():
+    """The other half of the change: `.4` is Club, and the pre-filter can now say so.
+
+    Before the catalogue read adidas's retired numbering, every clearance-era boot came
+    back `unknown` and was waved through to spend a request. Reading the number saves the
+    budget on the takedowns and — far more importantly — stops `.1` flagships being
+    dropped by `require_stated: [tier]`.
+    """
+    assert title_plausible("adidas Kids Copa 19.4 FG", _hunt()) is False
+    assert title_plausible("adidas Kids Copa Sense.1 FG", _hunt()) is True
 
 
 def test_the_pre_filter_and_the_judge_should_agree_about_tier():

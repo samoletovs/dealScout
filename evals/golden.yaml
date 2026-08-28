@@ -606,3 +606,149 @@ cases:
     expected:
       band: good
       attrs: { tier: junior-flagship, soleplate: FG, silo: copa, generation_status: null, generation_year: null }
+
+  # --- sportsdirect.lv, the owner's main shop (wired in 2026-08-28) -----------------
+  #
+  # Verbatim titles from www.sportsdirect.lv/football/football-boots/kids-football-boots.
+  # Every one of these was judged WRONG until the shop was wired in and the ways it
+  # writes a name were learned. They are the reason this file has a sportsdirect block.
+
+  - id: boots-sportsdirect-plural-juniors-is-not-an-adult
+    note: >-
+      "Juniors", not "Junior". Tokens match on a word boundary, so the trailing "s"
+      defeated the junior marker and this €61.20 junior boot was reported as an ADULT
+      flagship — the one error the tier catalogue exists to prevent. The tier pin is the
+      whole point of the case.
+    hunt: boots-junior
+    product:
+      title: "Predator Elite Juniors Firm Ground Football Boots"
+      category: football_boots
+      brand: adidas
+      price: 61.20
+      reference_price: 260
+      currency: EUR
+      url: "https://example.com/sd-predator-elite-juniors"
+      source: sportsdirect.lv
+      sizes: ["@wanted"]
+      sizes_known: true
+    expected:
+      band: must-buy
+      attrs: { tier: junior-flagship, soleplate: FG, silo: predator }
+
+  - id: boots-sportsdirect-orphaned-soleplate-pro
+    note: >-
+      SportsDirect spells the ground out in words, which strands the "Pro" of Nike's
+      "SG-Pro" SOLEPLATE: "Superfly 10 Elite SG-Pro" is listed as "Elite Pro ... Soft
+      Ground". The stray Pro fell later than "Elite", so later-word-wins demoted a
+      genuine junior Elite to a takedown and `require_stated: [tier]` dropped it.
+      Rejected here for SOLEPLATE (SG is not AG/FG), which is correct — the pin proves
+      it is rejected for the ground and not for a tier it does have.
+    hunt: boots-junior
+    product:
+      title: "Kids' Superfly 10 Elite Pro Soft Ground Football Boot"
+      category: football_boots
+      brand: Nike
+      price: 96
+      reference_price: 310
+      currency: EUR
+      url: "https://example.com/sd-superfly-10-elite-sg-pro"
+      source: sportsdirect.lv
+      sizes: ["@wanted"]
+      sizes_known: true
+    expected:
+      band: reject
+      attrs: { tier: junior-flagship, soleplate: SG }
+
+  - id: boots-sportsdirect-truncated-name
+    note: >-
+      "CopaP3Elt" is Copa Pure 3 Elite, truncated to a fixed width. Unexpanded it carries
+      no tier word at all, so it read `unknown` and was rejected every run — a genuine
+      junior Elite at €70.20 on the owner's own shop, never once surfaced.
+      Lands in `good`, not `must-buy`: €70.20 is twenty cents the wrong side of the
+      `must_buy: 70` line, which is the threshold behaving exactly as configured.
+    hunt: boots-junior
+    product:
+      title: "Unisex Kids CopaP3Elt Firm Ground Football Boots"
+      category: football_boots
+      brand: adidas
+      price: 70.20
+      reference_price: 250
+      currency: EUR
+      url: "https://example.com/sd-copa-pure-3-elite"
+      source: sportsdirect.lv
+      sizes: ["@wanted"]
+      sizes_known: true
+    expected:
+      band: good
+      attrs: { tier: junior-flagship, soleplate: FG, silo: copa }
+
+  # --- adidas before it renamed its tiers (retired mid-2024) ------------------------
+  #
+  # Until 2024 adidas marked the tier with a NUMBER: Predator 20.1, X Ghosted.1. "+"
+  # (laceless) and ".1" (laced) were the SAME top tier; ".2" was Pro, ".3" League, ".4"
+  # Club. adidas renamed the lot to Elite/Pro/League/Club precisely because "+" versus
+  # ".1" made people think one outranked the other. Clearance shelves are full of these
+  # and every one of them read `unknown`, which `require_stated: [tier]` then rejected.
+
+  - id: boots-adidas-legacy-dot-one-is-a-flagship
+    note: >-
+      The case behind the owner's question about "adidas Elite tiers". ".1" is a
+      FLAGSHIP, level with "+" — not a second tier, and not a Nike Pro equivalent.
+    hunt: boots-junior
+    product:
+      title: "adidas Kids Predator Accuracy.1 FG"
+      category: football_boots
+      brand: adidas
+      price: 85
+      reference_price: 270
+      currency: EUR
+      url: "https://example.com/adidas-predator-accuracy-1-kids"
+      source: example.com
+      sizes: ["@wanted"]
+      sizes_known: true
+    expected:
+      band: good
+      attrs: { tier: junior-flagship, soleplate: FG, silo: predator }
+
+  - id: boots-adidas-legacy-dot-three-is-a-takedown
+    note: >-
+      The other direction, and the reason the read insists on the literal dot: ".3" is
+      League. Cheap, and correctly refused.
+    hunt: boots-junior
+    product:
+      title: "adidas Kids X Speedflow.3 FG"
+      category: football_boots
+      brand: adidas
+      price: 35
+      reference_price: 90
+      currency: EUR
+      url: "https://example.com/adidas-x-speedflow-3-kids"
+      source: example.com
+      sizes: ["@wanted"]
+      sizes_known: true
+    expected:
+      band: reject
+      attrs: { tier: takedown, soleplate: FG }
+
+  - id: boots-generation-number-is-not-a-legacy-tier
+    note: >-
+      The trap the legacy read must never fall into. `Copa Pure 3` is a CURRENT
+      generation; `.3` was a League takedown. Normalisation turns the dot into a space,
+      after which the two are the same characters — so the number is only ever read as a
+      tier when the dot is actually there. Getting this wrong would argue the owner out
+      of exactly the boot this tool hunts.
+    hunt: boots-junior
+    product:
+      title: "adidas Kids Copa Pure 3 Elite FG"
+      category: football_boots
+      brand: adidas
+      price: 92
+      reference_price: 250
+      currency: EUR
+      url: "https://example.com/adidas-copa-pure-3-elite-kids"
+      source: example.com
+      sizes: ["@wanted"]
+      sizes_known: true
+    expected:
+      band: good
+      attrs: { tier: junior-flagship, soleplate: FG, silo: copa, generation: "3" }

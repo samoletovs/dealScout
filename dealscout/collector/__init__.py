@@ -35,7 +35,17 @@ from .collect import (
     read_listing,
 )
 from .htmlproduct import _money, parse_html_product
-from .http import _ROBOTS, BROWSER_HEADERS, USER_AGENT, fetch, robots_allows
+from .http import (
+    _ROBOTS,
+    BROWSER_HEADERS,
+    HONEST_HEADERS,
+    HONEST_USER_AGENT,
+    SELF_IDENTIFYING_HOSTS,
+    USER_AGENT,
+    fetch,
+    headers_for,
+    robots_allows,
+)
 from .ldjson import (
     parse_ldjson_links,
     parse_ldjson_product,
@@ -48,6 +58,10 @@ from .tiles import parse_product_tiles
 
 __all__ = [
     "BROWSER_HEADERS",
+    "HONEST_HEADERS",
+    "HONEST_USER_AGENT",
+    "SELF_IDENTIFYING_HOSTS",
+    "headers_for",
     "USER_AGENT",
     "_ROBOTS",
     "_money",

@@ -11,6 +11,17 @@ in both directions, and expensively so:
 * Puma's flagship is **Ultimate**. A Puma boot saying "Elite" is not the top line.
 * A junior Elite (€120–140) is a **different boot** from an adult Elite (€250–295):
   softer plate, thicker upper, wider last. Not the same boot in small sizes.
+* adidas did not always use the word at all. Until mid-2024 it marked the tier with a
+  **number** — `Predator 20.1`, `X Ghosted.1`, `Copa Sense.1` — where `+` (laceless) and
+  `.1` (laced) were the *same* top tier and `.2`/`.3`/`.4` were Pro/League/Club. adidas
+  renamed the lot to Elite/Pro/League/Club precisely because `+` versus `.1` read as a
+  ranking to everyone who saw it. Clearance shelves are still full of the numbered ones.
+
+Retailers add a second layer of the same problem: they do not all write a name the way the
+brand does. SportsDirect truncates "Copa Pure 3 Elite" to ``CopaP3Elt``, and spells grounds
+out in words — so Nike's ``SG-Pro`` *soleplate* arrives as a bare "Pro" sitting after
+"Elite", where the later-word-wins rule reads it as a tier and demotes a flagship.
+``title_rewrites`` in the data file repairs those before anything is matched.
 
 Substring matching cannot reach any of this, and it could not be fixed by adding words
 to the vocabulary: :func:`dealscout.spec.extract_attrs` returns the first match in
@@ -143,15 +154,23 @@ class Catalogue:
     soleplate_suffixes: tuple[str, ...]
     noise: tuple[str, ...]
     roman_numerals: dict[str, str]
+    #: (pattern, replacement) pairs repairing how a retailer writes a name, applied in
+    #: order at the end of :meth:`normalise`. Defaulted so a hand-built Catalogue — and
+    #: every catalogue that needs no repairs — stays valid without naming them.
+    title_rewrites: tuple[tuple[str, str], ...] = ()
 
     # -- normalisation ---------------------------------------------------------------
 
     def normalise(self, title: str) -> str:
-        """Lower-case, drop apostrophes, and fold Roman generation numerals to Arabic.
+        """Lower-case, drop apostrophes, fold Roman numerals, then apply title rewrites.
 
         Folding matters: retailers write the same boot as `Superfly XI` and `Superfly 11`,
         and the Tiempo `Legend X` / `Legend 10` collision has already cost this repo an
         ``exclude_models`` line.
+
+        Rewrites come last, so they see a title that is already lower-cased, punctuation-
+        free and numerically folded, and can be written against that one shape rather than
+        against every way a retailer might have typed it.
         """
         text = re.sub(r"['\u2019`]", "", title.lower())
         text = re.sub(r"[^a-z0-9+()]+", " ", text)
@@ -161,7 +180,10 @@ class Catalogue:
 
         # Only whole words, so the "x" in "X Crazyfast" is not turned into "10" unless it
         # stands alone as a generation — which is why the F50 lineage keeps its own patterns.
-        return re.sub(r"(?<![a-z0-9])[ivx]{1,5}(?![a-z0-9])", fold, text).strip()
+        text = re.sub(r"(?<![a-z0-9])[ivx]{1,5}(?![a-z0-9])", fold, text).strip()
+        for pattern, replacement in self.title_rewrites:
+            text = re.sub(pattern, replacement, text)
+        return re.sub(r"\s+", " ", text).strip()
 
     def _strip(self, text: str, tokens: tuple[str, ...]) -> str:
         for token in tokens:
@@ -274,6 +296,16 @@ class Catalogue:
             flagship_at = self._legacy_flagship(cleaned, spec)
         takedown_at = self._first_hit(cleaned, list(spec.get("takedown") or []))
 
+        # Only when the title names no tier IN WORDS does the retired numbered system get
+        # a hearing — so a "Copa Pure 3 Elite" is settled by "Elite" and never reaches the
+        # code that would read a 3 as a League takedown.
+        if flagship_at < 0 and takedown_at < 0:
+            numbered = self._legacy_numbered(title, spec)
+            if numbered == "flagship":
+                flagship_at = 0
+            elif numbered == "takedown":
+                takedown_at = 0
+
         bands = spec.get("rrp_bands") or {}
         tier = self._tier_from(flagship_at, takedown_at, self.is_junior(normalised))
         note = str(generation.get("note") or "") if generation else ""
@@ -319,6 +351,28 @@ class Catalogue:
         return min(hits) if hits else -1
 
     @staticmethod
+    def _legacy_numbered(title: str, spec: dict) -> str:
+        """adidas's retired ``.1``/``.2``/``.3``/``.4`` tiers, or "" if the title has none.
+
+        Deliberately reads the **raw** title rather than the normalised one. The dot is the
+        entire signal, and :meth:`normalise` replaces it with a space — after which
+        ``Copa Pure 3``, a current *generation*, is character-for-character the same shape
+        as ``.3``, a League *takedown*. Demoting a current Copa Pure 3 to a takedown would
+        argue the owner out of exactly the boot this tool exists to find, so the dot is
+        required and a title that has lost it is simply not answered here.
+
+        ``.1`` is a **flagship**: under that system "+" (laceless) and ".1" (laced) were
+        the same top tier, which is precisely the confusion adidas renamed to Elite to end.
+        """
+        low = title.lower()
+        rules = spec.get("legacy_numbered") or {}
+        for outcome in ("flagship", "takedown"):
+            for raw in rules.get(outcome) or []:
+                if re.search(str(raw), low):
+                    return outcome
+        return ""
+
+    @staticmethod
     def _tier_from(flagship_at: int, takedown_at: int, junior: bool) -> str:
         """Later tier word wins when both appear — which settles Diadora and Mizuno at once.
 
@@ -351,6 +405,21 @@ def _as_tuple(value: object) -> tuple[str, ...]:
 
 def build(data: dict[str, Any]) -> Catalogue:
     """Build a Catalogue from a parsed data file (pure — no I/O)."""
+    rewrites: list[tuple[str, str]] = []
+    for rule in data.get("title_rewrites") or []:
+        if not isinstance(rule, dict):
+            continue
+        pattern, replacement = rule.get("pattern"), rule.get("replace", "")
+        if not pattern:
+            continue
+        try:
+            re.compile(str(pattern))
+        except re.error as exc:
+            # A typo in one rewrite must not take the whole catalogue — and with it every
+            # tier reading — down with it. Skipped loudly rather than silently.
+            logger.warning("title_rewrite %r is not a valid regex (%s) — skipping", pattern, exc)
+            continue
+        rewrites.append((str(pattern), str(replacement)))
     return Catalogue(
         category=str(data.get("category") or ""),
         last_verified=str(data.get("last_verified") or ""),
@@ -361,6 +430,7 @@ def build(data: dict[str, Any]) -> Catalogue:
         roman_numerals={
             str(k).lower(): str(v) for k, v in (data.get("roman_numerals") or {}).items()
         },
+        title_rewrites=tuple(rewrites),
     )
 
 
