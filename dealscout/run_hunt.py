@@ -175,6 +175,16 @@ async def run(
             [p for p, _, _ in results], history, limits=limits, identify=identify
         )
 
+        # An observation-only hunt has done its job once its prices are logged: it exists
+        # for breadth, to keep a price for the whole range, and must never reach the digest.
+        # Its prices are already in `fresh` above; skip its findings, render and section so a
+        # three-hundred-boot range hunt cannot bury the owner's real finds.
+        if hunt.observe_only:
+            findings[hunt.id] = []
+            logger.info("hunt %s: observe-only, logged %d price(s), not reported", hunt.id, len(fresh))
+            state = record(state, candidates, hunt.sizes)
+            continue
+
         body = render_hunt_report(hunt, results, base, vocab, memory)
         out = Path("out") / f"hunt-{hunt.id}.md"
         out.parent.mkdir(parents=True, exist_ok=True)

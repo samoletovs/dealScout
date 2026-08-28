@@ -105,3 +105,26 @@ def test_the_undelivered_error_should_name_how_much_was_lost():
 
     assert error.findings == 7
     assert "7" in str(error)
+
+def test_observe_only_hunt_logs_but_never_emails(monkeypatch, tmp_path):
+    """An observe-only hunt feeds the price log for the whole range but must never reach the
+    digest. Without the guard in run(), its always-deal boot becomes a finding and forces a
+    send — burying the owner's real finds under the range."""
+    logged: list = []
+
+    async def _must_not_send(_subject, _body):  # pragma: no cover - the point is it isn't
+        raise AssertionError("an observe-only hunt must not attempt a send")
+
+    aio = _one_finding(monkeypatch, tmp_path, _must_not_send)
+    # Turn the driver's single hunt into an observation-only one.
+    observe_hunt = run_hunt.Hunt(
+        id="boots-archive", label="Archive", category="football_boots", observe_only=True
+    )
+    monkeypatch.setattr(run_hunt, "load_hunts", lambda _c, _o="": [observe_hunt])
+    monkeypatch.setattr(run_hunt, "append_dir", lambda obs, _dir: logged.extend(obs))
+    monkeypatch.setattr(run_hunt, "rewrite_dir", lambda _hist, _dir: None)
+
+    findings = aio.run(run_hunt.run(Path("config.example.yaml")))
+
+    assert findings["boots-archive"] == [], "observe-only produces no reportable findings"
+    assert len(logged) == 1, "but the boot's price is still logged"

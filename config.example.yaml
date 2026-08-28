@@ -384,6 +384,66 @@ hunts:
       - "Puma Future Ultimate junior football boots"
     notes: "Under €100 · junior Elite RRP €120+ · AG preferred, FG accepted · ships to Latvia"
 
+  # boots-archive — the breadth hunt. It buys nothing and emails nothing; its only job is
+  # to put a correctly-keyed price for the WHOLE Nike + adidas range into the durable log,
+  # so the public archive (bRoom) can say "cheapest seen in N days" about any boot, not
+  # only the owner's EU-37 flagship slice. Disabled here because the example config must not
+  # commit the owner to a daily broad scan; the real config.local.yaml (or a dedicated
+  # workflow) enables it. The engine stays user-agnostic — this hunt names no person.
+  #
+  # Why a SEPARATE hunt rather than loosening boots-junior: boots-junior is the owner's
+  # buying tool and must stay a sniper (tier + size + €100 ceiling). Widening it would bury
+  # his three real buy signals under three hundred boots he will never purchase. The observe
+  # path already logs `run.kept` for every hunt, so a second permissive hunt reuses all of
+  # Steps 1 & 2 with no engine change beyond the `observe_only` flag.
+  #
+  # Why it observes so much more than boots-junior does:
+  #   - require: {}         — no tier/soleplate gate. A takedown Copa League boot is exactly
+  #                           a price the archive wants; the catalogue still CLASSIFIES it
+  #                           into the key (brand/silo/generation/tier/soleplate/audience),
+  #                           it is simply not filtered away.
+  #   - no min_reference_price — a boot with no flagship RRP is kept, not rejected as a
+  #                           lookalike. The archive is not trying to prove anything is a
+  #                           flagship; it is recording what everything costs.
+  #   - sizes: []           — no size filter, so a boot is logged across every size the shop
+  #                           publishes, and `Observation.size` is "" (honest unknown) when
+  #                           it publishes none. boots-junior only ever saw EU 37/37.5.
+  #   - price: {}           — no ceiling. `_uncapped` forces good_offer=inf so every survivor
+  #                           bands as a deal and is logged; `must_buy` is left unset because
+  #                           this hunt never emails, so banding is irrelevant to it.
+  - id: boots-archive
+    enabled: false
+    observe_only: true           # log prices for the whole range; never render, never email
+    label: "Football boots — full Nike + adidas range (price observation only)"
+    for: household               # opaque role — the archive is for the site, not a person
+    category: football_boots
+    deliver_to: LV
+    sizes: []                    # no size filter — observe the range across every size
+    brands: [Nike, adidas]
+    brands_only: true            # Nike + adidas only; a 79%-off Skechers is not in scope
+    require: {}                  # no tier/soleplate gate — classify everything, filter nothing
+    require_size_in_stock: false # a sold-out size still has a price worth remembering
+    price: {}                    # no ceiling — record what every boot costs
+    # Reuses the same full-range retailer pages as boots-junior. Listed again here because a
+    # hunt is self-contained; these are the whole-catalogue URLs (football-boots, not only
+    # kids-football-boots), which already carry every tier the junior hunt filtered down.
+    watch:
+      - "https://www.sportsdirect.lv/football/football-boots"
+      - "https://www.unisportstore.com/football-boots-on-sale/"
+      - "https://www.unisportstore.com/ag-football-boots/"
+      - "https://www.prodirectsport.ie/collections/football-boots-sale/products.json?limit=250&page=1"
+      - "https://www.prodirectsport.ie/collections/football-boots-sale/products.json?limit=250&page=2"
+      - "https://www.prodirectsport.ie/collections/football-boots/products.json?limit=250&page=1"
+      - "https://komanda.lv/collections/futbola-apavi/products.json?limit=250"
+      - "https://komanda.lv/collections/ag-un-tf/products.json?limit=250"
+      - "https://www.11teamsports.com/de-de/fussballschuhe/"
+      - "https://www.teamsport.lv/lv_lv/futbols/futbola-apavi.html"
+      - "https://www.voetbalshop.nl/en/adidas/football-boots.html"
+      - "https://www.voetbalshop.nl/en/nike/football-boots.html"
+      - "https://www.futbolemotion.com/en/category/soccer-boots/nike"
+      - "https://www.futbolemotion.com/en/category/soccer-boots/adidas"
+    notes: "Observation only — feeds the price log for the whole range; buys and emails nothing"
+
   # A second hunt proves the engine is not boots-specific. Disabled until needed.
   - id: running-adult
     enabled: false

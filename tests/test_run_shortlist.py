@@ -385,3 +385,71 @@ def test_no_email_should_stay_a_success_because_not_sending_was_the_request(
     _stub_run(monkeypatch, tmp_path, boots, send_email=_must_not_be_called)
 
     assert asyncio.run(run_shortlist.main(["--no-email"])) == 0
+
+# ------------------------------------------------- observe-only breadth hunt (bRoom)
+
+def _archive_hunt() -> Hunt:
+    """A permissive observation hunt: the whole range, logged, never emailed."""
+    return Hunt(
+        id="boots-archive",
+        category="football_boots",
+        observe_only=True,
+        brands=("Nike", "adidas"),
+        brands_only=True,
+        require={},                      # no tier gate — classify everything
+        require_size_in_stock=False,
+        sizes=(),                        # no size filter
+        # no price block — _uncapped forces good_offer=inf so every survivor is kept
+    )
+
+
+def test_observe_hunt_keeps_a_boot_the_buying_hunt_rejects(monkeypatch):
+    # boots-junior requires a flagship tier, so an adult Copa League takedown is contradicted
+    # and never logged. The archive hunt must keep exactly that boot — a price the site wants.
+    league = replace(
+        _boot("adidas Copa Pure 3 League FG", "https://shop.example/league", price=55.0),
+        reference_price=None,            # a takedown with no flagship RRP
+    )
+    buying = replace(HUNT, require={"tier": ("adult-flagship",)}, min_reference_price=110.0)
+
+    rejected_by_buyer = _run(buying, [league], frozenset(), monkeypatch)
+    kept_by_archive = _run(_archive_hunt(), [league], frozenset(), monkeypatch)
+
+    assert [p.url for p in rejected_by_buyer.kept] == []
+    assert [p.url for p in kept_by_archive.kept] == [league.url]
+
+
+def test_observe_only_hunt_logs_prices_but_never_emails(monkeypatch, tmp_path):
+    # The whole point of observe_only: its prices reach the log, but no shortlist is rendered
+    # and no email is sent, because a shortlist of the entire range is noise, not a buy signal.
+    boots = [
+        replace(_boot("Nike Mercurial Superfly 10 Elite FG", f"https://shop{i}.example/m"),
+                source=f"shop{i}.example", brand="Nike")
+        for i in range(6)
+    ]
+    logged: list = []
+    sent: list = []
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(run_shortlist, "scout", _stub_scout(boots))
+    monkeypatch.setattr(run_shortlist, "load_config", lambda _p: CONFIG)
+    monkeypatch.setattr(run_shortlist, "config_path", lambda: Path("config.example.yaml"))
+    monkeypatch.setattr(run_shortlist, "load_hunts", lambda _c, _o="": [_archive_hunt()])
+    monkeypatch.setattr(run_shortlist, "append_dir", lambda obs, _dir: logged.extend(obs))
+    monkeypatch.setattr(run_shortlist, "rewrite_dir", lambda _hist, _dir: None)
+
+    async def _no_feedback():
+        return []
+
+    async def _record_send(subject, body):
+        sent.append(subject)
+        return True
+
+    monkeypatch.setattr(run_shortlist, "read_feedback", _no_feedback)
+    monkeypatch.setattr(run_shortlist, "send_email", _record_send)
+
+    asyncio.run(run_shortlist.main([]))
+
+    assert len(logged) == 6, "every boot in the range is remembered"
+    assert sent == [], "an observe-only hunt sends no email"
+    assert not (tmp_path / "out" / "shortlist-boots-archive.md").exists(), "and renders no shortlist"
