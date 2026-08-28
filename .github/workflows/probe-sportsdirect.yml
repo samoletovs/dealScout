@@ -3,6 +3,10 @@ name: probe sportsdirect (temporary)
 # TEMPORARY measurement. SOURCES.md asserts that GitHub's datacentre IPs are blocked by
 # sportsdirect.lv's Akamai edge. That was an inference, never a measurement. This job
 # settles it. Delete once the answer is recorded in SOURCES.md.
+#
+# Round 1 measured: http=000 in 0.26s, curl exit 92 (CURLE_HTTP2_STREAM). That is an
+# HTTP/2 framing refusal, not a timeout — and it is the classic Akamai behaviour that
+# forcing HTTP/1.1 defeats. Round 2 tests that, plus a full browser header set.
 
 on:
   push:
@@ -13,15 +17,34 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Bare canonical category URL (robots-allowed)
+      - name: Probe variants
         run: |
-          curl -sS -o page.html -w "http=%{http_code} time=%{time_total} size=%{size_download}\n" \
-            --max-time 45 \
-            -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" \
-            -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" \
+          URL="https://www.sportsdirect.lv/football/football-boots/kids-football-boots"
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+
+          probe () {
+            echo "=== $1 ==="
+            shift
+            curl -sS -o page.html -w "http=%{http_code} time=%{time_total} size=%{size_download}\n" \
+              --max-time 40 "$@" "$URL" || echo "curl exit $?"
+            if grep -q "ecommerceData" page.html 2>/dev/null; then
+              echo "ecommerceData: PRESENT"
+              grep -o '"name":"[^"]*"' page.html | head -5
+            else
+              echo "ecommerceData: absent"
+            fi
+            echo
+          }
+
+          probe "1. http2 default (baseline)" -A "$UA"
+          probe "2. forced HTTP/1.1" --http1.1 -A "$UA"
+          probe "3. HTTP/1.1 + full browser headers" --http1.1 -A "$UA" \
+            -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8" \
             -H "Accept-Language: en-GB,en;q=0.9,lv;q=0.8" \
-            "https://www.sportsdirect.lv/football/football-boots/kids-football-boots" || echo "CURL FAILED $?"
-          echo "--- ecommerceData present? ---"
-          grep -c "ecommerceData" page.html || echo "NOT FOUND"
-          echo "--- product count ---"
-          grep -o '"name":"[^"]*"' page.html | head -30 || true
+            -H "Sec-Fetch-Dest: document" \
+            -H "Sec-Fetch-Mode: navigate" \
+            -H "Sec-Fetch-Site: none" \
+            -H "Sec-Fetch-User: ?1" \
+            -H "Upgrade-Insecure-Requests: 1"
+          probe "4. HTTP/1.1 + IPv4 only" --http1.1 -4 -A "$UA"
+          probe "5. plain curl, no UA at all" --http1.1
