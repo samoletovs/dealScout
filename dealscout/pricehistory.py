@@ -28,7 +28,7 @@ from __future__ import annotations
 
 import json
 import logging
-from collections.abc import Iterable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -38,6 +38,32 @@ from .models import Product
 from .monitor import canonical_url, in_stock
 
 logger = logging.getLogger(__name__)
+
+# The identity a price is *about*: the boot, not the listing. A URL is a retailer's
+# identifier — the same Predator Elite is a different URL at every shop, so keying price
+# memory on the URL answers "cheapest this *listing* has been", never "cheapest this
+# *boot* has been anywhere", which is the claim an honest cross-retailer archive makes.
+# These are the attributes that make two listings the same boot: brand, silo (model line),
+# generation, tier, the soleplate the boot is built on and the audience the size grid is
+# cut for. They are resolved once, by the same catalogue/vocabulary path the judge uses,
+# and passed in — this module stays dependency-light and never disagrees with the judge
+# about what a boot is.
+#
+# **Soleplate is in the key, and this is a correctness rule, not an optimisation.** The FG
+# and SG of the same boot are different SKUs at different prices and are *not substitutes*:
+# a firm-ground player cannot wear soft-ground studs on turf. Pooling them would let the
+# Scout quote an SG clearance price as the low for an FG boot — the confident, checkable,
+# and wrong price claim this whole project exists to refuse. So when a listing does not
+# state its soleplate, the honest reading is a distinct "unknown" bucket, *not* a merge
+# into the FG history: a missed pooling (two FG listings that don't share history because
+# one stayed silent) costs a little depth; a wrong merge costs the trust the number carries.
+#
+# Colourway is deliberately **not** in the key. A Mercurial in blue and the same Mercurial
+# in white are the same boot, and pooling colourways is exactly what lets the archive say
+# "this boot has been cheaper than this". It is stored as an attribute on the observation
+# all the same, because a discontinued colourway is often *why* a price fell — the drop is
+# real, and the colourway is the explanation the renderer may want to show.
+_IDENTITY_ATTRS: tuple[str, ...] = ("brand", "silo", "generation", "tier", "soleplate")
 
 DEFAULT_HISTORY_PATH = Path("state/prices.jsonl")
 DEFAULT_KEEP_DAYS = 180
@@ -54,13 +80,26 @@ _CENT = 0.005
 
 @dataclass(frozen=True)
 class Observation:
-    """One sighting of one product's price at one moment."""
+    """One sighting of one product's price at one moment.
+
+    ``url`` keys the retailer's listing (tracking-stripped), so a run can link exactly what
+    it saw. ``boot_key`` keys the *boot* — a stable identity (brand, silo, generation, tier,
+    soleplate, audience) resolved from the catalogue — so price memory can answer "cheapest
+    this boot has been, at any shop". It is empty when the boot could not be classified (the
+    catalogue's honest ``unknown``), in which case the memory falls back to the URL rather
+    than merging two boots it cannot tell apart. ``size`` pins the specific EU size a
+    per-size price refers to, so a junior EU 37 low is never contaminated by an adult EU 44
+    of the "same" model — just as the soleplate in ``boot_key`` keeps an SG price from ever
+    standing in for an FG one.
+    """
 
     url: str  # canonical (tracking-stripped), so it keys the same across runs
     price: float
     at: datetime
     source: str = ""
     in_stock: bool | None = None  # None = the page never said
+    boot_key: str = ""  # resolved boot identity; "" when the boot is unclassified
+    size: str = ""  # the EU size this price/stock is for; "" when the page never said
 
     def to_json(self) -> str:
         """Serialise to a single JSONL line."""
@@ -71,13 +110,20 @@ class Observation:
                 "at": self.at.isoformat(),
                 "source": self.source,
                 "in_stock": self.in_stock,
+                "boot_key": self.boot_key,
+                "size": self.size,
             },
             sort_keys=True,
         )
 
     @classmethod
     def from_dict(cls, data: dict) -> Observation | None:
-        """Parse one logged observation, or None if the line cannot be trusted."""
+        """Parse one logged observation, or None if the line cannot be trusted.
+
+        ``boot_key`` and ``size`` default to empty when absent, so a log written before the
+        identity fields existed still reads — the old lines simply key on their URL, as
+        they always did, and new lines key on the boot.
+        """
         try:
             url = str(data["url"]).strip()
             price = float(data["price"])
@@ -95,7 +141,62 @@ class Observation:
             at=at,
             source=str(data.get("source") or ""),
             in_stock=bool(stock) if stock is not None else None,
+            boot_key=str(data.get("boot_key") or ""),
+            size=str(data.get("size") or ""),
         )
+
+    @property
+    def key(self) -> str:
+        """What this observation is *about*: the boot when known, else the listing.
+
+        A resolved boot key lets two retailers' listings of one boot share a price history;
+        an unclassified boot has no honest identity to share, so it keeps its own URL and is
+        never silently folded into another.
+        """
+        return self.boot_key or self.url
+
+
+def boot_key(attrs: dict[str, str]) -> str:
+    """A stable identity string for a boot, from already-resolved attributes.
+
+    ``brand/silo/generation/tier/soleplate/audience`` — the fields that make two listings
+    the same boot. Pure and closed over its input: the caller resolves attributes via the
+    catalogue (the same path the judge uses) and passes them here, so this module needs no
+    catalogue dependency and can never read a title by an older rule than the judge.
+
+    Soleplate carries a hard rule: it is part of the key, and an *unstated* soleplate keys
+    as ``unknown`` rather than being folded into any stated one. FG and SG are different
+    boots at different prices and are not substitutes, so quoting one as the low for the
+    other is the dishonesty this project refuses — the missed pooling of a silent listing
+    is the cheaper mistake.
+
+    Returns ``""`` when the identity is too thin to trust — no brand, or the catalogue
+    declined to name a tier. An empty key is the signal to fall back to the URL, never a
+    key that would merge every unclassified boot into one.
+    """
+    parts = [str(attrs.get(name) or "").strip().lower() for name in _IDENTITY_ATTRS]
+    brand, silo, generation, tier, soleplate = parts
+    if not brand or not tier or tier == "unknown":
+        return ""
+    audience = _audience(attrs)
+    return f"{brand}/{silo}/{generation}/{tier}/{soleplate or 'unknown'}/{audience}"
+
+
+def _audience(attrs: dict[str, str]) -> str:
+    """Who the size grid is cut for: 'junior', 'adult', or '' when unstated.
+
+    A junior flagship and an adult flagship are different boots at different prices, so the
+    audience belongs in the identity. It is read from the tier first (the catalogue marks a
+    junior flagship as such) and the ``fit`` attribute second.
+    """
+    tier = str(attrs.get("tier") or "").strip().lower()
+    if tier.startswith("junior"):
+        return "junior"
+    if tier.startswith("adult"):
+        return "adult"
+    fit = str(attrs.get("fit") or "").strip().lower()
+    return fit if fit in {"junior", "adult"} else ""
+
 
 
 @dataclass(frozen=True)
@@ -164,24 +265,39 @@ def observe(
     products: Iterable[Product],
     wanted_sizes: tuple[str, ...] = (),
     now: datetime | None = None,
+    identify: Callable[[Product], tuple[str, str]] | None = None,
 ) -> list[Observation]:
-    """One observation per product for this run, keyed on the tracking-stripped URL.
+    """One observation per product per source for this run.
 
-    Two hunts can reach the same boot, and a listing can link it twice with different
-    click tracking. Logging each sighting would let a popular product outvote itself and
-    make the median a measure of how often we saw it rather than what it cost.
+    ``identify`` resolves a product to its ``(boot_key, size)`` — the caller supplies it
+    because the caller already holds the hunt and vocabulary the catalogue needs, and this
+    keeps the module dependency-light. Without it an observation keys on its URL alone, as
+    it always did.
+
+    Two hunts can reach the same boot, and a listing can link it twice with different click
+    tracking. Logging each sighting would let a popular product outvote itself and make the
+    median a measure of how often we saw it rather than what it cost — so a run keeps one
+    observation per ``(boot, source)``. It is deliberately not one per *boot*: two shops
+    selling the same boot at two prices are the whole point of a cross-retailer low, and
+    collapsing them would throw away the cheaper one.
     """
     stamp = now or datetime.now(UTC)
-    latest: dict[str, Observation] = {}
+    latest: dict[tuple[str, str], Observation] = {}
     for product in products:
-        key = canonical_url(product.url)
-        latest[key] = Observation(
-            url=key,
+        url = canonical_url(product.url)
+        key, size = identify(product) if identify else ("", "")
+        observation = Observation(
+            url=url,
             price=product.price,
             at=stamp,
             source=product.source,
             in_stock=in_stock(product, wanted_sizes),
+            boot_key=key,
+            size=size,
         )
+        # Dedupe within the run on (boot-or-listing, source): the same boot at two shops is
+        # two observations, the same listing linked twice is one.
+        latest[(observation.key, product.source)] = observation
     return list(latest.values())
 
 
@@ -214,7 +330,7 @@ def load_history(path: Path = DEFAULT_HISTORY_PATH) -> dict[str, list[Observatio
         if observation is None:
             skipped += 1
             continue
-        history.setdefault(observation.url, []).append(observation)
+        history.setdefault(observation.key, []).append(observation)
 
     if skipped:
         logger.warning("price history: skipped %d unreadable line(s)", skipped)
@@ -243,9 +359,9 @@ def extend(
     Lets a run read its own fresh observation, so "cheapest seen" is a claim about the
     price in front of the reader rather than about the previous run's.
     """
-    merged = {url: list(points) for url, points in history.items()}
+    merged = {key: list(points) for key, points in history.items()}
     for observation in observations:
-        merged.setdefault(observation.url, []).append(observation)
+        merged.setdefault(observation.key, []).append(observation)
     for points in merged.values():
         points.sort(key=lambda o: o.at)
     return merged
@@ -348,15 +464,23 @@ def summarise_all(
     history: dict[str, list[Observation]],
     now: datetime | None = None,
     limits: HistoryConfig | None = None,
+    identify: Callable[[Product], tuple[str, str]] | None = None,
 ) -> dict[str, PriceMemory]:
-    """Memory for each product, keyed on the tracking-stripped URL the renderer will use."""
+    """Memory for each product, keyed on the tracking-stripped URL the renderer will use.
+
+    The *lookup* into ``history`` is by boot identity when the caller supplies ``identify``,
+    so a boot's memory draws on every retailer that has ever sold it — but the returned
+    dict stays keyed on the URL, because that is what the renderer holds for each row. An
+    unclassified boot (empty ``boot_key``) falls back to its own URL, exactly as before.
+    """
     limits = limits or HistoryConfig()
     memories: dict[str, PriceMemory] = {}
     for product in products:
-        key = canonical_url(product.url)
-        memories[key] = summarise(
+        url = canonical_url(product.url)
+        boot = (identify(product)[0] if identify else "") or url
+        memories[url] = summarise(
             product.price,
-            history.get(key, ()),
+            history.get(boot, ()),
             now,
             limits.min_observations,
             limits.min_span_days,
