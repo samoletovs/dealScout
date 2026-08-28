@@ -532,3 +532,57 @@ def test_an_adult_flagship_priced_between_the_bands_should_stay_adult():
     either — being in no band is a truthful answer.
     """
     assert _tier("adidas Predator Elite LL FG", "adidas", rrp=162.0) == ADULT_FLAGSHIP
+
+
+# ----------------- why a junior marker is NEVER overridden by a reference price
+#
+# This was attempted on 2026-08-28 and reverted the same day. The reasoning is recorded
+# because the idea is a natural one and will be had again.
+#
+# Both brands' adult Elite ranges start at EU 35-36, which fits a child — measured on
+# prodirectsport.ie: 116 adult Nike Elites span EU 35-49 at RRP 250-300, and 84 adult
+# adidas Elites span EU 36-48 at 240-350. So retailers shelve small sizes of the ADULT
+# flagship under "Kids": sportsdirect.lv lists "Kids' Superfly 10 Elite SG", EU 36-39, at
+# a reference price of 317.99, which is the adult RRP for a genuinely adult-spec boot.
+# That argues for reading an adult-band RRP as evidence the junior word is a shelf label.
+#
+# It cannot be done, because the SAME shop also does the opposite. Which? analysed 160
+# Sports Direct products in 2025, found 58 whose reference price no other retailer
+# matched, and reported the company to the CMA. Its own listings show the practice
+# plainly: a "Predator Accuracy Injection+ CHILDRENS Elite" in EU 28.5 - a small child's
+# boot - carries a reference price of 300, which is the ADULT RRP. The junior boots in
+# the golden set below are the same shape: "Predator Elite Juniors" at a stated 260.
+#
+# So "junior word + adult-band reference price" means BOTH "adult boot on a kids shelf"
+# AND "junior boot with an inflated was-price", and title plus price cannot separate
+# them. The size grid could - a junior boot stops at EU 38/38.5 - but the catalogue is
+# given a title, a brand and a price, and none of those carry it. An explicit junior
+# marker is a statement by the retailer about the product; a reference price is the least
+# trustworthy number on the page. The explicit statement wins.
+
+
+def test_a_junior_marker_should_survive_an_adult_looking_reference_price():
+    """sportsdirect.lv states 260 against a boot whose title says "Juniors". Which? found
+    that shop inflating reference prices to the point of a CMA referral, so the title is
+    the better evidence and must not be overridden."""
+    assert (
+        _tier("Predator Elite Juniors Firm Ground Football Boots", "adidas", rrp=260.0)
+        == JUNIOR_FLAGSHIP
+    )
+
+
+def test_the_same_should_hold_for_a_kids_shelf_label_on_a_nike_elite():
+    """The case that motivated the attempt. It really may be the adult boot in EU 36-39 -
+    but nothing in a title, brand and price can establish that, so the catalogue says what
+    the retailer said rather than guessing past it."""
+    assert (
+        _tier("Kids' Superfly 10 Elite Soft Ground Football Boot", "Nike", rrp=317.99)
+        == JUNIOR_FLAGSHIP
+    )
+
+
+def test_the_price_inference_should_still_work_in_the_direction_it_can():
+    """The surviving rule is the one where the title is SILENT, so nothing is overridden:
+    komanda.lv lists "adidas Predator Elite LL FG" at 130 in EU 36-38 with no junior word
+    anywhere. Inferring from price adds information; it does not contradict any."""
+    assert _tier("adidas Predator Elite LL FG", "adidas", rrp=130.0) == JUNIOR_FLAGSHIP
