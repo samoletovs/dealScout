@@ -11,8 +11,9 @@
 #
 # Two cautions the sources and PR #30 make explicit:
 #   * Junior Elite is a DIFFERENT construction, not "the adult boot in small sizes". adidas
-#     genuinely makes junior Elite boots (TPU plate, no rubber fins, laced only); Nike's
-#     "junior Elite" is often closer to the adult article. Both say Elite.
+#     genuinely makes junior Elite boots (TPU plate, fewer rubber fins); Nike's
+#     "junior Elite" is often closer to the adult article. Both say Elite. (Closure is NOT
+#     the tell: laceless junior Elite SKUs exist — see the closure note below.)
 #   * Adult Elite starts at EU 35–36. A small size is not proof of a junior boot; retailers
 #     shelve adult flagships in EU 36–39 under "Kids". Title + price cannot settle it — only
 #     the size grid can, which is why this file teaches rather than filters.
@@ -65,10 +66,9 @@ tiers:
         - {feature: "plate stiffness", value: "stiffest of the three", confidence: directional,
            note: "carbon/Pebax composite; draw as the most rigid plate"}
         - {feature: "profile", value: "lowest, thinnest upper and lining", confidence: directional}
-        - {feature: "adidas Predator closure", value: "LACELESS on Predator Elite", confidence: measured,
-           note: "adult Predator Elite is laceless with a Primeknit collar — a clean, no-lace strike face. Drawable. Source: adidas.com IF8860 / thesoccerfactory."}
       drawable_by_silo:
         - {feature: "collar", note: "Nike Superfly Elite = high knit Dynamic Fit collar; Nike Vapor Elite = low-cut, laced. adidas Predator Elite = Primeknit collar. Collar is a SILO trait, not a tier trait — draw per silo, not per tier. Source: thesoccerfactory Superfly-vs-Vapor; adidas.com."}
+        - {feature: "closure (laced vs laceless)", note: "NOT a tier difference. Closure is a VARIANT WITHIN a tier: adidas sells both 'Predator Elite FG' (laced) and 'Predator Elite Laceless FG' (laceless) at the same Elite tier — and this repo's own classifier lists `laceless` as noise, stripped before tier is read (data/football_boots.yaml), precisely because Predator+ (laceless) and Predator.1 (laced) were the SAME tier. So a card labelled plainly 'Predator Elite FG' must NOT be drawn laceless — that is one SKU of two. Draw closure only when the card names the specific SKU. Counter-example on file: 'Predator Elite Laceless Juniors FG' €63.00, sportsdirect.lv 2026-08-28 — a laceless JUNIOR Elite, which alone falsifies any 'juniors are always laced' rule."}
       do_not_draw:
         - {feature: "last width", reason: "no measured Nike/adidas adult-Elite last-width figure sourced"}
         - {feature: "exact weight", reason: "range is silo-wide (150–230 g), not a per-boot spec"}
@@ -87,7 +87,7 @@ tiers:
         De-specced from the adult plate for durability and cost. On adidas junior Elite this
         is a genuine TPU plate, not the adult carbon/Comfort Frame.
     upper:
-      material: "The silo's upper, simplified; adidas junior Elite is laced only."
+      material: "The silo's upper, simplified; closure varies by SKU (laced and laceless junior Elite both exist)."
       plain: "Same look and often the same upper family, built for growing feet."
     fit_last: "Roomier and more forgiving than the adult last — built on a junior last for growing feet."
     fit_last_confidence: directional   # junior boots run roomier (Pro:Direct, buying guides); no measured width delta
@@ -99,8 +99,6 @@ tiers:
         - {feature: "plate stiffness", value: "softer / more flexible than adult", confidence: directional,
            note: "genuine TPU/Pebax on junior, not adult carbon; draw a visibly less rigid plate"}
         - {feature: "profile", value: "slightly fuller than adult", confidence: directional}
-        - {feature: "adidas junior closure", value: "LACED (never laceless)", confidence: measured,
-           note: "adidas junior Elite is laced only, even where the adult is laceless — a concrete, drawable difference. Draw laces on the junior adidas card. Source: Pro:Direct kids-elite; footyheadlines junior launches."}
         - {feature: "grip fins", value: "fewer / simplified vs adult", confidence: directional,
            note: "junior Elite de-specs the adult's grip elements; draw a plainer strike face than the adult"}
       do_not_draw:
@@ -136,8 +134,6 @@ tiers:
         - {feature: "plate stiffness", value: "least stiff — injected TPU/plastic, no carbon", confidence: directional,
            note: "draw as the thickest, most rigid-looking BUT least responsive plate; injected not carbon"}
         - {feature: "profile", value: "bulkier upper and lining than Elite", confidence: directional}
-        - {feature: "closure", value: "LACED", confidence: measured,
-           note: "the tier below is laced (adidas League is never laceless); draw laces. Source: thesoccerfactory Predator-buying-guide; motionwears review."}
         - {feature: "grip fins / strike elements", value: "fewer or none vs Elite", confidence: measured,
            note: "Predator League has fewer/no rubber grip fins vs Elite's full set — draw a plainer strike face. Source: thesoccerfactory; motionwears."}
         - {feature: "collar", value: "lower-profile mesh, not premium knit", confidence: directional,

@@ -231,9 +231,25 @@ def test_every_drawable_tier_difference_declares_a_confidence_and_last_width_is_
             )
             # A 'measured' drawable is a hard claim on the page — it must name its evidence.
             if item.get("confidence") == "measured":
-                assert "source" in str(item.get("note", "")).lower(), (
+                note = str(item.get("note", ""))
+                assert "source" in note.lower(), (
                     f"tier {t['tier']} draws '{item.get('feature')}' as MEASURED but its note "
                     "names no source — a measured drawable must cite evidence"
+                )
+                # "Never" is the most expensive word in a dataset: a single counter-example
+                # falsifies an absolute. A MEASURED drawable phrased as never/always/only is a
+                # tendency dressed as a law, and it becomes a taught tier difference in artwork.
+                # (This is the exact trap the junior 'LACED (never laceless)' claim fell into —
+                # falsified by a €63 laceless junior Elite on file in football_boots.yaml.) An
+                # absolute claim must be phrased as a tendency (drop the absolute) or demoted to
+                # directional / drawable_by_silo.
+                absolutes = ("never", "always", " only", "exclusively")
+                blob = f"{item.get('feature','')} {item.get('value','')} {note}".lower()
+                offending = [w for w in absolutes if w.strip() in blob]
+                assert not offending, (
+                    f"tier {t['tier']} draws '{item.get('feature')}' as MEASURED but phrases it "
+                    f"as an absolute ({offending}) — one counter-example falsifies it. Restate "
+                    "as a tendency or demote to directional / drawable_by_silo."
                 )
             assert "last width" not in str(item.get("feature", "")).lower(), (
                 f"tier {t['tier']} tries to DRAW last width — no measured figure exists; "
