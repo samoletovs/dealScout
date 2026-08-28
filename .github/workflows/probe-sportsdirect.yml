@@ -23,44 +23,7 @@ jobs:
       - run: pip install -q -r requirements.txt
 
       - name: What do our parsers recover?
-        run: |
-          python - <<'PY'
-          import asyncio, re, pathlib
-          from dealscout import collector
-
-          URL = "https://www.sportsdirect.lv/football/football-boots/kids-football-boots"
-
-          async def main():
-              html = await collector.fetch(URL, timeout=40)
-              if not html:
-                  print("FETCH FAILED"); return
-              print(f"fetched {len(html)} bytes")
-              pathlib.Path("page.html").write_text(html, encoding="utf-8")
-
-              print("\n--- parse_html_links ---")
-              links = collector.parse_html_links(html, URL)
-              print(f"  {len(links)} links")
-              for n, u in links[:8]:
-                  print(f"   * {n!r} -> {u[:90]}")
-
-              print("\n--- parse_product_tiles ---")
-              tiles = collector.parse_product_tiles(html, URL)
-              print(f"  {len(tiles)} tiles")
-              for p in tiles[:8]:
-                  print(f"   * {p.name!r} {p.price} {p.brand!r}")
-
-              print("\n--- parse_ldjson_products ---")
-              lds = collector.parse_ldjson_products(html, URL)
-              print(f"  {len(lds)} ld+json products")
-
-              print("\n--- raw ecommerceData impressions (what IS in the page) ---")
-              m = re.search(r"var ecommerceData\s*=\s*(\{.*?\});", html, re.S)
-              print(f"  block present: {bool(m)}")
-              if m:
-                  print(f"  impressions: {len(re.findall(r'\"id\":\"', m.group(1)))}")
-
-          asyncio.run(main())
-          PY
+        run: python probe_sportsdirect.py
 
       - uses: actions/upload-artifact@v4
         if: always()
