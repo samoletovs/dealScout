@@ -47,6 +47,7 @@ decision outright, and one that states only a price is capped at 🟡 *verify on
 | Source | Country | Platform | How stock is read | Trust | Elite proof (measured) |
 |---|---|---|---|---|---|
 | **11teamsports.com** | 🇩🇪 DE → LV ~€10 DHL | Shopware 6 | one ld+json `Product` block per size | **4.6/5, 12k+ reviews** | Superfly Elite €277–295; Elite is a `serie=` facet |
+| **sportsdirect.lv** | 🇱🇻 LV — Frasers Group; the owner's **main shop**, and the one he orders from | listing anchors (`parse_html_links`) — 60 links, names carry the brand; no sizes, so 🟡 only | Frasers Group | Nike Mercurial Vapor 16 Elite €171; Superfly 10 Elite SG-Pro €96 |
 | **prodirectsport.ie** | 🇮🇪 IE (CZ warehouse) | Shopify | `/products.json` — one request per collection | 4.0/5, **175k+ reviews** | New Balance Furon V9 Elite FG, RRP €230; Superfly XI Elite €289.99 |
 | **komanda.lv** | 🇱🇻 LV — shop at Duntes iela 7, Rīga | Shopify | `/products.json` | official adidas Baltic dealer | adidas Predator Elite FT FG €280; Copa Pure IV Elite €240 |
 | **futbola-apavi.lv** | 🇱🇻 LV | OpenCart | rendered size boxes (`read_size_boxes`) | small specialist, unrated | Nike Tiempo Maestro Elite FG €250 (RRP €270) |
@@ -63,6 +64,51 @@ this is the safest place to send the owner.
 **prodirectsport.ie** is the deepest catalogue and the only source pairing a large sale
 range with exact EU sizing. Its rendered pages show *UK* sizes — read the JSON, not the
 page. The 4.0 score rests on 175,000 reviews, the largest sample in this survey.
+
+**sportsdirect.lv is the shop the owner actually orders from, and this file told the tool
+not to read it — for a reason that was never measured.** Until 2026-08-28 it sat under
+*Blocked* with the note "an IP-level Akamai tarpit … CI runners are datacentre IPs and
+will be blocked too. Do not wire it in." The first half was a real local observation. The
+second was an inference, and it was wrong. Measured on a GitHub runner, one category page,
+four clients:
+
+| client | result |
+|---|---|
+| `BROWSER_HEADERS` (claims to be Chrome) | TimeoutError |
+| no headers at all (aiohttp's own UA) | TimeoutError |
+| `Accept` only, no UA override | TimeoutError |
+| **one honest, self-identifying UA** | **HTTP 200, 812 KB, 0.7 s** |
+
+Akamai here is not blocking the IP; it is **fingerprinting**. A client whose headers claim
+to be Chrome while its TLS/HTTP2 handshake plainly is not gets tarpitted as a liar, and a
+client that says what it actually is gets served at once. curl showed the same thing from
+the other side: claiming Chrome failed in 0.26 s with an HTTP/2 framing error, while plain
+`curl/8.x` fetched the page. So `collector.headers_for` now sends this estate an honest
+`dealScout/1.0 (+…)` UA, and `parse_html_links` recovers 60 products from the category page.
+
+Three things follow, and the third is the one worth remembering:
+
+1. **The blanket browser-header policy was never universal.** It is right for every other
+   source here — the comment on `BROWSER_HEADERS` documents shops that tarpit a bare UA —
+   but stating it as a rule hid the one shop where it is exactly backwards. It is now a
+   per-host policy with the measurement written next to it.
+2. **Drop the query string.** The old watch URLs carried `?dcp=1&dppp=60&OrderBy=…`, and
+   the shop's own robots.txt says `Disallow: *dppp` and `Disallow: *OrderBy*`. Python's
+   `RobotFileParser` ignores a rule that does not begin with `/`, so nothing would have
+   stopped us — which is precisely why it had to become a decision rather than stay an
+   accident. The bare canonical URL returns the same catalogue and this engine sorts by
+   its own judge anyway.
+3. **"The parser is not the problem" was not true either.** That note pointed at a
+   `var ecommerceData = {…}` block as though something read it. Nothing does, and nothing
+   here has been added to: the block covers only the first **20** of the 60 products on the
+   page, and a product page has to be fetched for per-size stock regardless — so a fifth
+   listing reader would buy a partial signal for real complexity. Recorded rather than
+   built. If it is ever wanted, `dimension5` joins to the `#colcode=` in each product URL,
+   and that join was measured clean at 20/20.
+
+The general lesson, which cost this project its best shop for months: **an inference about
+a source has to be labelled as one.** "CI will be blocked too" reads exactly like the
+measured half of the sentence it was attached to, and so was never retested.
 
 **komanda.lv** is the official adidas dealer for the Baltics and the only source with a
 shop the boots can be tried on in. It sells at RRP, so `compare_at_price` is always null:
@@ -160,7 +206,6 @@ reason below why it cannot be. New candidates land here after a qualifier run.
 | Source | Trust / note | Symptom |
 |---|---|---|
 | **unisportstore.com** 🇩🇰 | Unisport A/S, ~€155M revenue, top-3 European pure-play, €7 flat to LV. 3.7/5. **Now an R-GOL subsidiary.** | HTTP 405 on every request including the homepage — an IP-range block, not a page fault. Previously the best source of all (per-size stock *and* RRP), so the clean route is an **Awin / TradeDoubler affiliate feed**, which a human has to apply for. Not worth further scraping attempts. |
-| **sportsdirect.lv** 🇱🇻 | Frasers Group; good for heavily discounted last-season Elite in person | **Readable in principle, unreachable in practice.** Its category HTML does carry a `var ecommerceData = {…}` block with name, price and brand (a genuine Nike Mercurial Vapor 16 Elite at €171), so the parser is not the problem: it is an IP-level Akamai tarpit that times out from here with both aiohttp and curl regardless of headers or TLS. CI runners are datacentre IPs and will be blocked too. Do not wire it in. |
 | **intersport.lv** 🇱🇻 | INTERSPORT BALTIJA, authorised Nike + adidas, Rīga mall stores | **Definitively dead as a source.** The site is a one-line page containing `<iframe src="http://www.intersport.com/">` — no catalogue, no API, nothing to read. Not "not yet probed"; there is nothing there. |
 | **sportisimo.com** 🇨🇿 | 220+ stores, authorised — but **2.5/5, returns from abroad are the core complaint** | 403 on every category page |
 | kickz.com 🇩🇪 | 3.7/5; subsidiary of 11teamsports, so the parent covers it | 403 (Cloudflare + PerimeterX) |
