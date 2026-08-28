@@ -44,6 +44,15 @@ class Product:
     attrs: dict[str, str] = field(default_factory=dict)  # extracted spec, e.g. {"soleplate": "AG"}
     sizes: frozenset[str] = frozenset()  # in-stock sizes, normalised (e.g. {"37", "37.5"})
     sizes_known: bool = False  # False = the page never told us; don't infer "out of stock"
+    # Product image URLs as the feed served them, most-representative first. These come from
+    # the *same* payload we already read for price/size/stock (Shopify `/products.json`), so
+    # keeping them costs no extra request. Retrieval is not a licence to republish: a URL
+    # here is fit for an internal design spike, and for public display only once an affiliate
+    # (or other) licence covers the image. `image_seen_at` is the ISO-8601 UTC instant the
+    # feed served these URLs — merchant CDNs rotate image URLs (Shopify appends a `?v=`
+    # cache-buster), so a stored link is only trustworthy relative to when it was last seen.
+    images: tuple[str, ...] = ()
+    image_seen_at: str = ""  # ISO-8601 UTC, e.g. "2026-08-28T14:03:11Z"; "" = never captured
 
 
 @dataclass(frozen=True)
