@@ -272,8 +272,14 @@ def test_a_generation_newer_than_the_catalogue_should_not_be_called_the_oldest_o
     it answered for all of them. The failure direction is the bad one — it argues the
     owner out of a current boot — and it arrives silently on the day adidas ships a
     number this file has not seen.
+
+    The example moved on 2026-08-28: the Copa Pure IV that first exposed this is now IN
+    the catalogue (it shipped in January 2026 and is the current generation), so it can
+    no longer stand for a number the file has never seen. Copa Pure 5 does that job now
+    — and will keep doing it, because the point of the case is a number nobody has
+    catalogued rather than any particular boot.
     """
-    boot = _gen("adidas Copa Pure IV Elite FG Chaos vs Control Kids")
+    boot = _gen("adidas Copa Pure V Elite FG Kids")
 
     assert boot.year is None
     assert not boot.status
@@ -281,7 +287,7 @@ def test_a_generation_newer_than_the_catalogue_should_not_be_called_the_oldest_o
 
 def test_that_boot_should_still_be_classified_as_a_flagship():
     """Only the generation claim is withdrawn; the tier is read from the title and stands."""
-    assert _gen("adidas Copa Pure IV Elite FG Chaos vs Control Kids").tier == JUNIOR_FLAGSHIP
+    assert _gen("adidas Copa Pure V Elite FG Kids").tier == JUNIOR_FLAGSHIP
 
 
 def test_a_generation_the_catalogue_does_know_should_be_unaffected():
@@ -289,7 +295,10 @@ def test_a_generation_the_catalogue_does_know_should_be_unaffected():
 
     assert str(known.generation) == "3"
     assert known.year == 2024
-    assert known.status == "current"
+    # Superseded since January 2026, when the Copa Pure 4 shipped. This assertion is the
+    # canary for that rot: it is the line that fails the next time adidas moves the silo
+    # on and this file has not been refreshed.
+    assert known.status == "superseded"
 
 
 def test_an_unnumbered_title_should_still_match_the_unnumbered_generation():
@@ -429,3 +438,69 @@ def test_a_word_tier_should_outrank_the_legacy_number_reading():
 def test_a_brand_with_no_legacy_numbering_should_not_borrow_adidas_rules():
     # Nike never used the dotted system, so a stray number must not invent a tier for it.
     assert _tier("Nike Phantom 6.3 FG", "Nike") == UNKNOWN
+
+
+# ------------------------------------------- Copa Pure 4 (launched Jan 2026), and bands
+#
+# `generation.status` is a season snapshot and rots silently — the file says so. It had:
+# Copa Pure 3 "current", when adidas shipped the Copa Pure 4 in January 2026. Measured
+# 2026-08-28 on komanda.lv, adidas's own Baltic dealer: Copa Pure IV Elite at €240 across
+# a full 39-44 grid, Copa Pure 2 Elite down to one size at €184.
+
+
+def test_the_current_copa_generation_should_be_the_fourth():
+    read = classify("adidas Copa Pure IV Elite FG", CATEGORY, "adidas")
+
+    assert str(read.generation) == "4"
+    assert read.status == "current"
+    assert read.year == 2026
+
+
+def test_the_third_copa_should_no_longer_claim_to_be_current():
+    """The half of the change that is easy to forget: the old current must be demoted."""
+    read = classify("adidas Copa Pure 3 Elite FG", CATEGORY, "adidas")
+
+    assert str(read.generation) == "3"
+    assert read.status == "superseded"
+
+
+def test_an_adult_copa_flagship_should_fall_inside_the_adult_band():
+    """Copa is adidas's cheapest flagship line at €240, and the band used to start at 250.
+
+    The band is corroboration the email prints, never a gate — but a band that excludes a
+    whole current silo is simply wrong about the world.
+    """
+    read = classify("adidas Copa Pure IV Elite FG", CATEGORY, "adidas", rrp=240.0)
+
+    assert read.tier == ADULT_FLAGSHIP
+    assert read.rrp_band is not None
+    assert read.rrp_band[0] <= 240.0 <= read.rrp_band[1]
+
+
+def test_the_cheapest_adult_nike_flagship_should_fall_inside_its_band():
+    # Tiempo Maestro Elite, €210 on prodirectsport.ie — a genuine adult flagship.
+    read = classify("Nike Tiempo Maestro Elite FG", CATEGORY, "Nike", rrp=210.0)
+
+    assert read.tier == ADULT_FLAGSHIP
+    assert read.rrp_band is not None
+    assert read.rrp_band[0] <= 210.0 <= read.rrp_band[1]
+
+
+def test_lowering_the_adult_floor_must_not_stop_a_silent_junior_being_caught():
+    """The guard on the band change.
+
+    `_priced_as_junior` requires the RRP to sit below the adult floor, so lowering that
+    floor can only ever make the inference stricter. This is the real boot it must keep
+    catching: komanda.lv lists it at €130 in EU 36-38 with nothing in the title to say
+    it is a junior.
+    """
+    assert _tier("adidas Predator Elite LL FG", "adidas", rrp=130.0) == JUNIOR_FLAGSHIP
+
+
+def test_an_adult_flagship_priced_between_the_bands_should_stay_adult():
+    """€162-216 on that shop is a superseded adult flagship on a broken size run.
+
+    It sits above the junior band and below the adult one, and must not be dragged into
+    either — being in no band is a truthful answer.
+    """
+    assert _tier("adidas Predator Elite LL FG", "adidas", rrp=162.0) == ADULT_FLAGSHIP

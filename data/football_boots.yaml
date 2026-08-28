@@ -110,8 +110,12 @@ brands:
   nike:
     flagship: [elite]
     takedown: [pro, academy, club, league, match, play, essential]
+    # Lower bound measured, not estimated: on prodirectsport.ie, 2026-08-28, the cheapest
+    # ADULT Elite is the Tiempo Maestro at €210 and the Vapor at €215 — both genuine
+    # flagships. A band starting at 250 called them out-of-band and reported no band at
+    # all for the two cheapest silos.
     rrp_bands:
-      adult-flagship: [250, 320]
+      adult-flagship: [210, 320]
       junior-flagship: [110, 150]
       takedown: [40, 190]
     lines:
@@ -242,7 +246,15 @@ brands:
       takedown: ['(?<=[a-z0-9])\.[234](?![0-9])']
     takedown: [pro, league, club, academy, match, play, essential]
     rrp_bands:
-      adult-flagship: [250, 350]
+      # Measured on komanda.lv (adidas's Baltic dealer, which sells at RRP) 2026-08-28.
+      # The adult floor is the Copa silo at €240, not 250 — Copa is adidas's cheapest
+      # flagship line and a band starting at 250 excluded every current Copa Pure IV.
+      # The junior band is the sharpest signal in this file and is measured, not guessed:
+      # every €130 Elite on that shop grades EU 34–38, and every Elite at €162 or more
+      # grades 39–46. There is nothing priced in between and no size overlap, which is
+      # what makes `_priced_as_junior` safe on a title that says nothing — such as
+      # "adidas Predator Elite LL FG", €130, sizes 36–38, with no junior marker at all.
+      adult-flagship: [240, 350]
       junior-flagship: [120, 140]
       takedown: [40, 180]
     lines:
@@ -302,11 +314,22 @@ brands:
       copa:
         patterns: [copa pure, copa]
         generations:
+          # Copa Pure 4 launched Jan 2026 ("Born For Goals"), so the 3 is now superseded.
+          # Measured 2026-08-28 on komanda.lv, adidas's own Baltic dealer: Copa Pure IV
+          # Elite FG and SG both €240 across a full 39–44 grid, while the Copa Pure 2
+          # Elite is down to a single size at €184 — a current boot and a clearing one.
+          # Reported to be the LAST Copa: adidas is bringing the Adipure name back for
+          # 2027, at which point this line needs a new entry rather than another number.
+          - gen: 4
+            patterns: [copa pure 4]
+            year: 2026
+            launch_rrp_eur: 240
+            status: current
           - gen: 3
             patterns: [copa pure 3]
             year: 2024
             launch_rrp_eur: 250
-            status: current
+            status: superseded
           - gen: 2
             patterns: [copa pure 2]
             year: 2024

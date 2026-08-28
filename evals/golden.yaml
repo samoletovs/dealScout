@@ -461,6 +461,9 @@ cases:
       junior range, and `min_reference_price: 110` used to reject it as "not a
       flagship". Now the tier is established from the title, so the price proxy for
       that same question no longer applies and the boot is surfaced.
+      `generation_status` is incidental corroboration here rather than the point of the
+      case — it moved from `current` to `superseded` on 2026-08-28, when the catalogue
+      caught up with the Copa Pure 4 having shipped in January 2026.
     hunt: boots-junior
     product:
       title: "adidas Kids Copa Pure III Elite FG/MG"
@@ -475,7 +478,7 @@ cases:
       sizes_known: true
     expected:
       band: must-buy
-      attrs: { tier: junior-flagship, silo: copa, generation: "3", generation_status: current }
+      attrs: { tier: junior-flagship, silo: copa, generation: "3", generation_status: superseded }
 
   - id: boots-wales-bonner-collab-is-a-real-flagship-priced-up
     note: >-
@@ -591,9 +594,37 @@ cases:
       clearance. The tier is still read from the title and pinned here; only the
       generation claim is withdrawn. `generation_status` is absent from the pinned
       attributes on purpose — the point of the case is that no status is asserted.
+      The boot moved on 2026-08-28: the Copa Pure IV that first exposed this shipped in
+      January 2026 and is now the CURRENT generation in the catalogue, so it can no
+      longer stand for a number the file has never seen. Copa Pure V does that now. The
+      case is about an uncatalogued number, not about any particular boot.
     hunt: boots-junior
     product:
-      title: "adidas Copa Pure IV Elite FG Chaos vs Control Kids"
+      title: "adidas Copa Pure V Elite FG Chaos vs Control Kids"
+      category: football_boots
+      brand: adidas
+      price: 94
+      reference_price: null
+      currency: EUR
+      url: "https://example.com/adidas-copa-pure-v-elite-kids"
+      source: example.com
+      sizes: ["@wanted"]
+      sizes_known: true
+    expected:
+      band: good
+      attrs: { tier: junior-flagship, soleplate: FG, silo: copa, generation_status: null, generation_year: null }
+
+  - id: boots-current-copa-generation-is-the-fourth
+    note: >-
+      The other side of the change, and the one that rots silently: this file said Copa
+      Pure 3 was "current" nine months after adidas shipped the 4. Measured 2026-08-28 on
+      komanda.lv (adidas's Baltic dealer, which sells at RRP): Copa Pure IV Elite €240
+      across a full 39-44 grid, Copa Pure 2 Elite down to one size at €184. Pinning the
+      status is what makes the next generation's arrival a test failure rather than a
+      quietly wrong email.
+    hunt: boots-junior
+    product:
+      title: "adidas Copa Pure IV Elite FG Kids"
       category: football_boots
       brand: adidas
       price: 94
@@ -605,7 +636,7 @@ cases:
       sizes_known: true
     expected:
       band: good
-      attrs: { tier: junior-flagship, soleplate: FG, silo: copa, generation_status: null, generation_year: null }
+      attrs: { tier: junior-flagship, soleplate: FG, silo: copa, generation: "4", generation_status: current, generation_year: "2026" }
 
   # --- sportsdirect.lv, the owner's main shop (wired in 2026-08-28) -----------------
   #
