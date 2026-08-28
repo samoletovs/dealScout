@@ -162,7 +162,8 @@ def test_the_run_should_log_a_price_for_every_boot_it_judged(monkeypatch, tmp_pa
     monkeypatch.setattr(run_shortlist, "load_config", lambda _p: CONFIG)
     monkeypatch.setattr(run_shortlist, "config_path", lambda: Path("config.example.yaml"))
     monkeypatch.setattr(run_shortlist, "load_hunts", lambda _c, _o="": [HUNT])
-    monkeypatch.setattr(run_shortlist, "append", lambda obs, _path: logged.extend(obs))
+    monkeypatch.setattr(run_shortlist, "append_dir", lambda obs, _dir: logged.extend(obs))
+    monkeypatch.setattr(run_shortlist, "rewrite_dir", lambda _hist, _dir: None)
 
     async def _no_feedback():
         return []
@@ -332,7 +333,8 @@ def _stub_run(monkeypatch, tmp_path, boots, send_email):
     monkeypatch.setattr(run_shortlist, "load_config", lambda _p: CONFIG)
     monkeypatch.setattr(run_shortlist, "config_path", lambda: Path("config.example.yaml"))
     monkeypatch.setattr(run_shortlist, "load_hunts", lambda _c, _o="": [HUNT])
-    monkeypatch.setattr(run_shortlist, "append", lambda _obs, _path: None)
+    monkeypatch.setattr(run_shortlist, "append_dir", lambda _obs, _dir: None)
+    monkeypatch.setattr(run_shortlist, "rewrite_dir", lambda _hist, _dir: None)
     monkeypatch.setattr(run_shortlist, "send_email", send_email)
 
     async def _no_feedback():

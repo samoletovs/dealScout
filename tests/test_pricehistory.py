@@ -8,18 +8,25 @@ from __future__ import annotations
 
 import json
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 
 from dealscout.models import Product
 from dealscout.pricehistory import (
+    DEFAULT_HISTORY_DIR,
     HistoryConfig,
     Observation,
+    _month_of,
+    _shard_path,
     append,
+    append_dir,
     boot_key,
     extend,
     load_history,
+    load_history_dir,
     observe,
     prune,
     rewrite,
+    rewrite_dir,
     summarise,
     summarise_all,
 )
@@ -560,3 +567,122 @@ def test_a_freshly_restarted_log_should_still_say_not_enough_history(tmp_path):
     assert memory.enough_history is False
     assert memory.low is None
     assert memory.is_lowest is None
+
+
+# --------------------------------------------------------- durable monthly store
+
+def _obs(price: float, at: datetime, url: str = URL) -> Observation:
+    return Observation(url=url, price=price, at=at)
+
+
+def test_append_dir_writes_a_monthly_shard(tmp_path):
+    # An observation is filed under the YYYY-MM.jsonl of its own timestamp, so a shard
+    # never grows without bound and the site can read one month at a time.
+    directory = tmp_path / "prices"
+    append_dir([_obs(95.0, NOW)], directory)
+
+    assert (directory / "2026-08.jsonl").exists()
+    assert [o.price for o in load_history_dir(directory, legacy_path=None)[URL]] == [95.0]
+
+
+def test_observations_in_different_months_land_in_different_shards(tmp_path):
+    # Two runs a month apart write two files; a load reads them back as one merged series.
+    directory = tmp_path / "prices"
+    july = datetime(2026, 7, 15, 12, 0, tzinfo=UTC)
+    append_dir([_obs(110.0, july)], directory)
+    append_dir([_obs(95.0, NOW)], directory)
+
+    assert (directory / "2026-07.jsonl").exists()
+    assert (directory / "2026-08.jsonl").exists()
+    assert [o.price for o in load_history_dir(directory, legacy_path=None)[URL]] == [110.0, 95.0]
+
+
+def test_load_history_dir_merges_the_legacy_flat_file(tmp_path):
+    # The migration must not throw away what the old cache holds: whatever is in the legacy
+    # state/prices.jsonl is the only history that exists, so it is read alongside the shards
+    # rather than replaced by them.
+    directory = tmp_path / "prices"
+    legacy = tmp_path / "prices.jsonl"
+    legacy.write_text(_obs(120.0, NOW - timedelta(days=40)).to_json() + "\n", encoding="utf-8")
+    append_dir([_obs(95.0, NOW)], directory)
+
+    merged = load_history_dir(directory, legacy_path=legacy)[URL]
+
+    assert [o.price for o in merged] == [120.0, 95.0]
+
+
+def test_legacy_observations_survive_a_rewrite_round_trip(tmp_path):
+    # After migration the legacy file is re-sharded into monthly files; the old observations
+    # must still be present, now living in the shard for their own month.
+    directory = tmp_path / "prices"
+    legacy = tmp_path / "prices.jsonl"
+    old = NOW - timedelta(days=40)  # July 2026
+    legacy.write_text(_obs(120.0, old).to_json() + "\n", encoding="utf-8")
+    append_dir([_obs(95.0, NOW)], directory)
+
+    merged = load_history_dir(directory, legacy_path=legacy)
+    rewrite_dir(merged, directory)
+
+    reloaded = load_history_dir(directory, legacy_path=None)[URL]
+    assert [o.price for o in reloaded] == [120.0, 95.0]
+    assert (directory / "2026-07.jsonl").exists()
+
+
+def test_duplicate_observation_in_legacy_and_shard_collapses(tmp_path):
+    # If a run migrates the legacy file into a shard and the legacy file is read again, the
+    # same observation must not be counted twice, or the history would look denser than it is.
+    directory = tmp_path / "prices"
+    legacy = tmp_path / "prices.jsonl"
+    same = _obs(120.0, NOW - timedelta(days=40))
+    legacy.write_text(same.to_json() + "\n", encoding="utf-8")
+    append_dir([same], directory)  # same observation now in both places
+
+    merged = load_history_dir(directory, legacy_path=legacy)[URL]
+
+    assert [o.price for o in merged] == [120.0]
+
+
+def test_rewrite_dir_drops_a_shard_whose_month_aged_out(tmp_path):
+    # Pruning past keep_days must actually remove the file, not just the in-memory series, or
+    # the store would grow forever on disk while claiming to be bounded.
+    directory = tmp_path / "prices"
+    old = NOW - timedelta(days=400)
+    append_dir([_obs(120.0, old)], directory)
+    append_dir([_obs(95.0, NOW)], directory)
+    assert _shard_path(directory, _month_of(old)).exists()
+
+    pruned = prune(load_history_dir(directory, legacy_path=None), keep_days=180, max_points=200, now=NOW)
+    rewrite_dir(pruned, directory)
+
+    assert not _shard_path(directory, _month_of(old)).exists()
+    assert [o.price for o in load_history_dir(directory, legacy_path=None)[URL]] == [95.0]
+
+
+def test_both_workflows_resolve_to_one_log(monkeypatch):
+    # The split-brain bug: hunt.yml and shortlist.yml cached state under different keys, so
+    # their observations never merged. Both now read DEALSCOUT_PRICE_HISTORY_DIR, so both
+    # HistoryConfig instances must point at the exact same directory — proof of one log.
+    monkeypatch.setenv("DEALSCOUT_PRICE_HISTORY_DIR", "price-history/prices")
+
+    hunt_cfg = HistoryConfig.from_config({})
+    shortlist_cfg = HistoryConfig.from_config({})
+
+    assert hunt_cfg.dir == shortlist_cfg.dir == Path("price-history/prices")
+
+
+def test_env_overrides_configured_history_dir(monkeypatch):
+    # Env is the deployment's fact about where the log physically lives and must win over the
+    # user's configured preference.
+    monkeypatch.setenv("DEALSCOUT_PRICE_HISTORY_DIR", "price-history/prices")
+
+    cfg = HistoryConfig.from_config({"monitor": {"price_history_dir": "state/prices"}})
+
+    assert cfg.dir == Path("price-history/prices")
+
+
+def test_history_dir_defaults_when_unset(monkeypatch):
+    monkeypatch.delenv("DEALSCOUT_PRICE_HISTORY_DIR", raising=False)
+
+    cfg = HistoryConfig.from_config({})
+
+    assert cfg.dir == DEFAULT_HISTORY_DIR
