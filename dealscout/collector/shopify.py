@@ -4,6 +4,29 @@ Shopify hands over exactly what a hunt needs — one variant per size, each with
 ``available`` flag and a ``compare_at_price`` — for one request per collection and no
 scraping at all. It is JSON but not schema.org, so it is its own concern: worth preferring
 wherever a retailer runs on it (prodirectsport.ie, komanda.lv).
+
+Image licence — retrieval is not the right to republish
+--------------------------------------------------------
+This parser now also keeps each product's image URLs (``Product.images``) and the instant
+they were seen (``Product.image_seen_at``). Capturing a URL from a public endpoint does not
+license us to display that image on a public/commercial surface. Two questions gate any such
+display and BOTH are currently **UNVERIFIED** — they can only be answered from inside an
+approved affiliate account, so whoever reaches that point must answer exactly these before
+any retailer photo goes public:
+
+  1. Does the *retailer's own* affiliate programme terms (e.g. Pro:Direct on Awin — read its
+     Terms/Branding tab after acceptance) actually permit displaying feed imagery on a
+     price-comparison / shopping-portal site? Awin's *general* publisher guidance permitting
+     feed images is NOT the same as the advertiser's programme terms.
+  2. Does that permission survive the image being of *another brand's* product — specifically,
+     does Nike's wholesale / authorised-dealer contract forbid the retailer from syndicating
+     Nike-product imagery to affiliates, regardless of who owns the copyright in the photo?
+     Secondary sources say such a restriction is a standard wholesale term; the operative
+     clause is unreadable from outside. If it binds, the retailer's own copyright licence to
+     us is overridden upstream and Nike stays illustrated.
+
+Until both are confirmed in writing, treat everything captured here as fit for an internal
+design spike only. See the project imagery report for the full analysis and citations.
 """
 
 from __future__ import annotations
