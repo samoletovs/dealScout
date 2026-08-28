@@ -1,12 +1,14 @@
 name: probe sportsdirect (temporary)
 
-# TEMPORARY measurement. SOURCES.md asserts that GitHub's datacentre IPs are blocked by
-# sportsdirect.lv's Akamai edge. That was an inference, never a measurement. This job
-# settles it. Delete once the answer is recorded in SOURCES.md.
+# TEMPORARY measurement. Delete once the answer is recorded in SOURCES.md.
 #
-# Round 1 measured: http=000 in 0.26s, curl exit 92 (CURLE_HTTP2_STREAM). That is an
-# HTTP/2 framing refusal, not a timeout — and it is the classic Akamai behaviour that
-# forcing HTTP/1.1 defeats. Round 2 tests that, plus a full browser header set.
+# Round 1: browser headers, HTTP/2  -> http=000, curl exit 92 in 0.26s (framing refusal)
+# Round 2: plain curl, NO User-Agent -> http=200, 812KB, ecommerceData PRESENT in 0.7s
+#
+# So the block is not on the IP at all: Akamai tarpits a request that CLAIMS to be Chrome
+# while having a non-Chrome TLS/HTTP fingerprint, and serves an honest `curl/8.x` at once.
+# Round 3 asks the only question that matters for the fix: does AIOHTTP -- the client the
+# collector actually uses, with a different TLS fingerprint again -- also get through?
 
 on:
   push:
@@ -17,34 +19,49 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Probe variants
-        run: |
-          URL="https://www.sportsdirect.lv/football/football-boots/kids-football-boots"
-          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - run: pip install -q aiohttp
 
-          probe () {
-            echo "=== $1 ==="
-            shift
-            curl -sS -o page.html -w "http=%{http_code} time=%{time_total} size=%{size_download}\n" \
-              --max-time 40 "$@" "$URL" || echo "curl exit $?"
-            if grep -q "ecommerceData" page.html 2>/dev/null; then
-              echo "ecommerceData: PRESENT"
-              grep -o '"name":"[^"]*"' page.html | head -5
-            else
-              echo "ecommerceData: absent"
-            fi
-            echo
+      - name: aiohttp variants
+        run: |
+          python - <<'PY'
+          import asyncio, aiohttp, re
+
+          URL = "https://www.sportsdirect.lv/football/football-boots/kids-football-boots"
+          BROWSER = {
+              "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                             "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"),
+              "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+              "Accept-Language": "en-GB,en;q=0.9,lv;q=0.8",
+              "Sec-Fetch-Dest": "document",
+              "Sec-Fetch-Mode": "navigate",
+              "Sec-Fetch-Site": "none",
+              "Upgrade-Insecure-Requests": "1",
           }
 
-          probe "1. http2 default (baseline)" -A "$UA"
-          probe "2. forced HTTP/1.1" --http1.1 -A "$UA"
-          probe "3. HTTP/1.1 + full browser headers" --http1.1 -A "$UA" \
-            -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8" \
-            -H "Accept-Language: en-GB,en;q=0.9,lv;q=0.8" \
-            -H "Sec-Fetch-Dest: document" \
-            -H "Sec-Fetch-Mode: navigate" \
-            -H "Sec-Fetch-Site: none" \
-            -H "Sec-Fetch-User: ?1" \
-            -H "Upgrade-Insecure-Requests: 1"
-          probe "4. HTTP/1.1 + IPv4 only" --http1.1 -4 -A "$UA"
-          probe "5. plain curl, no UA at all" --http1.1
+          async def probe(label, headers):
+              print(f"=== {label} ===", flush=True)
+              try:
+                  async with aiohttp.ClientSession(headers=headers) as s:
+                      async with s.get(URL, timeout=aiohttp.ClientTimeout(total=40)) as r:
+                          body = await r.text()
+                  names = re.findall(r'"name":"([^"]{0,60})"', body)
+                  print(f"  HTTP {r.status}  bytes={len(body)}  ecommerceData="
+                        f"{'PRESENT' if 'ecommerceData' in body else 'absent'}  products={len(names)}")
+                  for n in names[:5]:
+                      print("   *", n)
+              except Exception as exc:
+                  print(f"  FAILED: {type(exc).__name__}: {exc}")
+              print(flush=True)
+
+          async def main():
+              await probe("A. current BROWSER_HEADERS", BROWSER)
+              await probe("B. no headers at all (aiohttp default UA)", None)
+              await probe("C. minimal, honest UA", {"User-Agent": "dealScout/1.0 (+https://github.com/samoletovs/dealScout)"})
+              await probe("D. Accept only, no UA override", {"Accept": "text/html,*/*;q=0.8"})
+
+          asyncio.run(main())
+          PY
