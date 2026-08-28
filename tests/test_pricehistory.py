@@ -7,10 +7,12 @@ must produce no claim at all, and must say so in a field rather than in a zero.
 from __future__ import annotations
 
 import json
+import inspect
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from dealscout.models import Product
+from dealscout import pricehistory
 from dealscout.pricehistory import (
     DEFAULT_HISTORY_DIR,
     HistoryConfig,
@@ -686,3 +688,30 @@ def test_history_dir_defaults_when_unset(monkeypatch):
     cfg = HistoryConfig.from_config({})
 
     assert cfg.dir == DEFAULT_HISTORY_DIR
+
+
+def test_load_history_dir_defaults_to_reading_the_legacy_file():
+    """The migration must be wired by DEFAULT, not only when a caller asks for it.
+
+    `test_load_history_dir_merges_the_legacy_flat_file` passes `legacy_path` explicitly,
+    which is correct for a unit test but leaves the production wiring uncovered: if the
+    default were ever changed to None, the migration would silently stop and every
+    existing test would still pass.
+
+    That regression is unrecoverable. The legacy flat file is the only price history that
+    exists, and a price log cannot be backfilled -- a day not observed is gone. So the
+    default is asserted directly, by introspection, rather than through behaviour
+    (Python binds defaults at definition time, so monkeypatching the module attribute
+    afterwards cannot reach it).
+    """
+    default = inspect.signature(load_history_dir).parameters["legacy_path"].default
+
+    assert default is not None, (
+        "load_history_dir's `legacy_path` default is None, so the workflows -- which "
+        "call it with no such argument -- would skip the one-time migration and drop "
+        "the entire history the two caches hold."
+    )
+    assert default == pricehistory.DEFAULT_HISTORY_PATH, (
+        f"`legacy_path` defaults to {default!r}, not DEFAULT_HISTORY_PATH. The migration "
+        "would read somewhere other than where the legacy log actually lives."
+    )
