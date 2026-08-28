@@ -360,6 +360,10 @@ def test_collect_should_ignore_a_listing_name_for_a_different_product(monkeypatc
 
 _SHOPIFY = """{"products":[
  {"title":"Predator Elite FT FG J","handle":"predator-elite-ft-fg-j","vendor":"adidas",
+  "featured_image":"https://cdn.shopify.com/predator_main.jpg?v=2",
+  "images":[
+   {"src":"https://cdn.shopify.com/predator_main.jpg?v=2"},
+   {"src":"https://cdn.shopify.com/predator_sole.jpg?v=2"}],
   "variants":[
    {"title":"36","price":"130.00","compare_at_price":"260.00","available":true},
    {"title":"37","price":"130.00","compare_at_price":"260.00","available":false},
@@ -410,6 +414,27 @@ def test_should_not_prefix_a_vendor_that_is_just_the_shop_name():
 def test_should_ignore_a_payload_that_is_not_a_shopify_collection():
     assert parse_shopify_products("<html>not json</html>", "https://x.lv/", "x") == []
     assert parse_shopify_products('{"items":[]}', "https://x.lv/", "x") == []
+
+
+def test_should_keep_the_shopify_product_image_urls_in_feed_order():
+    # The image URLs ride in the *same* payload we already read for price/size/stock, so
+    # keeping them is free. An internal design spike needs real boot pictures; discarding
+    # them forced a placeholder. Primary (featured) image first, then the rest, de-duped.
+    [boot, other] = parse_shopify_products(_SHOPIFY, "https://komanda.lv/c/products.json", "x")
+    assert boot.images == (
+        "https://cdn.shopify.com/predator_main.jpg?v=2",
+        "https://cdn.shopify.com/predator_sole.jpg?v=2",
+    )
+    assert other.images == ()  # a node with no images yields no invented URLs
+
+
+def test_should_stamp_when_a_shopify_image_was_seen_but_only_when_there_is_one():
+    # CDN URLs rotate (Shopify's `?v=` cache-buster), so a stored link is only trustworthy
+    # relative to when the feed last served it. No image, no timestamp — an empty stamp must
+    # never read as "seen just now".
+    [boot, other] = parse_shopify_products(_SHOPIFY, "https://komanda.lv/c/products.json", "x")
+    assert boot.image_seen_at.endswith("Z") and boot.image_seen_at[:4].isdigit()
+    assert other.image_seen_at == ""
 
 
 def test_should_read_half_sizes_from_a_shopify_payload_that_prints_them_as_glyphs():
