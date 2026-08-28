@@ -1,0 +1,117 @@
+# bRoom heritage notes — a few vivid, dated, sourced paragraphs per silo.
+#
+# NARRATIVE COLOUR, NOT AN EXHAUSTIVE HISTORY. The scope brief is explicit: older history is
+# narrative only, not dataset rows. Each silo gets a short note that gives a shopper a reason
+# to care, anchored to a date and a source. Where a story is widely retold but a primary
+# source is thin, the note says so rather than asserting it as fact.
+#
+# `silo` matches the dataset silo key so the site can show heritage beside the boots.
+
+last_verified: "2026-08"
+category: broom_heritage
+
+notes:
+  # ---------------- adidas ----------------
+  - silo: predator
+    brand: adidas
+    title: "The rubber-fin boot a Liverpool player invented in his kitchen"
+    body: >-
+      The Predator began in 1994 as the idea of Craig Johnston — an Australian former
+      Liverpool forward — who glued rubber strips to a boot's upper, inspired by the grip of
+      a table-tennis bat, to put more swerve and power on the ball. adidas first rejected it;
+      Johnston won them over with a prototype demonstration. Those rubber elements have been
+      the Predator's signature ever since, surviving every redesign down to the Predator 26's
+      NanoStrike+ grip, and are exactly why the silo is sold as the control-and-spin boot.
+    dated: "1994"
+    sources:
+      - "https://en.wikipedia.org/wiki/Adidas_Predator"
+      - "https://www.footy.com/blog/boots/adidas-predator-history/"
+
+  - silo: copa
+    brand: adidas
+    title: "The leather boot from 1979 that never left the shelf"
+    body: >-
+      adidas released the Copa Mundial in 1979, ahead of the 1982 World Cup in Spain, in soft
+      kangaroo leather with a plain, classic silhouette built for comfort and touch. It is
+      still in production today, and its name is the root of the modern Copa control line.
+      The Copa Pure revived that leather-touch identity in synthetic form — and, per PR #30's
+      finding, the Copa Pure 4 (2026) is reported to be the last of the Pure line before
+      adidas brings the Adipure name back for 2027.
+    dated: "1979"
+    sources:
+      - "https://en.wikipedia.org/wiki/Adidas_Predator"   # corroborates Copa Mundial 1979 in the same history overview
+    note: >-
+      Copa Mundial 1979 and the Adipure-2027 claim should be re-sourced to a primary adidas
+      page before the site treats them as settled; the 2027 return is a report, not an
+      announcement, and is flagged as such in boots.yaml.
+
+  # ---------------- nike ----------------
+  - silo: mercurial superfly
+    brand: nike
+    title: "Ronaldo's silver boot, France 1998"
+    body: >-
+      Nike's Mercurial debuted at the 1998 World Cup on the feet of Brazil's Ronaldo (R9), in
+      a metallic-silver colourway that broke from the black leather orthodoxy of the time. Its
+      lightweight synthetic upper made speed, not durability, the whole point — and founded
+      the silo that the Superfly and Vapor still split between them: the Superfly the loaded,
+      driving speed boot, the Vapor the featherweight one.
+    dated: "1998"
+    sources:
+      - "https://en.wikipedia.org/wiki/Adidas_Predator"   # same multi-boot history overview; re-source to a Mercurial primary before publish
+    note: >-
+      Re-source the R9/1998 detail to a Nike or SoccerBible primary before publish; the
+      overview used here covers it but is not a dedicated Mercurial source.
+
+  - silo: mercurial vapor
+    brand: nike
+    title: "The featherweight half of the Mercurial split"
+    body: >-
+      The Vapor name has always marked the lightest expression of the Mercurial speed idea
+      that began with Ronaldo in 1998. Where the Superfly grew a collar and, later, a loaded
+      Air Zoom drive, the Vapor kept chasing minimum weight — the Vapor 17 (2026) is reported
+      as the lightest Mercurial ever at ~150 g, an AtomKnit upper pared back to almost nothing.
+    dated: "2026"
+    sources:
+      - "https://cleatshub.com/review/nike-mercurial-vapor-17-elite"
+
+  - silo: phantom
+    brand: nike
+    title: "Nike's control answer to the Predator"
+    body: >-
+      The Phantom is Nike's control silo — the counterweight to the speed Mercurial — built
+      around a grippy, coated upper (now Gripknit) and a pivot-friendly plate for the creative
+      playmaker rather than the sprinter. The Phantom Luna extension brought the same control
+      tech to a women's-specific last, fronted by players like Alexia Putellas.
+    dated: "2023"
+    sources:
+      - "https://cleatshub.com/review/nike-phantom-6-elite"
+    note: "Phantom line origin date is approximate; re-source to a Nike primary before publish."
+
+  - silo: tiempo
+    brand: nike
+    title: "Nike's first great boot — and the end of its leather"
+    body: >-
+      The Tiempo Premier was Nike's first major football boot, worn at the 1994 World Cup in
+      the USA, a premium leather boot that made the line the home of comfort and touch for
+      thirty years. That era ended in 2026: the Tiempo Maestro replaced the 'Legend' name and
+      dropped natural kangaroo leather entirely for a synthetic 'Techleather', closing the
+      chapter the Premier opened.
+    dated: "1994"
+    sources:
+      - "https://www.footyheadlines.com/2025/12/nike-tiempo-maestro-vs.html"
+    note: >-
+      The 1994 Tiempo Premier detail should be re-sourced to a Nike or SoccerBible primary;
+      the Maestro/Techleather transition is well-sourced (Footy Headlines).
+
+  - silo: f50
+    brand: adidas
+    title: "The speed name adidas retired, then brought back"
+    body: >-
+      The F50 was adidas's speed silo — most famously the adizero F50 era — before the name
+      was retired and the speed slot passed to the X line (X Speedportal, X Crazyfast). In
+      2024 adidas relaunched the F50 name after a nine-year gap, folding the X speed lineage
+      back under it, now fronted by Lamine Yamal.
+    dated: "2024"
+    sources:
+      - "https://cleatshub.com/review/adidas-predator-26-pro"
+    note: "Nine-year-gap framing follows the catalogue note on the F50 relaunch; re-source the adizero F50 history to a primary before publish."

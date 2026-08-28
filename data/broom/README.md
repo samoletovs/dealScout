@@ -1,0 +1,72 @@
+# `data/broom/` — the bRoom public reference dataset
+
+This directory is the source data for **bRoom** (`broom.naurolabs.com`), a public football
+boot reference and honest price finder. It is **separate from `data/football_boots.yaml`**
+on purpose, and the separation follows one rule:
+
+> **One boot fact, one home.** A fact lives in exactly one file. The other file joins to it.
+
+## Who owns what
+
+`data/football_boots.yaml` is dealScout's **classifier**. It already owns, and remains the
+single source of truth for:
+
+- silo / model line
+- generation and model **year**
+- **launch RRP** (`launch_rrp_eur`)
+- generation **status** (`current` / `superseded` / `discontinued` / `evergreen`)
+- the tier vocabulary and all the title-parsing machinery
+
+`data/broom/` owns the **site-only** fields the classifier has no use for:
+
+- `boots.yaml` — per-generation rows: audience, measured street price, upper technology +
+  plain-language explanation, plate material, weight, soleplate variants sold, signature
+  players, colourway packs, retailer URL pattern. **Keyed by `(brand, silo, generation)`**
+  so it joins onto the catalogue.
+- `glossary.yaml` — the technology glossary (Flyknit, Zoom Air, Gripknit, …).
+- `tiers.yaml` — the tier explainer (adult Elite vs junior Elite vs the tier below).
+- `heritage.yaml` — short, dated, sourced heritage notes per silo.
+
+## What `boots.yaml` deliberately does NOT store
+
+`launch_rrp_eur`, `year` and `status` are **not** copied here. Copying them would create two
+`last_verified` clocks that drift apart within a season — exactly the rot the whole project
+exists to fight. The public site build resolves those fields from `football_boots.yaml`
+using the same `(brand, silo, generation)` key. `boots.yaml` carries `street_price_eur`
+(a *measured selling price*, never an RRP) and the join key, and nothing that the catalogue
+already answers.
+
+`tests/test_broom_dataset.py` enforces this: every `(brand, silo, generation)` key in
+`boots.yaml` must exist in `football_boots.yaml` (so the files cannot drift on identity),
+and every factual field must carry a source URL or the literal `UNVERIFIED`.
+
+## Where this data lives, and when it moves
+
+**Now: it lives here, in dealScout.** bRoom (`github.com/samoletovs/bRoom`) is the eventual
+home for the *presentation* half, but this data ships in dealScout first for one concrete
+reason — **the join test (`tests/test_broom_dataset.py`) can only run where both files sit in
+the same repo.** A drift guard that cannot execute is not a guard. So the data lives beside
+the catalogue it joins to until the join can survive the move.
+
+**Migration trigger (the ONLY condition under which this moves to bRoom).** Move the
+presentation files to the bRoom repo *when, and only when,* dealScout exports a machine-
+readable **join-key manifest** — the set of valid `(brand, silo, generation)` keys, and the
+`launch_rrp_eur` / `year` / `status` each resolves to — that bRoom can consume at build time.
+Only then can the drift guard run in bRoom against real catalogue identity instead of a stale
+copy. Until that manifest exists, moving the data would either break the guard or force a
+duplicate of the catalogue into bRoom, which is the exact rot this whole split exists to
+prevent. "We'll migrate later" without this written trigger means never — so it is written.
+
+When the trigger fires: the pure-prose files (`glossary.yaml`, `heritage.yaml`, and the
+tier-explainer copy) move first (they carry no join key); `boots.yaml` moves last, and its
+join test moves with it, re-pointed at the exported manifest.
+
+
+
+- **Cite a source URL for every factual claim.** Prefer Footy Headlines, Unisport,
+  Pro:Direct, Fútbol Emotion, SoccerBible, and the brands' own product pages.
+- **Never record a discounted selling price as an RRP.** `street_price_eur` is a measured
+  street price and says so; launch RRP lives in the catalogue.
+- Where sources disagree, record both (a list) and add a `note`.
+- Where you cannot verify, write `UNVERIFIED`. A gap beats a confident wrong number.
+- Carry `last_verified` per row. Generation status is a season snapshot and will rot.

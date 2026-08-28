@@ -1,0 +1,832 @@
+# bRoom boot dataset — per-generation site facts, joined to the classifier.
+#
+# READ data/broom/README.md FIRST. The short version:
+#
+#   * This file carries the fields the public site needs and the classifier does not:
+#     audience, measured street price, upper tech + plain explanation, plate material,
+#     weight, soleplate variants sold, signature players, colourway packs, retailer URL.
+#   * It does NOT carry launch RRP, model year, or generation status. Those live in
+#     data/football_boots.yaml and are joined on (brand, silo, generation). Storing them
+#     here too would let the two files drift within a season — the rot this project fights.
+#   * Every factual field cites a source URL, or is the literal string UNVERIFIED.
+#     street_price_eur is a MEASURED selling price, never an RRP.
+#
+# The join key is (brand, silo, generation). `silo` matches a line key under a brand in
+# football_boots.yaml (e.g. "mercurial superfly", "copa"); `generation` matches a
+# generation's `gen:` there, or its first pattern when it has no number (e.g. "maestro",
+# "phantom gx"). tests/test_broom_dataset.py fails the build if a key here is absent there.
+#
+# WHY LAUNCH RRP SOMETIMES DIFFERS FROM WHAT REVIEWS SAY. Reviews and US retailers quote
+# USD MSRPs and regional EUR launch prices that vary by country and VAT; they disagree by
+# €10–20 routinely (a search put Superfly 11 at "€300–315" while the catalogue's measured
+# EU launch RRP is €295). The catalogue's launch_rrp_eur is the number this project stands
+# behind; disagreements are recorded in `rrp_note` here rather than overwriting it.
+
+last_verified: "2026-08"
+category: broom_boots
+source_note: >-
+  Per-generation facts for bRoom. Launch RRP, model year and generation status are NOT in
+  this file — they are owned by data/football_boots.yaml and joined on
+  (brand, silo, generation). street_price_eur is a measured selling price with its own
+  source, never an RRP. Sourced Aug 2026 from Footy Headlines, Unisport, Pro:Direct,
+  Fútbol Emotion, SoccerBible, brand product pages, and named specialist reviews.
+
+boots:
+  # ========================= NIKE =========================
+
+  # ---- Mercurial Superfly (speed, loaded; low-cut from gen 11) ----
+  - brand: nike
+    silo: mercurial superfly
+    generation: "11"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: 289.99          # measured selling price, not RRP
+    street_price_source: "https://www.unisportstore.com/guides/nike-mercurial-superfly-11-elite-fg-breakout-review/"
+    rrp_note: "Catalogue launch RRP €295; Pro:Direct/House of Heat quoted €300–315 at launch — regional/VAT spread."
+    upper:
+      tech: "FlyWeave Ultra"
+      plain: >-
+        A woven upper tensioned tighter than the Vapor's knit, so the foot is locked to the
+        plate at speed rather than cushioned — the Superfly is now the 'loaded' speed boot,
+        the Vapor the featherweight one.
+      source: "https://www.prodirectsport.com/blogs/football/nike-mercurial-superfly-11-first-look"
+    plate:
+      material: "Composite plate with forefoot Air Zoom unit; ZoomX foam"
+      source: "https://www.footyheadlines.com/2026/01/blog-post_27.html"
+    weight_g: 180
+    weight_note: "Reviews report 170–180 g for the FG Elite; treat as approximate."
+    weight_source: "https://cleatshub.com/review/nike-mercurial-superfly-11"
+    soleplates: [FG, SG, AG]
+    soleplate_source: "https://www.prodirectsport.com/collections/football-nike-mercurial-superfly-boots"
+    signature_players: [Kylian Mbappé, Vinícius Júnior, Sam Kerr]
+    signature_source: "https://houseofheat.co/nike/nike-mercurial-vapor-17-superfly-11-world-cup-2026"
+    colourway_packs:
+      - {name: "2026 World Cup launch", source: "https://houseofheat.co/nike/nike-mercurial-vapor-17-superfly-11-world-cup-2026"}
+    retailer_handle: "mercurial-superfly-11-elite-{soleplate}-{colour}"  # nike.com /t/ slug pattern
+    retailer_handle_source: "https://www.nike.com/t/mercurial-superfly-11-elite-firm-ground-low-top-soccer-cleats-JcPHoPXr"
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: mercurial superfly
+    generation: "10"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: 96              # measured: SportsDirect junior/small-size clearance; verify sizing
+    street_price_source: "https://www.footyheadlines.com/2026/01/blog-post_27.html"
+    rrp_note: "Catalogue launch RRP €310 — the highest-ever Nike Elite RRP; a genuine one near €150–180 is ~50% off."
+    upper:
+      tech: "Vaporposite+"
+      plain: >-
+        A thin knit backed by a grippy micro-textured skin and a foam layer, tuned for a
+        secure lock at speed with just enough touch.
+      source: "https://www.unisportstore.com/guides/nike-mercurial-superfly-11-elite-fg-breakout-review/"
+    plate:
+      material: "Full-length carbon-fibre composite with forefoot Air Zoom unit"
+      source: "https://www.footyheadlines.com/2026/01/blog-post_27.html"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG]
+    soleplate_source: "https://www.prodirectsport.com/collections/football-nike-mercurial-superfly-boots"
+    signature_players: [Kylian Mbappé, Vinícius Júnior]
+    signature_source: "https://houseofheat.co/nike/nike-mercurial-vapor-17-superfly-11-world-cup-2026"
+    colourway_packs: []
+    retailer_handle: "mercurial-superfly-10-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: mercurial superfly
+    generation: "9"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    upper:
+      tech: "Vaporposite+"
+      plain: >-
+        The knit-plus-grip-skin upper that defined this Superfly era; close, secure, speed-first.
+      source: "https://www.unisportstore.com/guides/nike-mercurial-superfly-11-elite-fg-breakout-review/"
+    plate:
+      material: "Full-length carbon-fibre composite with forefoot Air Zoom unit"
+      source: "https://www.footyheadlines.com/2026/01/blog-post_27.html"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG]
+    soleplate_source: "https://www.prodirectsport.com/collections/football-nike-mercurial-superfly-boots"
+    signature_players: [Cristiano Ronaldo]
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "mercurial-superfly-9-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  # ---- Mercurial Vapor (speed, featherweight) ----
+  - brand: nike
+    silo: mercurial vapor
+    generation: "17"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: 289.99
+    street_price_source: "https://www.unisportsoccer.com/products/nike-vapor-17-elite-fg"
+    rrp_note: "Catalogue launch RRP €260; US MSRP quoted at $280 (Nike By You $290)."
+    upper:
+      tech: "AtomKnit"
+      plain: >-
+        Nike's lightest, most transparent knit — a near-barefoot upper with minimal padding
+        for direct ball feel. The Vapor's job is featherweight quickness, not the Superfly's
+        loaded drive.
+      source: "https://www.prodirectsport.com/blogs/football/nike-mercurial-vapor-17-first-look"
+    plate:
+      material: "FlyLite composite plate, bladed chevron studs"
+      source: "https://www.prodirectsport.com/blogs/football/nike-mercurial-vapor-17-first-look"
+    weight_g: 152
+    weight_note: "~150–155 g (US 9); reported as the lightest Mercurial ever, up to 20% lighter than Vapor 16."
+    weight_source: "https://cleatshub.com/review/nike-mercurial-vapor-17-elite"
+    soleplates: [FG, AG]
+    soleplate_note: "SG not widely referenced at launch."
+    soleplate_source: "https://cleatshub.com/review/nike-mercurial-vapor-17-elite"
+    signature_players: [Kylian Mbappé, Vinícius Júnior, Sam Kerr]
+    signature_source: "https://www.footyheadlines.com/2251333599/next-gen-nike-mercurial-vapor-17-superfly-11-nike-by-you-boots-released.html"
+    colourway_packs:
+      - {name: "Shadow Pack", source: "https://www.unisportsoccer.com/products/nike-vapor-17-elite-fg"}
+    retailer_handle: "mercurial-vapor-17-elite-{soleplate}-{colour}"
+    retailer_handle_source: "https://hypebeast.com/2026/5/nike-mercurial-vapor-17-elite-multi-color-black-io1560-900-official-images-release-info"
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: mercurial vapor
+    generation: "16"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: 171
+    street_price_source: "https://www.sportsdirect.lv/"   # measured on owner's main shop (SOURCES.md), sizing to verify
+    rrp_note: "Catalogue launch RRP €310."
+    upper:
+      tech: "Vaporposite+"
+      plain: >-
+        A thin knit over a grippy textured skin and foam — secure at pace with clean strike-zone touch.
+      source: "https://www.prodirectsport.com/blogs/football/nike-mercurial-vapor-17-first-look"
+    plate:
+      material: "Full-length carbon-fibre composite, bladed studs"
+      source: UNVERIFIED
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: [Kylian Mbappé]
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "mercurial-vapor-16-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: mercurial vapor
+    generation: "15"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    upper:
+      tech: "Vaporposite+"
+      plain: "Knit-plus-grip-skin speed upper of the previous Mercurial generation."
+      source: "https://www.prodirectsport.com/blogs/football/nike-mercurial-vapor-17-first-look"
+    plate:
+      material: "Full-length carbon-fibre composite"
+      source: UNVERIFIED
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "mercurial-vapor-15-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  # ---- Phantom (control / precision) ----
+  - brand: nike
+    silo: phantom
+    generation: "6"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Catalogue launch RRP €265."
+    upper:
+      tech: "Tuned Gripknit"
+      plain: >-
+        A tacky knit that covers more of the upper than before, gripping the ball across the
+        strike zone in wet and dry — the Phantom is the control silo, built for precise
+        contact rather than speed.
+      source: "https://cleatshub.com/review/nike-phantom-6-elite"
+    plate:
+      material: "Cyclone 360 soleplate, conical/circular studs for fast pivots"
+      source: "https://about.nike.com/en/newsroom/releases/nike-phantom-6-official-images"
+    weight_g: 199
+    weight_note: "FG Elite, per Cleats Hub."
+    weight_source: "https://cleatshub.com/review/nike-phantom-6-elite"
+    soleplates: [FG, AG]
+    soleplate_note: "Lower tiers (Pro/Academy/Club) add SG-Pro, MG, TF, IC."
+    soleplate_source: "https://cleatshub.com/review/nike-phantom-6-elite"
+    signature_players: [Erling Haaland, Alexia Putellas]
+    signature_source: "https://about.nike.com/en/newsroom/releases/nike-phantom-6-official-images"
+    colourway_packs: []
+    retailer_handle: "phantom-6-elite-{soleplate}-{colour}"
+    retailer_handle_source: "https://www.prodirectsport.com/collections/football-nike-phantom-boots"
+    last_verified: "2026-08"
+
+  # Phantom Luna — the control silo's women's-fit line, same tech family (in scope: Phantom
+  # incl. Luna). Not a separate catalogue generation, so recorded audience: adult, and the
+  # join test treats it under phantom/gen 6-era tech; kept as a note rather than a fake key.
+  - brand: nike
+    silo: phantom
+    generation: "6"
+    audience: adult
+    tier: adult-flagship
+    variant: "Luna 2"
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    upper:
+      tech: "Gripknit"
+      plain: >-
+        The Phantom's tacky control knit on a last shaped for female players (standard and
+        wide fits); same Cyclone 360 plate as the Phantom 6.
+      source: "https://cleatshub.com/review/nike-phantom-6-elite"
+    plate:
+      material: "Cyclone 360 soleplate"
+      source: "https://cleatshub.com/review/nike-phantom-6-elite"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: [Alexia Putellas]
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "phantom-luna-2-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: phantom
+    generation: "phantom gx 2"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: 99
+    street_price_source: "https://www.sportland.lv/"   # measured (SOURCES.md): Phantom GX 2 Elite €99 (was €330)
+    rrp_note: "Catalogue launch RRP €290."
+    upper:
+      tech: "Gripknit + Cyclone 360"
+      plain: "The GX-era grippy control knit; predecessor to the Phantom 6's Tuned Gripknit."
+      source: "https://cleatshub.com/review/nike-phantom-6-elite"
+    plate:
+      material: "Cyclone 360 soleplate"
+      source: "https://about.nike.com/en/newsroom/releases/nike-phantom-6-official-images"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: [Erling Haaland]
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "phantom-gx-2-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: phantom
+    generation: "phantom gx"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Catalogue launch RRP €290."
+    upper:
+      tech: "Gripknit"
+      plain: "The first Gripknit generation — the tacky control upper that replaced the GT line's texture."
+      source: "https://cleatshub.com/review/nike-phantom-6-elite"
+    plate:
+      material: "Cyclone 360 soleplate"
+      source: "https://about.nike.com/en/newsroom/releases/nike-phantom-6-official-images"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "phantom-gx-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  # ---- Tiempo (heritage control; 'Maestro' replaces 'Legend' from 2026) ----
+  - brand: nike
+    silo: tiempo
+    generation: "maestro"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: 250
+    street_price_note: "futbola-apavi.lv listed Tiempo Maestro Elite FG €250 (RRP €270)."
+    street_price_source: "https://futbola-apavi.lv/"
+    rrp_note: "Catalogue launch RRP €240; a retailer listed RRP €270 — regional spread; catalogue figure stands."
+    upper:
+      tech: "Techleather (synthetic)"
+      plain: >-
+        A buttery synthetic engineered to feel like the kangaroo leather Nike has now dropped,
+        while absorbing ~29% less water and breaking in faster. Ends the natural-leather Tiempo.
+      source: "https://www.footyheadlines.com/2025/12/nike-tiempo-maestro-vs.html"
+    plate:
+      material: "Maestro360 two-piece split plate"
+      source: "https://www.footyheadlines.com/2025/12/nike-tiempo-maestro-vs.html"
+    weight_g: 227
+    weight_note: "~227 g (US 9), per Lockhart Boot Blog / Footy Headlines comparison."
+    weight_source: "https://www.footyheadlines.com/2025/12/nike-tiempo-maestro-vs.html"
+    soleplates: [FG, AG, SG]
+    soleplate_source: UNVERIFIED
+    signature_players: [Jamal Musiala]
+    signature_source: "https://www.footyheadlines.com/2025/10/new-limited-edition-next-gen-nike-tiempo-maestro-2026-boots.html"
+    colourway_packs: []
+    retailer_handle: "tiempo-maestro-elite-{soleplate}-{colour}"
+    retailer_handle_source: "https://www.footyheadlines.com/2025/10/new-limited-edition-next-gen-nike-tiempo-maestro-2026-boots.html"
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: tiempo
+    generation: "10"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: 120
+    street_price_note: "teamsport.lv: Legend 10 Elite SG-Pro €120 (was €330)."
+    street_price_source: "https://www.teamsport.lv/"
+    rrp_note: "Catalogue launch RRP €240 (Legend 10)."
+    upper:
+      tech: "FlyTouch Plus (synthetic)"
+      plain: "The last 'Legend' upper — a synthetic control leather before the Maestro's Techleather."
+      source: "https://www.footyheadlines.com/2025/12/nike-tiempo-maestro-vs.html"
+    plate:
+      material: "One-piece traditional soleplate"
+      source: "https://www.footyheadlines.com/2025/12/nike-tiempo-maestro-vs.html"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "tiempo-legend-10-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: tiempo
+    generation: "9"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Catalogue launch RRP €225 (Legend 9)."
+    upper:
+      tech: "Kangaroo leather + foam pods"
+      plain: >-
+        A genuine kangaroo-leather Tiempo — the construction Nike has since abandoned, which
+        is part of why clearance stock of this generation is sought out.
+      source: "https://www.footyheadlines.com/2025/12/nike-tiempo-maestro-vs.html"
+    plate:
+      material: "Hyperstability plate"
+      source: "https://www.footyheadlines.com/2025/12/nike-tiempo-maestro-vs.html"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: [Sergio Ramos]
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "tiempo-legend-9-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  # ---- Nike teaching trios (current silos): junior Elite + the tier below ----
+  # These share the current generation's silo/generation key so they join to the catalogue;
+  # `audience` and `tier` are what separate them on the site's three-price-band screen.
+  - brand: nike
+    silo: mercurial superfly
+    generation: "11"
+    audience: junior
+    tier: junior-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Nike junior Elite RRP band €150–175 (PR #30, measured on prodirectsport.ie 2026-08-28, n=11)."
+    upper:
+      tech: "FlyWeave Ultra (junior construction)"
+      plain: >-
+        Same silo, de-specced for growing feet: the junior Elite keeps the look and often a
+        Pebax (not full-carbon) plate, with a slightly roomier last. A different boot, same name.
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    plate:
+      material: "Pebax/TPU composite (rarely full carbon in junior)"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "jr-mercurial-superfly-11-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: phantom
+    generation: "6"
+    audience: adult
+    tier: academy               # the tier immediately below Elite for Nike
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Nike takedown RRP band €40–190 (catalogue)."
+    upper:
+      tech: "Synthetic / textile (no Gripknit)"
+      plain: >-
+        The tier below Elite: a basic TPU plate instead of Cyclone 360, a synthetic upper
+        without the tacky Gripknit, thicker lining, 30–60 g heavier. Same Phantom name, a
+        training-grade boot at a third of the price.
+      source: "https://www.sportsdirect.com/the-zone/football/football-boot-tiers-explained"
+    plate:
+      material: "Basic TPU soleplate"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "phantom-6-academy-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  # ========================= ADIDAS =========================
+
+  # ---- Predator (control / power / spin) ----
+  - brand: adidas
+    silo: predator
+    generation: "26"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: 280
+    street_price_note: "komanda.lv (adidas Baltic dealer, sells at RRP): Predator Elite FT FG €280."
+    street_price_source: "https://komanda.lv/"
+    rrp_note: "Catalogue launch RRP €280; Wales Bonner collab lists €320–350 (a genuine Elite, priced up)."
+    upper:
+      tech: "HybridTouch + NanoStrike+ grip"
+      plain: >-
+        A synthetic control upper studded with rubber grip elements (the heir to Demonskin)
+        that bite the ball for spin on passes and shots. Predator is the control/power silo.
+      source: "https://www.prodirectsport.com/blogs/football/adidas-predator-26"
+    plate:
+      material: "StrikeFrame soleplate with PowerSpine"
+      source: "https://cleatshub.com/review/adidas-predator-26-pro"
+    weight_g: UNVERIFIED
+    weight_note: "Cleats Hub reports ~258 g for the Pro; Elite may differ. Elite figure not separately verified."
+    weight_source: "https://cleatshub.com/review/adidas-predator-26-pro"
+    soleplates: [FG, SG, AG]
+    soleplate_source: "https://www.prodirectsport.com/blogs/football/adidas-predator-26"
+    signature_players: ["Jude Bellingham"]
+    signature_source: "https://news.adidas.com/football/adidas-challenges-players-to-choose-a-side--as-lamine-yamal-and-jude-bellingham-front-latest-predato/s/27064bd7-62bd-45b6-b1ed-82474fc69cdc"
+    colourway_packs: []
+    retailer_handle: "predator-26-elite-{closure}-{soleplate}-{colour}"
+    retailer_handle_source: "https://boot-supply.com/products/adidas-predator-26-elite-tongue-fg-61"
+    last_verified: "2026-08"
+
+  - brand: adidas
+    silo: predator
+    generation: "25"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: 104
+    street_price_note: "sportland.lv (SOURCES.md): Predator Elite FG €104 (was €260)."
+    street_price_source: "https://www.sportland.lv/"
+    rrp_note: "Catalogue launch RRP €280."
+    upper:
+      tech: "HybridTouch + Strikeskin/Demonskin grip"
+      plain: "The immediately-superseded Predator control upper with rubber spin fins."
+      source: "https://www.worldsoccershop.com/guide/adidas-predator-soccer-cleat-guide"
+    plate:
+      material: "Controlframe / PowerSpine soleplate"
+      source: UNVERIFIED
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: ["Jude Bellingham"]
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "predator-25-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: adidas
+    silo: predator
+    generation: "24"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Catalogue launch RRP €280. First 'Elite' Predator after the '+/.1' renaming."
+    upper:
+      tech: "HybridTouch + Demonskin 2.0"
+      plain: "The rubber-spine control upper; this generation reintroduced the folded tongue."
+      source: "https://www.worldsoccershop.com/guide/adidas-predator-soccer-cleat-guide"
+    plate:
+      material: "Controlframe soleplate"
+      source: UNVERIFIED
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG, TF]
+    soleplate_source: UNVERIFIED
+    signature_players: ["Jude Bellingham"]
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "predator-24-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: adidas
+    silo: predator
+    generation: "predator accuracy"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Catalogue launch RRP €270. Named-era Predator (Accuracy), still on clearance shelves."
+    upper:
+      tech: "HybridTouch + Demonskin"
+      plain: "The 'Accuracy' Predator — rubber spin elements across the strike zone."
+      source: "https://www.worldsoccershop.com/guide/adidas-predator-soccer-cleat-guide"
+    plate:
+      material: "Powerprint / Controlframe soleplate"
+      source: UNVERIFIED
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "predator-accuracy-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: adidas
+    silo: predator
+    generation: "predator edge"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Catalogue launch RRP €265. 'Edge' era; among the oldest still on clearance shelves."
+    upper:
+      tech: "HybridTouch + Zoneskin"
+      plain: "The 'Edge' Predator with a wrap of rubber spikes (Zoneskin) for grip and spin."
+      source: "https://www.worldsoccershop.com/guide/adidas-predator-soccer-cleat-guide"
+    plate:
+      material: "Power Facet soleplate"
+      source: UNVERIFIED
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "predator-edge-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  # ---- F50 (speed; relaunch of the F50 name in 2024) ----
+  - brand: adidas
+    silo: f50
+    generation: "f50"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: 223.99
+    street_price_note: "voetbalshop.nl: F50 Hyperfast Elite Laceless FG €223.99 (RRP €279.99)."
+    street_price_source: "https://www.voetbalshop.nl/"
+    rrp_note: "Catalogue launch RRP €270; a NL retailer showed RRP €279.99 — regional spread."
+    upper:
+      tech: "Fibertouch synthetic"
+      plain: >-
+        A thin, lightweight synthetic with targeted support — the F50 is pure speed and
+        agility, the relaunch of a name adidas retired for nine years.
+      source: "https://cleatshub.com/review/adidas-predator-26-pro"
+    plate:
+      material: "Sprintframe 360 soleplate"
+      source: "https://cleatshub.com/review/adidas-predator-26-pro"
+    weight_g: UNVERIFIED
+    weight_note: "Reported ~185–200 g for the speed Elite; exact Elite figure not separately verified."
+    weight_source: "https://cleatshub.com/review/adidas-predator-26-pro"
+    soleplates: [FG, SG, AG]
+    soleplate_source: "https://www.voetbalshop.nl/"
+    signature_players: ["Lamine Yamal"]
+    signature_source: "https://news.adidas.com/football/adidas-challenges-players-to-choose-a-side--as-lamine-yamal-and-jude-bellingham-front-latest-predato/s/27064bd7-62bd-45b6-b1ed-82474fc69cdc"
+    colourway_packs: []
+    retailer_handle: "f50-elite-{closure}-{soleplate}-{colour}"
+    retailer_handle_source: "https://www.voetbalshop.nl/"
+    last_verified: "2026-08"
+
+  - brand: adidas
+    silo: f50
+    generation: "x crazyfast"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Catalogue launch RRP €265. The 'X Crazyfast' speed line, predecessor to the F50 relaunch."
+    upper:
+      tech: "Fibertouch / Aeropacity synthetic"
+      plain: "adidas's speed silo before the F50 name returned; light synthetic, aggressive plate."
+      source: "https://www.worldsoccershop.com/guide/adidas-predator-soccer-cleat-guide"
+    plate:
+      material: "Sprintframe soleplate"
+      source: UNVERIFIED
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "x-crazyfast-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: adidas
+    silo: f50
+    generation: "x speedportal"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Catalogue launch RRP €260. 'X Speedportal' — the speed line two generations before F50."
+    upper:
+      tech: "Fibertouch / Mirage synthetic"
+      plain: "The Speedportal speed silo; thin synthetic upper for pace."
+      source: "https://www.worldsoccershop.com/guide/adidas-predator-soccer-cleat-guide"
+    plate:
+      material: "Sprintframe soleplate"
+      source: UNVERIFIED
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "x-speedportal-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  # ---- Copa Pure (heritage leather control). PR #30: Copa Pure 4 shipped Jan 2026 and is
+  #      current; 3 and 2 superseded. The 4 is reported to be the LAST Copa — Adipure 2027. ----
+  - brand: adidas
+    silo: copa
+    generation: "4"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: 240
+    street_price_note: "komanda.lv (adidas Baltic dealer, at RRP): Copa Pure IV Elite FG/SG €240 across a full 39–44 grid (PR #30)."
+    street_price_source: "https://komanda.lv/"
+    rrp_note: "Copa is the cheapest adult Elite silo at €240 (PR #30, measured). Reported to be the last Copa; Adipure returns 2027."
+    upper:
+      tech: "Fusionskin"
+      plain: >-
+        Calfskin leather at the forefoot fused to a synthetic mesh midfoot — a modern take on
+        leather touch that resists overstretch. Copa is the leather control silo.
+      source: "https://www.footyheadlines.com/2025/09/adidas-copa-pure-4-2026-born-for-goals.html"
+    plate:
+      material: "Comfort Frame soleplate (Pebax-like), mostly conical studs"
+      source: "https://www.footyheadlines.com/2025/09/adidas-copa-pure-4-2026-born-for-goals.html"
+    weight_g: 210
+    weight_note: "~210 g per shoe (Elite FG), per specialist review."
+    weight_source: "https://cleatshub.com/review/adidas-copa-pure-4-elite"
+    soleplates: [FG, SG, AG, TF, IC]
+    soleplate_source: "https://www.footyheadlines.com/2025/09/adidas-copa-pure-4-2026-born-for-goals.html"
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs:
+      - {name: "Born For Goals", source: "https://www.footyheadlines.com/2025/09/adidas-copa-pure-4-2026-born-for-goals.html"}
+      - {name: "2026 Fall", source: "https://www.footyheadlines.com/2026/04/adidas-acopa-pure-4-fall.html"}
+    retailer_handle: "copa-pure-iv-elite-{closure}-{soleplate}-{colour}"
+    retailer_handle_source: "https://www.adidas.com/us/copa-pure-iv-elite-firm-ground-soccer-cleats/JQ0399.html"
+    last_verified: "2026-08"
+
+  - brand: adidas
+    silo: copa
+    generation: "3"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Catalogue launch RRP €250. Superseded by Copa Pure 4 in Jan 2026 (PR #30)."
+    upper:
+      tech: "Fusionskin"
+      plain: "The previous Copa Pure leather-plus-mesh control upper."
+      source: "https://www.footballboots.co.uk/review-copa.html"
+    plate:
+      material: "Comfort Frame soleplate"
+      source: UNVERIFIED
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "copa-pure-3-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: adidas
+    silo: copa
+    generation: "2"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: 184
+    street_price_note: "komanda.lv: Copa Pure 2 Elite down to one size at €184 (PR #30)."
+    street_price_source: "https://komanda.lv/"
+    rrp_note: "Catalogue launch RRP €255. Superseded."
+    upper:
+      tech: "Fusionskin"
+      plain: "An earlier Copa Pure leather-plus-mesh control upper."
+      source: "https://www.footballboots.co.uk/review-copa.html"
+    plate:
+      material: "Comfort Frame soleplate"
+      source: UNVERIFIED
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "copa-pure-2-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  # ---- adidas teaching trios (current silos): junior Elite + the tier below ----
+  - brand: adidas
+    silo: copa
+    generation: "4"
+    audience: junior
+    tier: junior-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "adidas junior Elite RRP band €110–150 (PR #30, measured on prodirectsport.ie 2026-08-28, n=34)."
+    upper:
+      tech: "Fusionskin (junior construction)"
+      plain: >-
+        The junior Copa Pure 4 Elite is genuinely de-specced: a TPU plate rather than the
+        adult Comfort Frame, simplified upper, laced only. Same name, a different boot.
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    plate:
+      material: "TPU plate (not the adult Comfort Frame)"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "jr-copa-pure-iv-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: adidas
+    silo: predator
+    generation: "26"
+    audience: adult
+    tier: league               # the tier immediately below Elite for adidas
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "adidas takedown RRP band €40–180 (catalogue)."
+    upper:
+      tech: "Synthetic / textile (no rubber grip elements)"
+      plain: >-
+        The tier below Elite: a TPU plate, a plain synthetic upper without HybridTouch or the
+        rubber spin fins, thicker lining, 40–60 g heavier. Same Predator name, a value boot.
+      source: "https://www.sportsdirect.com/the-zone/football/football-boot-tiers-explained"
+    plate:
+      material: "TPU soleplate"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "predator-26-league-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
