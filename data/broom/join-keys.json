@@ -1,7 +1,7 @@
 {
   "_note": "Derived from data/football_boots.yaml — never edit by hand. Published so a consumer in another repository can verify it only names boots this classifier knows, and does not restate year/status/launch_rrp_eur, which the catalogue owns. If this disagrees with the catalogue, the catalogue is right.",
   "last_verified": "2026-08",
-  "generated_from": "sha256:47ea85ab585a9bd19cb2f7746b86626624822d2ef4a82de6d731389ee05a936b",
+  "generated_from": "sha256:9673aa7ac666dda06e4e3550ab60acd9d9178213cc355bab847a1cd84d0b0411",
   "generations": [
     {
       "brand": "adidas",

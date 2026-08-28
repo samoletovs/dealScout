@@ -103,7 +103,15 @@ def build_manifest(catalogue: dict[str, Any], *, source_digest: str) -> dict[str
 
 
 def _digest(path: Path) -> str:
-    return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+    """Digest the file's *text*, with newlines normalised.
+
+    Hashing raw bytes seemed obvious and is wrong: the same catalogue checked out on Windows
+    (CRLF) and on Linux (LF) then digests differently, so the manifest generated on one
+    platform is "stale" on the other. CI caught exactly that. Reading as text applies
+    universal-newline translation, which makes the digest describe the content rather than
+    the checkout.
+    """
+    return "sha256:" + hashlib.sha256(path.read_text(encoding="utf-8").encode("utf-8")).hexdigest()
 
 
 def main() -> int:
