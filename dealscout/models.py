@@ -163,6 +163,15 @@ class Hunt:
     require_size_in_stock: bool = True
     require_new: bool = True
     brands_only: bool = False  # when True, `brands` is a hard filter, not just a ranking
+    # An observation-only hunt feeds the price log but never emails. It exists for breadth:
+    # to observe the *whole* Nike/adidas range across every tier and size so the archive has
+    # depth, rather than the owner's narrow buying slice. The shortlist still scouts, judges
+    # and logs it (that is the point — the log wants those prices), but skips render and
+    # email, because a shortlist of the entire range in every size is not a buy signal, it
+    # is noise that would bury the one hunt that is. Kept separate from `enabled` so the two
+    # decisions stay independent: "run this hunt" and "email me its results" are not the
+    # same question, and folding them would force the archive to either spam or go dark.
+    observe_only: bool = False
     queries: tuple[str, ...] = ()  # search strings for the scout
     watch: tuple[str, ...] = ()  # listing/product URLs to poll directly
     # Magento storefronts read through their own GraphQL API, for shops that render
@@ -222,6 +231,7 @@ class Hunt:
             require_size_in_stock=bool(data.get("require_size_in_stock", True)),
             require_new=bool(data.get("require_new", True)),
             brands_only=bool(data.get("brands_only", False)),
+            observe_only=bool(data.get("observe_only", False)),
             queries=_tuple(data.get("queries")),
             watch=_tuple(data.get("watch")),
             catalogs=tuple(c for c in (data.get("catalogs") or []) if isinstance(c, dict)),

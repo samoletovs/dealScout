@@ -366,6 +366,13 @@ async def main(argv: list[str]) -> int:
         # timestamp, so a remembered RRP still expires on its own schedule.
         rrp_memory = rrpcache.learn(run.kept, rrp_memory)
 
+        # An observation-only hunt has now done its whole job: its prices are in the log.
+        # It never emails — a shortlist of the entire range in every size is not a buy
+        # signal — so skip render and send and move to the next hunt.
+        if hunt.observe_only:
+            logger.info("hunt %s: observe-only, logged %d price(s), no email", hunt.id, len(fresh))
+            continue
+
         body = render_shortlist(
             hunt,
             confirmed,
