@@ -77,13 +77,25 @@ def attrs_from_title(
     vocabulary. Where a catalogue exists it therefore **owns** its attributes outright,
     including the right to supply none: a catalogue that declines to name a tier must not
     have the vocabulary's guess quietly restored underneath it.
+
+    Brand is the one attribute the catalogue supplies as a *fallback* rather than owning.
+    A single-brand shop leaves its own brand out of the title — teamsport.lv lists "ZM
+    SUPERFLY 10 ELITE SG-PRO", never "Nike" — and a boot with no brand cannot be keyed
+    into the price log at all, so its price is observed and then discarded. The catalogue
+    can always answer, because a silo belongs to exactly one brand: reading ``copa`` is
+    what proves the boot is adidas. It fills only, never overrides, because an explicit
+    brand from the feed is a statement about this listing while this is an inference from
+    the model name, and the statement should win where the two disagree.
     """
     derived = extract_attrs(title, category, vocab)
     known = catalogue.load(category)
     if known is not None:
+        reading = known.classify(title, brand, reference_price)
         for name in catalogue.MANAGED_ATTRS:
             derived.pop(name, None)
-        derived.update(known.classify(title, brand, reference_price).as_attrs())
+        derived.update(reading.as_attrs())
+        if reading.brand:
+            derived.setdefault("brand", reading.brand)
     return derived
 
 
@@ -113,8 +125,11 @@ def product_identity(
     never stated sizes (``unknown``, not ``out of stock``) or the boot is confirmed in more
     than one wanted size, since a single line cannot honestly stand for several.
 
-    The brand read by the catalogue is folded back in, because a single-brand shop leaves
-    its own brand out of the title and the boot key needs it to be stable across retailers.
+    The brand read by the catalogue is folded back in by ``attrs_from_title``, because a
+    single-brand shop leaves its own brand out of the title and the boot key needs it to
+    be stable across retailers. Without it the same boot keys one way at a multi-brand
+    shop and not at all at the brand's own store, which is precisely the comparison the
+    log exists to make.
     """
     from .pricehistory import boot_key  # local import: pricehistory imports models only
 
