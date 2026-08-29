@@ -21,6 +21,19 @@ terms:
       sock-like piece. On your foot that means fewer seams to rub, a snugger wrap, and less
       weight — the base idea behind every modern Nike knit upper.
     source: "https://www.unisportstore.com/guides/nike-mercurial-superfly-11-elite-fg-breakout-review/"
+    i18n:
+      lv:
+        what: "Vienā gabalā adīta virsa."
+        plain: >-
+          Tā vietā, lai sašūtu kopā atsevišķus materiāla gabalus, virsa tiek adīta kā viens zeķveida
+          gabals. Uz kājas tas nozīmē mazāk šuvju, kas berž, ciešāku pieguļu un mazāku svaru —
+          pamatdoma, uz kuras balstās katra mūsdienu Nike adītā virsa.
+      ru:
+        what: "Цельновязаный верх."
+        plain: >-
+          Вместо того чтобы сшивать отдельные куски материала, верх вяжется одной деталью, похожей на
+          носок. На ноге это означает меньше швов, которые натирают, более плотную посадку и меньший
+          вес — базовая идея всех современных вязаных верхов Nike.
 
   - term: Vaporposite
     brand: nike
@@ -31,6 +44,21 @@ terms:
       speed without adding bulk. Used on the Mercurial Superfly/Vapor before the 2026 knits.
     also: ["Mercurial Superfly 10/9", "Mercurial Vapor 16/15"]
     source: "https://www.unisportstore.com/guides/nike-mercurial-superfly-11-elite-fg-breakout-review/"
+    i18n:
+      lv:
+        what: "Nike ātruma virsa: plāns adījums virs saķerīgas, tekstūrētas plēves un putu slāņa."
+        plain: >-
+          Trīs plāni slāņi, kas strādā kopā — adījums pieguļai, mikrotekstūrēta plēve saķerei ar bumbu
+          un plāns putu slānis nelielai sajūtai. Tas notur kāju piespiestu pie butes lielā ātrumā,
+          nepiešķirot apjomu. Izmantots Mercurial Superfly un Vapor modeļos pirms 2026. gada
+          adījumiem.
+      ru:
+        what: "Скоростной верх Nike: тонкое вязаное полотно поверх цепкой текстурной плёнки и слоя пены."
+        plain: >-
+          Три тонких слоя, работающих вместе: вязаное полотно для посадки, микротекстурная плёнка для
+          сцепления с мячом и тонкая пена для чувства мяча. Он удерживает стопу прижатой к бутсе на
+          скорости, не добавляя объёма. Применялся в Mercurial Superfly и Vapor до вязаных верхов 2026
+          года.
 
   - term: Zoom Air
     brand: nike
@@ -41,6 +69,21 @@ terms:
       'explosive' acceleration in the Mercurial. It also sits under your foot, so you feel it.
     also: ["Mercurial Superfly 11", "Mercurial Superfly 10"]
     source: "https://www.footyheadlines.com/2026/01/blog-post_27.html"
+    i18n:
+      lv:
+        what: "Zem pēdas priekšdaļas zolē iestrādāts hermētisks gaisa un šķiedru amortizācijas elements."
+        plain: >-
+          Neliels atsperīgs gaisa spilvens zem pēdas priekšdaļas, kas atsperes efektā saspiežas un
+          atgriežas katrā atgrūdienā, tā ka daļa ieguldītās enerģijas nāk atpakaļ — uz to balstās Nike
+          apgalvojums par «sprādzienbīstamu» paātrinājumu Mercurial modelī. Tas atrodas tieši zem
+          pēdas, tāpēc to arī sajūt.
+      ru:
+        what: "Герметичная амортизирующая вставка из воздуха и волокон в передней части подошвы."
+        plain: >-
+          Небольшая пружинящая воздушная камера под подушечкой стопы: при каждом отталкивании она
+          сжимается и распрямляется, возвращая часть вложенной энергии — на этом строится заявление
+          Nike о «взрывном» ускорении в Mercurial. Она расположена прямо под стопой, поэтому её
+          действительно чувствуешь.
 
   - term: Gripknit
     brand: nike
@@ -51,6 +94,19 @@ terms:
       pace. The Phantom 6's 'Tuned Gripknit' spreads it across more of the boot.
     also: ["Phantom 6", "Phantom GX 2", "Phantom GX", "Phantom Luna 2"]
     source: "https://cleatshub.com/review/nike-phantom-6-elite"
+    i18n:
+      lv:
+        what: "Lipīgs, ar pārklājumu apstrādāts adījums uz Phantom kontroles modeļa."
+        plain: >-
+          Adījums, kas apstrādāts tā, lai būtu nedaudz lipīgs: bumba pieķeras virsai gan pirmajā
+          pieskārienā, gan sitienā — domāts spēlētājiem, kuru spēle balstās uz kontroli un
+          precizitāti, nevis ātrumu. Phantom 6 «Tuned Gripknit» izpleš to pār lielāku butes daļu.
+      ru:
+        what: "Липкое вязаное полотно с покрытием на контрольной модели Phantom."
+        plain: >-
+          Вязаный верх, обработанный так, чтобы быть слегка липким: мяч цепляется за него и при первом
+          касании, и при ударе — сделано для игроков, чья игра построена на контроле и точности, а не
+          на скорости. «Tuned Gripknit» у Phantom 6 распространяет его на большую площадь бутсы.
 
   - term: Cyclone 360
     brand: nike
@@ -61,6 +117,21 @@ terms:
       straight-line acceleration. Suits the Phantom's stop-start, creative playmaker.
     also: ["Phantom 6", "Phantom Luna 2"]
     source: "https://about.nike.com/en/newsroom/releases/nike-phantom-6-official-images"
+    i18n:
+      lv:
+        what: "Phantom zole ar apļveida, konisku šķēpu izkārtojumu."
+        plain: >-
+          Šķēpu raksts, kas veidots pagriezieniem: koniski šķēpi ļauj pēdai ātri rotēt un mainīt
+          virzienu jebkurā pusē, atšķirībā no ātruma butes asmeņveida šķēpiem, kas domāti
+          paātrinājumam taisnā līnijā. Piemērots Phantom radošajam spēles vadītājam, kurš pastāvīgi
+          apstājas un atkal uzsāk kustību.
+      ru:
+        what: "Подошва Phantom с круговым расположением конических шипов."
+        plain: >-
+          Схема шипов, рассчитанная на развороты: конические шипы позволяют стопе быстро вращаться и
+          менять направление в любую сторону, в отличие от лезвийных шипов скоростной бутсы,
+          заточенных под разгон по прямой. Подходит созидателю Phantom с его постоянными остановками и
+          рывками.
 
   - term: ACC
     brand: nike
@@ -70,6 +141,19 @@ terms:
       the rain as in the dry, so first touch and swerve don't change when the pitch is wet.
       A claim about consistency rather than a structural part of the boot.
     source: "https://www.prodirectsport.com/blogs/football/nike-mercurial-vapor-17-first-look"
+    i18n:
+      lv:
+        what: "All Conditions Control — virsmas apstrāde vienmērīgai saķerei gan slapjā, gan sausā laikā."
+        plain: >-
+          Pārklājums uz virsas sitiena zonas, kam jānodrošina tāda pati saķere ar bumbu lietū kā
+          sausumā, lai pirmais pieskāriens un bumbas griezes nemainītos, kad laukums ir slapjš. Tas ir
+          apgalvojums par vienmērību, nevis butes konstrukcijas daļa.
+      ru:
+        what: "All Conditions Control — обработка поверхности для одинакового сцепления в дождь и в сухую погоду."
+        plain: >-
+          Покрытие ударной зоны верха, которое должно давать такое же сцепление с мячом в дождь, как и
+          в сухую погоду, чтобы первое касание и подкрутка не менялись на мокром поле. Это заявление о
+          стабильности, а не конструктивная часть бутсы.
 
   # ---------------- adidas ----------------
   - term: Primeknit
@@ -81,6 +165,18 @@ terms:
       collar of the laceless version.
     also: ["Predator 26 (laceless)"]
     source: "https://www.prodirectsport.com/blogs/football/adidas-predator-26"
+    i18n:
+      lv:
+        what: "adidas vienā gabalā adītā virsa un tās adītā potītes apkakle."
+        plain: >-
+          adidas atbilde Flyknit: adīta virsa (un bieži arī adīta apkakle, kas apņem potīti bezauklu
+          modeļos) zeķveida, bezšuvju pieguļai. Uz Predator tā veido bezauklu versijas apkakli.
+      ru:
+        what: "Цельновязаный верх adidas и его вязаный воротник."
+        plain: >-
+          Ответ adidas на Flyknit: вязаный верх (и часто вязаный воротник, обхватывающий лодыжку в
+          бутсах без шнуровки) для бесшовной посадки, похожей на носок. В Predator из него сделан
+          воротник версии без шнуровки.
 
   - term: Hybridtouch
     brand: adidas
@@ -91,6 +187,19 @@ terms:
       grip elements are added.
     also: ["Predator 26/25/24", "Predator Accuracy", "Predator Edge"]
     source: "https://www.worldsoccershop.com/guide/adidas-predator-soccer-cleat-guide"
+    i18n:
+      lv:
+        what: "Sintētiska «āda» kā kontroles virsa uz Predator."
+        plain: >-
+          Sintētisks materiāls, noregulēts tā, lai justos mīksts un kontrolēts kā āda, bet būtu
+          vieglāks un izturīgāks pret laikapstākļiem — Predator kontroles butes pamatvirsa, uz kuras
+          tiek uzliktie gumijas saķeres elementi.
+      ru:
+        what: "Синтетическая «кожа» как контрольный верх Predator."
+        plain: >-
+          Синтетический материал, настроенный так, чтобы ощущаться мягким и послушным, как кожа, но
+          при этом быть легче и устойчивее к погоде — базовый верх контрольной бутсы Predator, поверх
+          которого добавляются резиновые элементы сцепления.
 
   - term: Demonskin
     brand: adidas
@@ -101,6 +210,19 @@ terms:
       Predator 26 is called NanoStrike+.
     also: ["Predator 24", "Predator Accuracy"]
     source: "https://www.worldsoccershop.com/guide/adidas-predator-soccer-cleat-guide"
+    i18n:
+      lv:
+        what: "Gumijas radziņi un ribiņas, kas izlietas pār Predator sitiena zonu."
+        plain: >-
+          Mazi gumijas radziņi, kas klāj butes priekšdaļu un ieķeras bumbā, ļaujot piedot piespēlei
+          vai sitienam vairāk griezes un saķeres. Predator raksturīgākā iezīme; tās pēctecis uz
+          Predator 26 saucas NanoStrike+.
+      ru:
+        what: "Резиновые шипы и рёбра, отлитые по ударной зоне Predator."
+        plain: >-
+          Мелкие резиновые шипы, покрывающие переднюю часть бутсы и цепляющие мяч, — так пасу или
+          удару можно придать больше вращения и сцепления. Фирменная черта Predator; её наследник на
+          Predator 26 называется NanoStrike+.
 
   - term: Sprintframe
     brand: adidas
@@ -111,6 +233,17 @@ terms:
       current F50 version.
     also: ["F50", "X Crazyfast", "X Speedportal"]
     source: "https://cleatshub.com/review/adidas-predator-26-pro"
+    i18n:
+      lv:
+        what: "Viegla zole uz adidas ātruma modeļa (F50 / X)."
+        plain: >-
+          Plāna, viegla zole, veidota paātrinājumam un straujām virziena maiņām — plātne zem F50
+          ātruma butes, kur nogriezts katrs grams. «Sprintframe 360» ir pašreizējā F50 versija.
+      ru:
+        what: "Лёгкая подошва скоростной модели adidas (F50 / X)."
+        plain: >-
+          Тонкая лёгкая подошва, рассчитанная на разгон и резкую смену направления — пластина под
+          скоростной бутсой F50, где срезан каждый грамм. «Sprintframe 360» — её нынешняя версия.
 
   - term: Fibertouch
     brand: adidas
@@ -121,6 +254,19 @@ terms:
       Hybridtouch control upper.
     also: ["F50", "X Crazyfast", "X Speedportal"]
     source: "https://cleatshub.com/review/adidas-predator-26-pro"
+    i18n:
+      lv:
+        what: "Plāna, inženierēta sintētiska virsa uz F50 ātruma modeļa."
+        plain: >-
+          Viegla sintētiska virsa ar atbalstu, kas iestrādāts tikai tur, kur tas patiešām vajadzīgs,
+          un turēta pēc iespējas plānāka ciešai, ātrai sajūtai. Ātruma butes pretstats Predator
+          mīkstākajai Hybridtouch kontroles virsai.
+      ru:
+        what: "Тонкий инженерный синтетический верх скоростной модели F50."
+        plain: >-
+          Лёгкий синтетический верх с поддержкой только там, где она действительно нужна, и
+          максимально тонкий — ради плотного, быстрого ощущения мяча. Скоростной аналог более мягкого
+          контрольного верха Hybridtouch у Predator.
 
   # ---------------- cross-brand material ----------------
   - term: Carbitex
@@ -132,6 +278,19 @@ terms:
       Used in high-end plates and inserts across brands.
     also: []
     source: UNVERIFIED
+    i18n:
+      lv:
+        what: "Virzienatkarīgs oglekļa šķiedras kompozīts: stīvs vienā virzienā, lokans otrā."
+        plain: >-
+          Oglekļa materiāls, veidots tā, lai viegli liektos, kad pēda saliecas uz priekšu, bet paliktu
+          stīvs pret savērpšanos — tā bute var būt atsperīga zem pēdas, nejūtoties kā dēlis. Izmantots
+          augstākā līmeņa zolēs un ieliktņos vairākos zīmolos.
+      ru:
+        what: "Направленный углеволоконный композит: жёсткий в одну сторону, гибкий в другую."
+        plain: >-
+          Углеродный материал, спроектированный так, чтобы легко сгибаться, когда стопа идёт вперёд,
+          но не поддаваться скручиванию — благодаря этому бутса пружинит под стопой, не ощущаясь
+          доской. Применяется в подошвах и вставках высокого уровня у разных брендов.
     note: >-
       Named in scope for the glossary; not confirmed in any specific in-scope Nike/adidas
       Elite plate as of 2026-08. Left UNVERIFIED for its in-scope usage rather than guessed.

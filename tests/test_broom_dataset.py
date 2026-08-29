@@ -341,3 +341,54 @@ def test_closure_is_never_drawn_as_a_tier_property():
         "catalogue disproves. Move it to `drawable_by_silo`, or name the specific SKU:\n  "
         + "\n  ".join(offenders)
     )
+
+
+def test_every_glossary_term_is_translated_into_every_language():
+    """A term without lv/ru renders as English under a translated heading.
+
+    The site marks untranslated prose honestly rather than hiding it, so a gap is
+    visible rather than silent -- but visible-and-wrong is still wrong, and the marker
+    exists to be temporary. Once a language is claimed as equal, a new term arriving in
+    English only is a regression, and nothing else would catch it: the page still
+    renders, it just quietly speaks the wrong language to a Latvian reader.
+    """
+    doc = _load(BROOM / "glossary.yaml")
+    missing = [
+        f"{term['term']}.{lang}.{field}"
+        for term in doc["terms"]
+        for lang in ("lv", "ru")
+        for field in ("what", "plain")
+        if not (term.get("i18n") or {}).get(lang, {}).get(field)
+    ]
+
+    assert not missing, (
+        "glossary terms are missing translations. bRoom ships Latvian and Russian as "
+        "equals, so an English-only term is a gap a reader sees:\n  " + "\n  ".join(missing)
+    )
+
+
+def test_a_translation_never_restates_a_figure_the_english_does_not_have():
+    """A translation is another rendering of one fact, not a second copy of it.
+
+    Numbers are where that breaks: a translator adding "около 280 евро" to a paragraph
+    the English states without a price has invented a claim, in a field no English
+    reader will ever check. So any digit run in a translation must appear in the
+    English it renders.
+    """
+    import re
+
+    doc = _load(BROOM / "glossary.yaml")
+    offenders = []
+    for term in doc["terms"]:
+        for lang in ("lv", "ru"):
+            for field in ("what", "plain"):
+                src = str(term.get(field, ""))
+                dst = str((term.get("i18n") or {}).get(lang, {}).get(field, ""))
+                src_nums = set(re.findall(r"\d+", src))
+                for num in set(re.findall(r"\d+", dst)):
+                    if num not in src_nums:
+                        offenders.append(f"{term['term']}.{lang}.{field}: '{num}' not in the English")
+
+    assert not offenders, (
+        "a translation contains a number its English source does not:\n  " + "\n  ".join(offenders)
+    )
