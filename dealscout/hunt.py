@@ -56,6 +56,35 @@ def _check(actual: str | None, allowed: tuple[str, ...]) -> str:
     return PASS if any(str(a).strip().lower() == low for a in allowed) else FAIL
 
 
+def brand_is_known(attrs: dict[str, str], hunt: Hunt, *texts: str) -> bool:
+    """Is this one of the hunt's brands — by any evidence the engine actually has?
+
+    The single rule behind every ``brands_only`` gate. It exists as one function because
+    the scout pre-filter and the judge asked this question separately once before, and a
+    pre-filter answering by an older rule than the judge is how whole retailers vanish
+    with nothing in the log to say why.
+
+    Two kinds of evidence count. The brand may be *written* — in the title, or in the
+    shop's own brand field. Or the catalogue may *recognise the boot*: a single-brand shop
+    leaves its own name out, so teamsport.lv lists "ZM SUPERFLY 10 ELITE SG-PRO" and only
+    one brand in this catalogue makes a Superfly.
+
+    The second kind is honoured only alongside a named tier. Reading a brand from a model
+    line is an inference from a word, and a lookalike can borrow the word; naming the real
+    boot's tier as well is what it does not do. That keeps the gate's purpose intact — a
+    79%-off Skechers has neither and is still not a cheap Nike.
+    """
+    wanted = [b.strip().lower() for b in hunt.brands if b.strip()]
+    if not wanted:
+        return True
+    haystack = " ".join(texts).lower()
+    if any(b in haystack for b in wanted):
+        return True
+    known = str(attrs.get("brand") or "").strip().lower()
+    tier = str(attrs.get("tier") or "").strip().lower()
+    return bool(known and tier and tier != "unknown" and known in wanted)
+
+
 def attrs_from_title(
     title: str,
     category: str,
@@ -228,12 +257,13 @@ def judge_hunt(
 
     # A ranked brand list normally only *scores*. When the hunt says these brands and no
     # others, it gates: a 79%-off Skechers is not a cheap Nike, it is a different boot.
-    if hunt.brands_only and hunt.brands:
-        haystack = f"{product.brand} {product.title}".lower()
-        if not any(b.strip().lower() in haystack for b in hunt.brands if b.strip()):
-            return Verdict(
-                False, 0.0, (f"rejected: brand not in {'/'.join(hunt.brands)}",)
-            )
+    # Asked of the catalogue as well as the text, by the same rule the scout pre-filter
+    # uses, so the two can never disagree about whose boot this is.
+    attrs = resolve_attrs(product, hunt, vocab)
+    if hunt.brands_only and hunt.brands and not brand_is_known(
+        attrs, hunt, product.brand, product.title
+    ):
+        return Verdict(False, 0.0, (f"rejected: brand not in {'/'.join(hunt.brands)}",))
 
     # --- price gates ---
     if hunt.never_above is not None and product.price > hunt.never_above:
@@ -244,9 +274,8 @@ def judge_hunt(
     unknowns: list[str] = []
 
     # --- attribute requirements ---
-    # Resolved BEFORE the RRP gate, because whether that gate is needed depends on
-    # whether the attributes it stands in for are already known.
-    attrs = resolve_attrs(product, hunt, vocab)
+    # Resolved above, and BEFORE the RRP gate either way, because whether that gate is
+    # needed depends on whether the attributes it stands in for are already known.
     established = 0
     for attr, allowed in hunt.require.items():
         state = _check(attrs.get(attr), allowed)

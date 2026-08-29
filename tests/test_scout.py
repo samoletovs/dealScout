@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 
+from dealscout.hunt import judge_hunt
 from dealscout.models import Hunt, Product
 from dealscout.scout import (
     _match_brand,
@@ -282,6 +283,71 @@ def test_title_plausible_should_reject_an_off_brand_title_when_brands_are_a_gate
     )
     assert title_plausible("Skechers SKX 01 Elite FG", gated) is False
     assert title_plausible("Puma Ultra 5 Ultimate FG Juniors", gated) is True
+
+
+def _gated() -> Hunt:
+    return Hunt.from_dict(
+        {
+            "id": "b",
+            "category": "football_boots",
+            "require": {"tier": ["adult-flagship", "junior-flagship"]},
+            "brands": ["Nike", "adidas"],
+            "brands_only": True,
+        }
+    )
+
+
+def test_title_plausible_should_keep_a_flagship_whose_shop_never_names_the_brand():
+    # teamsport.lv is Nike's official Latvian distributor and a configured catalogue here,
+    # and it lists boots as "ZM SUPERFLY 10 ELITE SG-PRO" — the word Nike appears nowhere.
+    # A string-only gate discarded the shop's entire storefront before a request was spent,
+    # with nothing in the log to say why: it had zero rows in the price history while every
+    # other configured shop had hundreds. The catalogue reads this as a Nike flagship.
+    assert title_plausible("ZM SUPERFLY 10 ELITE SG-PRO", _gated()) is True
+
+
+def test_the_brand_gate_should_still_reject_a_boot_from_another_brand():
+    # The gate's purpose is unchanged: a 79%-off Skechers is not a cheap Nike. It names no
+    # catalogue brand and no tier, so neither kind of evidence rescues it.
+    assert title_plausible("Skechers Razor Astro Turf Trainers", _gated()) is False
+
+
+def test_the_brand_gate_should_not_accept_a_silo_name_alone():
+    # The narrow part of the rule. Reading a brand from a model line is an inference from a
+    # word, and a lookalike can borrow the word — so the line alone must not open the gate.
+    # Naming the real boot's tier is the part a knock-off does not do, and this title does
+    # not, so it stays out even though "superfly" resolves to Nike.
+    assert title_plausible("Superfly Astro Turf Trainers Mens", _gated()) is False
+
+
+def test_the_scout_and_the_judge_should_agree_about_whose_boot_it_is():
+    # The bug this codebase keeps re-learning: a pre-filter answering by a different rule
+    # than the judge. The old rules diverged precisely when a shop set its brand *field*
+    # but left the brand out of the title — the judge read the field and would have kept
+    # the boot, while the pre-filter read only the title and discarded it first, so the
+    # judge never got the chance. A disagreement here is invisible in production: the boot
+    # is simply never fetched, and nothing is logged to say a shop was skipped.
+    hunt = _gated()
+    cases = [
+        ("ZM SUPERFLY 10 ELITE SG-PRO", "Nike"),  # field states it, title does not
+        ("ZM SUPERFLY 10 ELITE SG-PRO", ""),  # nothing states it; only the catalogue knows
+        ("Nike Mercurial Superfly 10 Elite FG", ""),  # title states it
+        ("Skechers Razor Astro Turf Trainers", ""),  # another brand entirely
+        ("Superfly Astro Turf Trainers Mens", ""),  # silo word, no tier
+    ]
+    for title, brand in cases:
+        product = Product(
+            title=title,
+            category="football_boots",
+            price=90.0,
+            reference_price=280.0,
+            currency="EUR",
+            url="https://teamsport.lv/x",
+            source="teamsport.lv",
+            brand=brand,
+        )
+        judged = "brand not in" not in " ".join(judge_hunt(product, hunt).reasons)
+        assert title_plausible(title, hunt) == judged, f"{title!r} brand={brand!r}"
 
 
 def test_scout_should_follow_listing_links_when_a_page_lists_no_products(monkeypatch):
