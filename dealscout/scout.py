@@ -28,7 +28,7 @@ from .magento import (
     query_url,
     sitemap_product_keys,
 )
-from .hunt import attrs_from_title
+from .hunt import attrs_from_title, brand_is_known
 from .models import Hunt, Product, WatchItem
 from .serpsearch import _allowed_source, _condition, _old_price, _search
 
@@ -54,16 +54,26 @@ def title_plausible(title: str, hunt: Hunt, vocab: dict | None = None) -> bool:
     this runs *before* any request is spent, so a pre-filter reading tier by an older rule
     than the judge discards whole retailers with no exception, no empty parse and nothing
     in the log to say why.
+
+    ``brands_only`` therefore asks the catalogue, not just the string. A single-brand shop
+    omits its own name: teamsport.lv, Nike's Latvian distributor and a configured catalogue
+    here, lists "ZM SUPERFLY 10 ELITE SG-PRO". A string test discards that — the exact
+    failure the paragraph above warns about, and it had cost the shop's entire storefront.
+    The catalogue reads it as a Nike flagship, so the brand is known even though the word
+    is absent.
+
+    It is honoured only when the catalogue *also* named a tier. That keeps the gate doing
+    its job: "Skechers Razor Astro Turf Trainers" yields no brand and no tier and stays
+    rejected, and so does a lookalike titled after a silo it does not belong to, because
+    naming a real boot's tier is the part a knock-off does not do.
     """
     attrs = attrs_from_title(title, hunt.category, vocab)
     for attr, allowed in hunt.require.items():
         value = attrs.get(attr)
         if value and not any(str(a).strip().lower() == value.strip().lower() for a in allowed):
             return False
-    if hunt.brands_only and hunt.brands:
-        low = title.lower()
-        if not any(b.strip().lower() in low for b in hunt.brands if b.strip()):
-            return False
+    if hunt.brands_only and hunt.brands and not brand_is_known(attrs, hunt, title):
+        return False
     return not any(m.strip().lower() in title.lower() for m in hunt.exclude_models if m.strip())
 
 
