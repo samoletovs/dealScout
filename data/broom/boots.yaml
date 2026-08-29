@@ -50,6 +50,17 @@ boots:
         plate at speed rather than cushioned — the Superfly is now the 'loaded' speed boot,
         the Vapor the featherweight one.
       source: "https://www.prodirectsport.com/blogs/football/nike-mercurial-superfly-11-first-look"
+      i18n:
+        lv:
+          plain: >-
+            Austs virsmateriāls, savilkts ciešāk nekā Vapor adījums, tā ka pēdu ātrumā notur
+            piespiestu pie pamatnes, nevis mīkstina — Superfly tagad ir 'piesātinātā' ātruma bute,
+            Vapor vieglākā.
+        ru:
+          plain: >-
+            Тканый верх, натянутый плотнее, чем вязаное полотно Vapor, так что на скорости стопа
+            прижата к подошве, а не смягчается — Superfly теперь 'насыщенная' скоростная бутса, а
+            Vapor — самая лёгкая.
     plate:
       material: "Composite plate with forefoot Air Zoom unit; ZoomX foam"
       source: "https://www.footyheadlines.com/2026/01/blog-post_27.html"
@@ -80,6 +91,15 @@ boots:
         A thin knit backed by a grippy micro-textured skin and a foam layer, tuned for a
         secure lock at speed with just enough touch.
       source: "https://www.unisportstore.com/guides/nike-mercurial-superfly-11-elite-fg-breakout-review/"
+      i18n:
+        lv:
+          plain: >-
+            Plāns adījums, ko atbalsta pieķeroša mikrotekstūras āda un putu slānis, noskaņots
+            drošai fiksācijai ātrumā ar tieši tik daudz sajūtas, cik vajag.
+        ru:
+          plain: >-
+            Тонкое вязаное полотно на цепкой микрофактурной коже с прослойкой пены, настроенное
+            на надёжную фиксацию на скорости при достаточном чувстве мяча.
     plate:
       material: "Full-length carbon-fibre composite with forefoot Air Zoom unit"
       source: "https://www.footyheadlines.com/2026/01/blog-post_27.html"
@@ -106,6 +126,15 @@ boots:
       plain: >-
         The knit-plus-grip-skin upper that defined this Superfly era; close, secure, speed-first.
       source: "https://www.unisportstore.com/guides/nike-mercurial-superfly-11-elite-fg-breakout-review/"
+      i18n:
+        lv:
+          plain: >-
+            Adījuma un pieķerošās ādas virsma, kas noteica šo Superfly laikmetu; cieša, droša,
+            ātrumam pāri visam.
+        ru:
+          plain: >-
+            Верх из вязаного полотна и цепкой кожи, определивший эту эпоху Superfly; плотный,
+            надёжный, прежде всего скоростной.
     plate:
       material: "Full-length carbon-fibre composite with forefoot Air Zoom unit"
       source: "https://www.footyheadlines.com/2026/01/blog-post_27.html"
@@ -136,6 +165,17 @@ boots:
         for direct ball feel. The Vapor's job is featherweight quickness, not the Superfly's
         loaded drive.
       source: "https://www.prodirectsport.com/blogs/football/nike-mercurial-vapor-17-first-look"
+      i18n:
+        lv:
+          plain: >-
+            Nike vieglākais un caurspīdīgākais adījums — gandrīz basas pēdas virsma ar minimālu
+            polsterējumu tiešai bumbas sajūtai. Vapor uzdevums ir vieglums un ātrums, nevis
+            Superfly piesātinātais spēks.
+        ru:
+          plain: >-
+            Самое лёгкое и прозрачное вязаное полотно Nike — почти босой верх с минимальной
+            набивкой ради прямого чувства мяча. Задача Vapor — лёгкость и резкость, а не
+            насыщенная тяга Superfly.
     plate:
       material: "FlyLite composite plate, bladed chevron studs"
       source: "https://www.prodirectsport.com/blogs/football/nike-mercurial-vapor-17-first-look"
@@ -166,6 +206,15 @@ boots:
       plain: >-
         A thin knit over a grippy textured skin and foam — secure at pace with clean strike-zone touch.
       source: "https://www.prodirectsport.com/blogs/football/nike-mercurial-vapor-17-first-look"
+      i18n:
+        lv:
+          plain: >-
+            Plāns adījums pāri pieķerošai tekstūrētai ādai un putām — drošs ātrumā ar tīru sajūtu
+            sitiena zonā.
+        ru:
+          plain: >-
+            Тонкое вязаное полотно поверх цепкой фактурной кожи и пены — надёжное на скорости, с
+            чистым чувством в зоне удара.
     plate:
       material: "Full-length carbon-fibre composite, bladed studs"
       source: UNVERIFIED
@@ -191,6 +240,11 @@ boots:
       tech: "Vaporposite+"
       plain: "Knit-plus-grip-skin speed upper of the previous Mercurial generation."
       source: "https://www.prodirectsport.com/blogs/football/nike-mercurial-vapor-17-first-look"
+      i18n:
+        lv:
+          plain: "Iepriekšējās Mercurial paaudzes ātruma virsma no adījuma un pieķerošās ādas."
+        ru:
+          plain: "Скоростной верх из вязаного полотна и цепкой кожи предыдущего поколения Mercurial."
     plate:
       material: "Full-length carbon-fibre composite"
       source: UNVERIFIED
@@ -221,6 +275,17 @@ boots:
         strike zone in wet and dry — the Phantom is the control silo, built for precise
         contact rather than speed.
       source: "https://cleatshub.com/review/nike-phantom-6-elite"
+      i18n:
+        lv:
+          plain: >-
+            Pieķerošs adījums, kas nosedz lielāku virsmas daļu nekā agrāk, tverot bumbu pa visu
+            sitiena zonu slapjā un sausā — Phantom ir kontroles silo, veidots precīzam kontaktam,
+            nevis ātrumam.
+        ru:
+          plain: >-
+            Цепкое вязаное полотно, покрывающее большую часть верха, чем раньше, и держащее мяч по
+            всей зоне удара в сырую и сухую погоду — Phantom это силуэт контроля, созданный для
+            точного касания, а не скорости.
     plate:
       material: "Cyclone 360 soleplate, conical/circular studs for fast pivots"
       source: "https://about.nike.com/en/newsroom/releases/nike-phantom-6-official-images"
@@ -254,6 +319,15 @@ boots:
         The Phantom's tacky control knit on a last shaped for female players (standard and
         wide fits); same Cyclone 360 plate as the Phantom 6.
       source: "https://cleatshub.com/review/nike-phantom-6-elite"
+      i18n:
+        lv:
+          plain: >-
+            Phantom pieķerošais kontroles adījums uz kurpes formas, kas veidota sievietēm
+            (standarta un platie izmēri); tā pati Cyclone 360 pamatne kā Phantom 6.
+        ru:
+          plain: >-
+            Цепкое контрольное вязаное полотно Phantom на колодке под женскую стопу (стандартная и
+            широкая полнота); та же подошва Cyclone 360, что и у Phantom 6.
     plate:
       material: "Cyclone 360 soleplate"
       source: "https://cleatshub.com/review/nike-phantom-6-elite"
@@ -279,6 +353,11 @@ boots:
     upper:
       tech: "Gripknit + Cyclone 360"
       plain: "The GX-era grippy control knit; predecessor to the Phantom 6's Tuned Gripknit."
+      i18n:
+        lv:
+          plain: "GX laikmeta pieķerošais kontroles adījums; Phantom 6 Tuned Gripknit priekštecis."
+        ru:
+          plain: "Цепкое контрольное вязаное полотно эпохи GX; предшественник Tuned Gripknit у Phantom 6."
       source: "https://cleatshub.com/review/nike-phantom-6-elite"
     plate:
       material: "Cyclone 360 soleplate"
@@ -305,6 +384,11 @@ boots:
     upper:
       tech: "Gripknit"
       plain: "The first Gripknit generation — the tacky control upper that replaced the GT line's texture."
+      i18n:
+        lv:
+          plain: "Pirmā Gripknit paaudze — pieķerošā kontroles virsma, kas nomainīja GT līnijas tekstūru."
+        ru:
+          plain: "Первое поколение Gripknit — цепкий контрольный верх, сменивший фактуру линии GT."
       source: "https://cleatshub.com/review/nike-phantom-6-elite"
     plate:
       material: "Cyclone 360 soleplate"
@@ -336,6 +420,16 @@ boots:
         A buttery synthetic engineered to feel like the kangaroo leather Nike has now dropped,
         while absorbing ~29% less water and breaking in faster. Ends the natural-leather Tiempo.
       source: "https://www.footyheadlines.com/2025/12/nike-tiempo-maestro-vs.html"
+      i18n:
+        lv:
+          plain: >-
+            Maiga sintētika, kas radīta, lai justos kā ķengurādā, no kuras Nike tagad atteikusies,
+            turklāt uzsūc ~29% mazāk ūdens un ātrāk piestaigājas. Noslēdz dabiskās ādas Tiempo.
+        ru:
+          plain: >-
+            Мягкая синтетика, созданная, чтобы ощущаться как кожа кенгуру, от которой Nike теперь
+            отказалась, при этом впитывает на ~29% меньше воды и быстрее разнашивается. Завершает
+            Tiempo из натуральной кожи.
     plate:
       material: "Maestro360 two-piece split plate"
       source: "https://www.footyheadlines.com/2025/12/nike-tiempo-maestro-vs.html"
@@ -363,6 +457,11 @@ boots:
     upper:
       tech: "FlyTouch Plus (synthetic)"
       plain: "The last 'Legend' upper — a synthetic control leather before the Maestro's Techleather."
+      i18n:
+        lv:
+          plain: "Pēdējā 'Legend' virsma — sintētiska kontroles āda pirms Maestro Techleather."
+        ru:
+          plain: "Последний верх 'Legend' — синтетическая контрольная кожа перед Techleather у Maestro."
       source: "https://www.footyheadlines.com/2025/12/nike-tiempo-maestro-vs.html"
     plate:
       material: "One-piece traditional soleplate"
@@ -392,6 +491,15 @@ boots:
         A genuine kangaroo-leather Tiempo — the construction Nike has since abandoned, which
         is part of why clearance stock of this generation is sought out.
       source: "https://www.footyheadlines.com/2025/12/nike-tiempo-maestro-vs.html"
+      i18n:
+        lv:
+          plain: >-
+            Īsts ķengurādas Tiempo — konstrukcija, ko Nike kopš tā laika pametusi, un tas daļēji
+            izskaidro, kāpēc šīs paaudzes izpārdošanas krājumi tiek meklēti.
+        ru:
+          plain: >-
+            Настоящий Tiempo из кожи кенгуру — конструкция, от которой Nike с тех пор отказалась,
+            и отчасти поэтому распроданные остатки этого поколения так ищут.
     plate:
       material: "Hyperstability plate"
       source: "https://www.footyheadlines.com/2025/12/nike-tiempo-maestro-vs.html"
@@ -423,6 +531,17 @@ boots:
         Same silo, de-specced for growing feet: the junior Elite keeps the look and often a
         Pebax (not full-carbon) plate, with a slightly roomier last. A different boot, same name.
       source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Tas pats silo, taču ar pazeminātu specifikāciju augošām pēdām: junioru Elite saglabā
+            izskatu un bieži Pebax (nevis pilna oglekļa) pamatni, ar nedaudz plašāku kurpes formu.
+            Cita bute, tas pats nosaukums.
+        ru:
+          plain: >-
+            Тот же силуэт, но с урезанной спецификацией под растущую стопу: юниорский Elite
+            сохраняет вид и часто подошву Pebax (не из цельного карбона), с чуть более
+            просторной колодкой. Другая бутса под тем же именем.
     plate:
       material: "Pebax/TPU composite (rarely full carbon in junior)"
       source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
@@ -452,6 +571,17 @@ boots:
         without the tacky Gripknit, thicker lining, 30–60 g heavier. Same Phantom name, a
         training-grade boot at a third of the price.
       source: "https://www.sportsdirect.com/the-zone/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite: vienkārša TPU pamatne Cyclone 360 vietā, sintētiska virsma bez
+            pieķerošā Gripknit, biezāka odere, par 30–60 g smagāka. Tas pats Phantom nosaukums,
+            treniņa klases bute par trešdaļu cenas.
+        ru:
+          plain: >-
+            Класс ниже Elite: простая подошва TPU вместо Cyclone 360, синтетический верх без
+            цепкого Gripknit, более толстая подкладка, на 30–60 г тяжелее. То же имя Phantom,
+            бутса тренировочного класса за треть цены.
     plate:
       material: "Basic TPU soleplate"
       source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
@@ -484,6 +614,17 @@ boots:
         A synthetic control upper studded with rubber grip elements (the heir to Demonskin)
         that bite the ball for spin on passes and shots. Predator is the control/power silo.
       source: "https://www.prodirectsport.com/blogs/football/adidas-predator-26"
+      i18n:
+        lv:
+          plain: >-
+            Sintētiska kontroles virsma, kas nosēta ar gumijas satveres elementiem (Demonskin
+            mantinieks), kuri ieķeras bumbā, dodot rotāciju piespēlēs un sitienos. Predator ir
+            kontroles/spēka silo.
+        ru:
+          plain: >-
+            Синтетический контрольный верх, усыпанный резиновыми элементами сцепления (наследник
+            Demonskin), которые вгрызаются в мяч, придавая вращение пасам и ударам. Predator это
+            силуэт контроля и силы.
     plate:
       material: "StrikeFrame soleplate with PowerSpine"
       source: "https://cleatshub.com/review/adidas-predator-26-pro"
@@ -511,6 +652,11 @@ boots:
     upper:
       tech: "HybridTouch + Strikeskin/Demonskin grip"
       plain: "The immediately-superseded Predator control upper with rubber spin fins."
+      i18n:
+        lv:
+          plain: "Uzreiz nomainītā Predator kontroles virsma ar gumijas rotācijas ribām."
+        ru:
+          plain: "Сразу же сменённый контрольный верх Predator с резиновыми рёбрами для вращения."
       source: "https://www.worldsoccershop.com/guide/adidas-predator-soccer-cleat-guide"
     plate:
       material: "Controlframe / PowerSpine soleplate"
@@ -537,6 +683,11 @@ boots:
     upper:
       tech: "HybridTouch + Demonskin 2.0"
       plain: "The rubber-spine control upper; this generation reintroduced the folded tongue."
+      i18n:
+        lv:
+          plain: "Kontroles virsma ar gumijas mugurkaulu; šī paaudze atgrieza pārloka mēli."
+        ru:
+          plain: "Контрольный верх с резиновым гребнем; это поколение вернуло отворачивающийся язычок."
       source: "https://www.worldsoccershop.com/guide/adidas-predator-soccer-cleat-guide"
     plate:
       material: "Controlframe soleplate"
@@ -563,6 +714,11 @@ boots:
     upper:
       tech: "HybridTouch + Demonskin"
       plain: "The 'Accuracy' Predator — rubber spin elements across the strike zone."
+      i18n:
+        lv:
+          plain: "'Accuracy' Predator — gumijas rotācijas elementi pa visu sitiena zonu."
+        ru:
+          plain: "Predator 'Accuracy' — резиновые элементы вращения по всей зоне удара."
       source: "https://www.worldsoccershop.com/guide/adidas-predator-soccer-cleat-guide"
     plate:
       material: "Powerprint / Controlframe soleplate"
@@ -589,6 +745,11 @@ boots:
     upper:
       tech: "HybridTouch + Zoneskin"
       plain: "The 'Edge' Predator with a wrap of rubber spikes (Zoneskin) for grip and spin."
+      i18n:
+        lv:
+          plain: "'Edge' Predator ar gumijas radziņu ietinumu (Zoneskin) satverei un rotācijai."
+        ru:
+          plain: "Predator 'Edge' с обтяжкой из резиновых шипов (Zoneskin) для сцепления и вращения."
       source: "https://www.worldsoccershop.com/guide/adidas-predator-soccer-cleat-guide"
     plate:
       material: "Power Facet soleplate"
@@ -620,6 +781,15 @@ boots:
         A thin, lightweight synthetic with targeted support — the F50 is pure speed and
         agility, the relaunch of a name adidas retired for nine years.
       source: "https://cleatshub.com/review/adidas-predator-26-pro"
+      i18n:
+        lv:
+          plain: >-
+            Plāna, viegla sintētika ar mērķtiecīgu atbalstu — F50 ir tīrs ātrums un veiklība,
+            nosaukuma atdzimšana, ko adidas bija atlicis malā deviņus gadus.
+        ru:
+          plain: >-
+            Тонкая лёгкая синтетика с точечной поддержкой — F50 это чистая скорость и ловкость,
+            возвращение имени, которое adidas откладывал девять лет.
     plate:
       material: "Sprintframe 360 soleplate"
       source: "https://cleatshub.com/review/adidas-predator-26-pro"
@@ -646,6 +816,11 @@ boots:
     upper:
       tech: "Fibertouch / Aeropacity synthetic"
       plain: "adidas's speed silo before the F50 name returned; light synthetic, aggressive plate."
+      i18n:
+        lv:
+          plain: "adidas ātruma silo pirms F50 nosaukuma atgriešanās; viegla sintētika, agresīva pamatne."
+        ru:
+          plain: "Скоростной силуэт adidas до возвращения имени F50; лёгкая синтетика, агрессивная подошва."
       source: "https://www.worldsoccershop.com/guide/adidas-predator-soccer-cleat-guide"
     plate:
       material: "Sprintframe soleplate"
@@ -672,6 +847,11 @@ boots:
     upper:
       tech: "Fibertouch / Mirage synthetic"
       plain: "The Speedportal speed silo; thin synthetic upper for pace."
+      i18n:
+        lv:
+          plain: "Speedportal ātruma silo; plāna sintētiska virsma tempam."
+        ru:
+          plain: "Скоростной силуэт Speedportal; тонкий синтетический верх ради темпа."
       source: "https://www.worldsoccershop.com/guide/adidas-predator-soccer-cleat-guide"
     plate:
       material: "Sprintframe soleplate"
@@ -704,6 +884,15 @@ boots:
         Calfskin leather at the forefoot fused to a synthetic mesh midfoot — a modern take on
         leather touch that resists overstretch. Copa is the leather control silo.
       source: "https://www.footyheadlines.com/2025/09/adidas-copa-pure-4-2026-born-for-goals.html"
+      i18n:
+        lv:
+          plain: >-
+            Teļāda priekšpēdā, sakausēta ar sintētisku sietu viduspēdā — mūsdienīga ādas sajūtas
+            versija, kas pretojas izstiepšanai. Copa ir ādas kontroles silo.
+        ru:
+          plain: >-
+            Телячья кожа в передней части, сплавленная с синтетической сеткой в средней — современный
+            вариант кожаного касания, устойчивый к растяжению. Copa это кожаный силуэт контроля.
     plate:
       material: "Comfort Frame soleplate (Pebax-like), mostly conical studs"
       source: "https://www.footyheadlines.com/2025/09/adidas-copa-pure-4-2026-born-for-goals.html"
@@ -732,6 +921,11 @@ boots:
     upper:
       tech: "Fusionskin"
       plain: "The previous Copa Pure leather-plus-mesh control upper."
+      i18n:
+        lv:
+          plain: "Iepriekšējā Copa Pure kontroles virsma no ādas un sieta."
+        ru:
+          plain: "Предыдущий контрольный верх Copa Pure из кожи и сетки."
       source: "https://www.footballboots.co.uk/review-copa.html"
     plate:
       material: "Comfort Frame soleplate"
@@ -759,6 +953,11 @@ boots:
     upper:
       tech: "Fusionskin"
       plain: "An earlier Copa Pure leather-plus-mesh control upper."
+      i18n:
+        lv:
+          plain: "Agrāka Copa Pure kontroles virsma no ādas un sieta."
+        ru:
+          plain: "Более ранний контрольный верх Copa Pure из кожи и сетки."
       source: "https://www.footballboots.co.uk/review-copa.html"
     plate:
       material: "Comfort Frame soleplate"
@@ -790,6 +989,17 @@ boots:
         adult Comfort Frame, and a simplified upper. Same name, a different boot. (Closure is
         not the tell — laceless junior Elite SKUs exist in other silos; see tiers.yaml.)
       source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Junioru Copa Pure 4 Elite ir patiešām ar pazeminātu specifikāciju: TPU pamatne, nevis
+            pieaugušo Comfort Frame, un vienkāršota virsma. Tas pats nosaukums, cita bute.
+            (Aizdare nav pazīme — bezauklu junioru Elite SKU pastāv citos silo; sk. tiers.yaml.)
+        ru:
+          plain: >-
+            Юниорский Copa Pure 4 Elite действительно с урезанной спецификацией: подошва TPU
+            вместо взрослой Comfort Frame и упрощённый верх. То же имя, другая бутса. (Застёжка
+            не признак — юниорские Elite без шнурков есть в других силуэтах; см. tiers.yaml.)
     plate:
       material: "TPU plate (not the adult Comfort Frame)"
       source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
@@ -818,6 +1028,17 @@ boots:
         The tier below Elite: a TPU plate, a plain synthetic upper without HybridTouch or the
         rubber spin fins, thicker lining, 40–60 g heavier. Same Predator name, a value boot.
       source: "https://www.sportsdirect.com/the-zone/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite: TPU pamatne, vienkārša sintētiska virsma bez HybridTouch vai gumijas
+            rotācijas ribām, biezāka odere, par 40–60 g smagāka. Tas pats Predator nosaukums,
+            budžeta bute.
+        ru:
+          plain: >-
+            Класс ниже Elite: подошва TPU, простой синтетический верх без HybridTouch и резиновых
+            рёбер для вращения, более толстая подкладка, на 40–60 г тяжелее. То же имя Predator,
+            бюджетная бутса.
     plate:
       material: "TPU soleplate"
       source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"

@@ -447,3 +447,61 @@ def test_a_heritage_translation_never_restates_a_figure_the_english_does_not_hav
         "a heritage translation contains a number its English source does not:\n  "
         + "\n  ".join(offenders)
     )
+
+
+def test_every_boot_upper_is_translated_into_every_language(boots):
+    """A boot's ``upper.plain`` without lv/ru renders as English under a translated heading.
+
+    The glossary and heritage narratives already ship three equal languages; the one-line
+    "what the upper actually is" description is the last English-only prose on a boot page,
+    shown under a ``vēl nav tulkots`` / ``не переведено`` marker. Once a language is claimed
+    as equal, a boot arriving (or left) in English only is a regression the rendered page
+    cannot catch — it still renders, it just speaks the wrong language to a Latvian or
+    Russian reader.
+
+    Note the shape: ``upper.plain`` is *nested*, and the site's ``localised(row, field, lang)``
+    reads ``row[field]`` and ``row.i18n[lang][field]`` flat, so the ``i18n`` block lives
+    inside ``upper`` (``upper.i18n.lv.plain``), not at the boot's top level. Sibling of
+    ``test_every_heritage_note_is_translated_into_every_language``.
+    """
+    missing = [
+        f"{row['brand']}/{row['silo']}/{row['generation']}.{lang}.plain"
+        for row in boots["boots"]
+        for lang in ("lv", "ru")
+        if not ((row.get("upper") or {}).get("i18n") or {}).get(lang, {}).get("plain")
+    ]
+
+    assert not missing, (
+        "boot upper descriptions are missing translations. bRoom ships Latvian and Russian "
+        "as equals, so an English-only upper is a gap a reader sees:\n  " + "\n  ".join(missing)
+    )
+
+
+def test_a_boot_upper_translation_never_restates_a_figure_the_english_does_not_have(boots):
+    """A boot upper translation is another rendering of one fact, not a second copy.
+
+    These lines carry weights and percentages (``~29%``, ``30–60 g``, ``40–60 g``) and
+    technology names with numbers (``Cyclone 360``, ``Copa Pure 4``). A translator adding a
+    price the English never states — ``no €61`` — would invent a claim in a field no English
+    reader audits, exactly where the tier explainer's honesty rules are hardest to police. So
+    any digit run in a translated ``upper.plain`` must already appear in the English it
+    renders. Sibling of ``test_a_heritage_translation_never_restates_a_figure_the_english_does_not_have``.
+    """
+    offenders = []
+    for row in boots["boots"]:
+        upper = row.get("upper") or {}
+        src = str(upper.get("plain", ""))
+        src_nums = set(re.findall(r"\d+", src))
+        for lang in ("lv", "ru"):
+            dst = str((upper.get("i18n") or {}).get(lang, {}).get("plain", ""))
+            for num in set(re.findall(r"\d+", dst)):
+                if num not in src_nums:
+                    offenders.append(
+                        f"{row['brand']}/{row['silo']}/{row['generation']}.{lang}.plain: "
+                        f"'{num}' not in the English"
+                    )
+
+    assert not offenders, (
+        "a boot upper translation contains a number its English source does not:\n  "
+        + "\n  ".join(offenders)
+    )
