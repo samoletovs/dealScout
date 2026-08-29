@@ -26,6 +26,27 @@ notes:
     sources:
       - "https://en.wikipedia.org/wiki/Adidas_Predator"
       - "https://www.footy.com/blog/boots/adidas-predator-history/"
+    i18n:
+      lv:
+        title: "Gumijas spuru bute, ko Liverpool spēlētājs izdomāja savā virtuvē"
+        body: >-
+          Predator sākās 1994. gadā kā Craig Johnston — austrāliešu bijušā Liverpool uzbrucēja —
+          iecere: viņš pielīmēja butes virsai gumijas sloksnes, iedvesmojoties no galda tenisa
+          raketes saķeres, lai bumbai piešķirtu vairāk griezes un spēka. adidas to sākotnēji
+          noraidīja; Johnston viņus pārliecināja ar prototipa demonstrējumu. Šie gumijas elementi
+          kopš tā laika ir bijuši Predator atpazīstamākā iezīme, izdzīvojot katru pārveidojumu līdz
+          pat Predator 26 NanoStrike+ saķerei, un tieši tāpēc šo silo pārdod kā kontroles un griezes
+          buti.
+      ru:
+        title: "Бутса с резиновыми рёбрами, придуманная игроком Liverpool у себя на кухне"
+        body: >-
+          Predator начался в 1994 году с идеи Craig Johnston — австралийца, бывшего нападающего
+          Liverpool, — который приклеил к верху бутсы резиновые полоски, вдохновившись сцеплением
+          ракетки для настольного тенниса, чтобы придать мячу больше подкрутки и силы. adidas
+          сначала отказалась; Johnston убедил их демонстрацией прототипа. Эти резиновые элементы с
+          тех пор остаются фирменной чертой Predator, пережив каждую переработку вплоть до сцепления
+          NanoStrike+ у Predator 26, и именно поэтому силуэт продаётся как бутса для контроля и
+          подкрутки.
 
   - silo: copa
     brand: adidas
@@ -44,6 +65,25 @@ notes:
       Copa Mundial 1979 and the Adipure-2027 claim should be re-sourced to a primary adidas
       page before the site treats them as settled; the 2027 return is a report, not an
       announcement, and is flagged as such in boots.yaml.
+    i18n:
+      lv:
+        title: "Ādas bute no 1979. gada, kas nekad nepameta plauktu"
+        body: >-
+          adidas laida klajā Copa Mundial 1979. gadā, pirms 1982. gada pasaules kausa Spānijā, no
+          mīkstas ķengurādas ar vienkāršu, klasisku siluetu, kas veidots komfortam un bumbas sajūtai.
+          Tā joprojām tiek ražota, un tās nosaukums ir mūsdienu Copa kontroles līnijas sakne. Copa
+          Pure atdzīvināja šo ādas sajūtas identitāti sintētiskā formā — un, saskaņā ar PR #30
+          atradumu, Copa Pure 4 (2026) tiek uzskatīta par pēdējo Pure līnijā, pirms adidas 2027. gadā
+          atgriež Adipure nosaukumu.
+      ru:
+        title: "Кожаная бутса 1979 года, которая так и не ушла с полки"
+        body: >-
+          adidas выпустила Copa Mundial в 1979 году, накануне чемпионата мира 1982 года в Испании, из
+          мягкой кенгуровой кожи, с простым, классическим силуэтом, созданным ради комфорта и чувства
+          мяча. Она выпускается и сегодня, а её имя — корень современной линии контроля Copa. Copa
+          Pure возродила эту кожаную идентичность в синтетической форме — и, согласно находке из
+          PR #30, Copa Pure 4 (2026) считается последней в линии Pure, прежде чем adidas вернёт имя
+          Adipure в 2027 году.
 
   # ---------------- nike ----------------
   - silo: mercurial superfly
@@ -61,6 +101,23 @@ notes:
     note: >-
       Re-source the R9/1998 detail to a Nike or SoccerBible primary before publish; the
       overview used here covers it but is not a dedicated Mercurial source.
+    i18n:
+      lv:
+        title: "Ronaldo sudraba bute, Francija 1998"
+        body: >-
+          Nike Mercurial debitēja 1998. gada pasaules kausā uz Brazīlijas Ronaldo (R9) kājām
+          metāliski sudrabainā krāsā, kas lauza tā laika melnās ādas ortodoksiju. Tās vieglā
+          sintētiskā virsa padarīja ātrumu, nevis izturību, par visas butes jēgu — un nodibināja
+          silo, ko Superfly un Vapor joprojām sadala savā starpā: Superfly kā piesātinātā, dzenošā
+          ātruma bute, Vapor kā vieglākā.
+      ru:
+        title: "Серебряная бутса Ronaldo, Франция 1998"
+        body: >-
+          Nike Mercurial дебютировала на чемпионате мира 1998 года на ногах бразильца Ronaldo (R9), в
+          металлически-серебристой расцветке, порвавшей с чёрно-кожаной ортодоксией того времени. Её
+          лёгкий синтетический верх сделал главным смыслом бутсы скорость, а не износостойкость — и
+          основал силуэт, который Superfly и Vapor до сих пор делят между собой: Superfly как
+          насыщенная, разгоняющая скоростная бутса, Vapor как самая лёгкая.
 
   - silo: mercurial vapor
     brand: nike
@@ -73,6 +130,21 @@ notes:
     dated: "2026"
     sources:
       - "https://cleatshub.com/review/nike-mercurial-vapor-17-elite"
+    i18n:
+      lv:
+        title: "Mercurial šķelšanās vieglākā puse"
+        body: >-
+          Vapor nosaukums vienmēr ir apzīmējis vieglāko izpausmi Mercurial ātruma idejai, kas sākās ar
+          Ronaldo 1998. gadā. Kamēr Superfly ieguva apkakli un vēlāk piesātinātu Air Zoom dzinēju,
+          Vapor turpināja dzīties pēc minimāla svara — Vapor 17 (2026) tiek uzskatīta par vieglāko
+          Mercurial jebkad ar ~150 g, ar AtomKnit virsu, kas noplānināta gandrīz līdz neesamībai.
+      ru:
+        title: "Самая лёгкая половина раскола Mercurial"
+        body: >-
+          Имя Vapor всегда обозначало самое лёгкое воплощение скоростной идеи Mercurial, начавшейся с
+          Ronaldo в 1998 году. Там, где Superfly обзавёлся воротником и позднее насыщенным приводом Air
+          Zoom, Vapor продолжал гнаться за минимальным весом — Vapor 17 (2026) считается самой лёгкой
+          Mercurial за всю историю, ~150 г, с верхом AtomKnit, сведённым почти к нулю.
 
   - silo: phantom
     brand: nike
@@ -86,6 +158,21 @@ notes:
     sources:
       - "https://cleatshub.com/review/nike-phantom-6-elite"
     note: "Phantom line origin date is approximate; re-source to a Nike primary before publish."
+    i18n:
+      lv:
+        title: "Nike kontroles atbilde Predator"
+        body: >-
+          Phantom ir Nike kontroles silo — pretsvars ātrajam Mercurial — veidots ap saķerīgu, pārklātu
+          virsu (tagad Gripknit) un pagriezieniem draudzīgu pamatni radošajam spēles vadītājam, nevis
+          sprinterim. Phantom Luna paplašinājums atnesa to pašu kontroles tehnoloģiju uz sievietēm
+          pielāgotas kurpes pamatnes, ko pārstāv tādas spēlētājas kā Alexia Putellas.
+      ru:
+        title: "Ответ Nike на Predator в бутсах для контроля"
+        body: >-
+          Phantom — это силуэт Nike для контроля, противовес скоростной Mercurial, построенный вокруг
+          цепкого верха с покрытием (теперь Gripknit) и удобной для разворотов подошвы для креативного
+          диспетчера, а не спринтера. Расширение Phantom Luna принесло ту же технологию контроля на
+          колодку, адаптированную под женскую стопу, во главе с такими игроками, как Alexia Putellas.
 
   - silo: tiempo
     brand: nike
@@ -102,6 +189,23 @@ notes:
     note: >-
       The 1994 Tiempo Premier detail should be re-sourced to a Nike or SoccerBible primary;
       the Maestro/Techleather transition is well-sourced (Footy Headlines).
+    i18n:
+      lv:
+        title: "Nike pirmā izcilā bute — un tās ādas beigas"
+        body: >-
+          Tiempo Premier bija Nike pirmā nozīmīgā futbola bute, valkāta 1994. gada pasaules kausā ASV,
+          augstākās klases ādas bute, kas padarīja līniju par komforta un bumbas sajūtas mājvietu
+          gadu desmitiem. Šī ēra beidzās 2026. gadā: Tiempo Maestro nomainīja 'Legend' nosaukumu un
+          pilnībā atteicās no dabīgās ķengurādas par labu sintētiskajam 'Techleather', noslēdzot
+          nodaļu, ko Premier bija atvēris.
+      ru:
+        title: "Первая великая бутса Nike — и конец её кожи"
+        body: >-
+          Tiempo Premier была первой крупной футбольной бутсой Nike, надетой на чемпионате мира 1994
+          года в США, — премиальной кожаной бутсой, которая сделала линию домом комфорта и чувства
+          мяча на десятилетия. Эта эпоха закончилась в 2026 году: Tiempo Maestro сменила имя 'Legend'
+          и полностью отказалась от натуральной кенгуровой кожи в пользу синтетического 'Techleather',
+          закрыв главу, которую открыла Premier.
 
   - silo: f50
     brand: adidas
@@ -115,3 +219,18 @@ notes:
     sources:
       - "https://cleatshub.com/review/adidas-predator-26-pro"
     note: "Nine-year-gap framing follows the catalogue note on the F50 relaunch; re-source the adizero F50 history to a primary before publish."
+    i18n:
+      lv:
+        title: "Ātruma nosaukums, ko adidas pameta un pēc tam atgrieza"
+        body: >-
+          F50 bija adidas ātruma silo — visslavenākā adizero F50 ēra — pirms nosaukums tika pamests un
+          ātruma vieta pārgāja X līnijai (X Speedportal, X Crazyfast). 2024. gadā adidas no jauna
+          palaida F50 nosaukumu pēc deviņu gadu pārtraukuma, saliekot X ātruma pēctecību atpakaļ zem
+          tā, ko tagad pārstāv Lamine Yamal.
+      ru:
+        title: "Скоростное имя, которое adidas убрала, а затем вернула"
+        body: >-
+          F50 был скоростным силуэтом adidas — наиболее известным по эпохе adizero F50 — прежде чем имя
+          убрали и скоростное место перешло к линии X (X Speedportal, X Crazyfast). В 2024 году adidas
+          заново запустила имя F50 после девятилетнего перерыва, вернув под него скоростное наследие X,
+          теперь во главе с Lamine Yamal.

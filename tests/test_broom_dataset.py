@@ -392,3 +392,58 @@ def test_a_translation_never_restates_a_figure_the_english_does_not_have():
     assert not offenders, (
         "a translation contains a number its English source does not:\n  " + "\n  ".join(offenders)
     )
+
+
+def test_every_heritage_note_is_translated_into_every_language():
+    """A heritage note without lv/ru renders as English under a translated heading.
+
+    The glossary already ships three equal languages; the heritage narratives are the
+    last English-only prose on the site, shown under a ``vēl nav tulkots`` /
+    ``не переведено`` marker. Once a language is claimed as equal, a note arriving (or
+    left) in English only is a regression the rendered page cannot catch — it still
+    renders, it just speaks the wrong language to a Latvian or Russian reader. This is
+    the sibling of ``test_every_glossary_term_is_translated_into_every_language``.
+    """
+    doc = _load(BROOM / "heritage.yaml")
+    missing = [
+        f"{note.get('silo')}.{lang}.{field}"
+        for note in doc["notes"]
+        for lang in ("lv", "ru")
+        for field in ("title", "body")
+        if not (note.get("i18n") or {}).get(lang, {}).get(field)
+    ]
+
+    assert not missing, (
+        "heritage notes are missing translations. bRoom ships Latvian and Russian as "
+        "equals, so an English-only note is a gap a reader sees:\n  " + "\n  ".join(missing)
+    )
+
+
+def test_a_heritage_translation_never_restates_a_figure_the_english_does_not_have():
+    """A heritage translation is another rendering of one fact, not a second copy.
+
+    These narratives are dense with dates (1994, 1979, 1998, 2026) and one weight
+    (~150 g). A translator adding a price the English never states — "no €61" — would
+    invent a claim in a field no English reader audits, in exactly the place the tier
+    explainer's honesty rules are hardest to police. So any digit run in a translated
+    ``title``/``body`` must already appear in the English it renders. Sibling of
+    ``test_a_translation_never_restates_a_figure_the_english_does_not_have``.
+    """
+    doc = _load(BROOM / "heritage.yaml")
+    offenders = []
+    for note in doc["notes"]:
+        for lang in ("lv", "ru"):
+            for field in ("title", "body"):
+                src = str(note.get(field, ""))
+                dst = str((note.get("i18n") or {}).get(lang, {}).get(field, ""))
+                src_nums = set(re.findall(r"\d+", src))
+                for num in set(re.findall(r"\d+", dst)):
+                    if num not in src_nums:
+                        offenders.append(
+                            f"{note.get('silo')}.{lang}.{field}: '{num}' not in the English"
+                        )
+
+    assert not offenders, (
+        "a heritage translation contains a number its English source does not:\n  "
+        + "\n  ".join(offenders)
+    )
