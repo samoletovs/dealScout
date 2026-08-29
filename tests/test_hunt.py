@@ -275,6 +275,90 @@ def test_product_identity_should_put_the_soleplate_in_the_boot_key():
     assert firm_key == firm_elsewhere_key  # same boot at two shops shares one identity
 
 
+def test_product_identity_should_key_a_boot_whose_shop_never_names_the_brand():
+    # A single-brand shop leaves its own brand out of the title: teamsport.lv, Nike's LV
+    # distributor, lists "ZM SUPERFLY 10 ELITE SG-PRO" and never the word "Nike". Before
+    # the catalogue's brand was folded back in, boot_key returned "" for every one of
+    # those listings, so the brand's own store — often the first to discount — had its
+    # prices observed and then silently dropped from the log.
+    brandless = _product(
+        title="ZM Superfly 10 Elite FG",
+        brand="",
+        url="https://teamsport.lv/zm-superfly-10-elite-fg",
+        attrs={"soleplate": "FG"},
+    )
+
+    key, _ = product_identity(brandless, _hunt())
+
+    assert key, "a boot the catalogue can read must be loggable even with no brand in the title"
+    assert key.startswith("nike/")
+
+
+def test_product_identity_should_give_one_boot_the_same_key_named_or_unnamed():
+    # The point is not that a brand appears — it is that the *same* boot pools its prices
+    # across shops that write its name differently. If these two keys differ, "cheapest
+    # seen" silently means "cheapest at the shops that spell out the brand".
+    named = _product(
+        title="Nike Mercurial Superfly 10 Elite FG",
+        brand="Nike",
+        url="https://komanda.lv/superfly-fg",
+        attrs={"soleplate": "FG"},
+    )
+    unnamed = _product(
+        title="ZM Superfly 10 Elite FG",
+        brand="",
+        url="https://teamsport.lv/zm-superfly-10-elite-fg",
+        attrs={"soleplate": "FG"},
+    )
+
+    named_key, _ = product_identity(named, _hunt())
+    unnamed_key, _ = product_identity(unnamed, _hunt())
+
+    assert named_key == unnamed_key
+
+
+def test_the_catalogue_brand_should_fill_a_gap_but_never_overrule_the_shop():
+    # The shop's own brand field wins over the model line. A Copa is an adidas boot, but if
+    # a shop files one under Puma the catalogue reports Puma, because the declared field is
+    # a statement about this listing and the line is only an inference from its name. The
+    # value is the catalogue's canonical brand key ("puma", not "Puma"), which is what makes
+    # it poolable: two shops shouting the same brand in different case must not become two
+    # boots. Requirement matching lowercases both sides, so `require: {brand: [Puma]}` is
+    # unaffected by the canonical form.
+    mislabelled = _product(
+        title="Copa Pure 2 Elite FG",
+        brand="Puma",
+        url="https://example.test/copa",
+        attrs={"soleplate": "FG"},
+    )
+
+    assert resolve_attrs(mislabelled, _hunt())["brand"] == "puma"
+    # ...while a listing that states nothing gets the brand its model line proves.
+    silent = _product(
+        title="Copa Pure 2 Elite FG",
+        brand="",
+        url="https://example.test/copa",
+        attrs={"soleplate": "FG"},
+    )
+    assert resolve_attrs(silent, _hunt())["brand"] == "adidas"
+
+
+def test_a_boot_the_catalogue_cannot_read_should_stay_unkeyed():
+    # The fallback must not become a way to invent an identity. A title the catalogue
+    # declines to classify has no tier, and a keyless observation is the honest outcome —
+    # far better than pooling every unreadable listing under one shared key.
+    unreadable = _product(
+        title="Sondico Strike Astro Turf Trainers",
+        brand="",
+        url="https://example.test/sondico",
+        attrs={},
+    )
+
+    key, _ = product_identity(unreadable, _hunt())
+
+    assert key == ""
+
+
 def test_an_empty_requirement_should_gate_nothing():
     hunt = _hunt(require={})
     verdict = judge_hunt(_product(title="Nike Jr. Mercurial Superfly 10 Academy TF"), hunt)
