@@ -94,11 +94,11 @@ boots:
       i18n:
         lv:
           plain: >-
-            Plāns adījums, ko atbalsta pieķeroša mikrotekstūras āda un putu slānis, noskaņots
+            Plāns adījums, ko atbalsta pieķerošs mikrotekstūras pārklājums un putu slānis, noskaņots
             drošai fiksācijai ātrumā ar tieši tik daudz sajūtas, cik vajag.
         ru:
           plain: >-
-            Тонкое вязаное полотно на цепкой микрофактурной коже с прослойкой пены, настроенное
+            Тонкое вязаное полотно на цепком микрофактурном покрытии с прослойкой пены, настроенное
             на надёжную фиксацию на скорости при достаточном чувстве мяча.
     plate:
       material: "Full-length carbon-fibre composite with forefoot Air Zoom unit"
@@ -129,11 +129,11 @@ boots:
       i18n:
         lv:
           plain: >-
-            Adījuma un pieķerošās ādas virsma, kas noteica šo Superfly laikmetu; cieša, droša,
+            Adījuma un pieķerošā pārklājuma virsma, kas noteica šo Superfly laikmetu; cieša, droša,
             ātrumam pāri visam.
         ru:
           plain: >-
-            Верх из вязаного полотна и цепкой кожи, определивший эту эпоху Superfly; плотный,
+            Верх из вязаного полотна и цепкого покрытия, определивший эту эпоху Superfly; плотный,
             надёжный, прежде всего скоростной.
     plate:
       material: "Full-length carbon-fibre composite with forefoot Air Zoom unit"
@@ -209,11 +209,11 @@ boots:
       i18n:
         lv:
           plain: >-
-            Plāns adījums pāri pieķerošai tekstūrētai ādai un putām — drošs ātrumā ar tīru sajūtu
+            Plāns adījums pāri pieķerošam tekstūrētam pārklājumam un putām — drošs ātrumā ar tīru sajūtu
             sitiena zonā.
         ru:
           plain: >-
-            Тонкое вязаное полотно поверх цепкой фактурной кожи и пены — надёжное на скорости, с
+            Тонкое вязаное полотно поверх цепкого фактурного покрытия и пены — надёжное на скорости, с
             чистым чувством в зоне удара.
     plate:
       material: "Full-length carbon-fibre composite, bladed studs"
@@ -242,9 +242,9 @@ boots:
       source: "https://www.prodirectsport.com/blogs/football/nike-mercurial-vapor-17-first-look"
       i18n:
         lv:
-          plain: "Iepriekšējās Mercurial paaudzes ātruma virsma no adījuma un pieķerošās ādas."
+          plain: "Iepriekšējās Mercurial paaudzes ātruma virsma no adījuma un pieķerošā pārklājuma."
         ru:
-          plain: "Скоростной верх из вязаного полотна и цепкой кожи предыдущего поколения Mercurial."
+          plain: "Скоростной верх из вязаного полотна и цепкого покрытия предыдущего поколения Mercurial."
     plate:
       material: "Full-length carbon-fibre composite"
       source: UNVERIFIED

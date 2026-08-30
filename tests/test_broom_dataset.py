@@ -505,3 +505,39 @@ def test_a_boot_upper_translation_never_restates_a_figure_the_english_does_not_h
         "a boot upper translation contains a number its English source does not:\n  "
         + "\n  ".join(offenders)
     )
+
+
+def test_a_translation_never_claims_a_material_the_english_does_not():
+    """The same rule as the digit guard, for the word that carries the most meaning here.
+
+    Russian «кожа» and Latvian "āda" both mean leather in a footwear context. The English
+    uppers say "skin" — a thin synthetic coating over the knit — and four Mercurial rows
+    came back translated as leather. A Mercurial is defined by *not* being leather; that
+    is the Tiempo's identity, and telling the two apart is the reason this site exists.
+
+    The digit guard cannot see this, because no figure changed. Nothing looks wrong in
+    either language on its own: the Russian reads as fluent, accurate prose about a boot
+    that does not exist. Only the pair reveals it, which is why it needs a test and not a
+    proofread.
+    """
+    import re
+
+    leather_en = re.compile(r"leather", re.I)
+    leather_tr = {"ru": re.compile(r"кож", re.I), "lv": re.compile(r"\bād", re.I)}
+
+    doc = _load(BROOM / "boots.yaml")
+    offenders = []
+    for boot in doc["boots"]:
+        upper = boot.get("upper") or {}
+        english = str(upper.get("plain", ""))
+        if leather_en.search(english):
+            continue  # the English says leather, so a translation may too
+        for lang, pattern in leather_tr.items():
+            rendered = str((upper.get("i18n") or {}).get(lang, {}).get("plain", ""))
+            if pattern.search(rendered):
+                key = f"{boot.get('silo')} {boot.get('generation')} {boot.get('tier')}"
+                offenders.append(f"{key}.{lang}: says leather where the English says skin")
+
+    assert not offenders, (
+        "a translation names a material its English source does not:\n  " + "\n  ".join(offenders)
+    )
