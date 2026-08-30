@@ -541,3 +541,63 @@ def test_a_translation_never_claims_a_material_the_english_does_not():
     assert not offenders, (
         "a translation names a material its English source does not:\n  " + "\n  ".join(offenders)
     )
+
+
+def test_collar_height_is_never_drawn_as_a_tier_property():
+    """High vs low collar is a SKU variant, like closure — the *material* is the tier thing.
+
+    The same shape of error as the closure one, and it hid in the sentence that was supposed
+    to prevent it. `drawable_by_silo` asserted "Collar is a SILO trait, not a tier trait",
+    which is true of the Mercurial — the silo name carries it, Superfly collared and Vapor
+    low — and false in general. Nike sells `Phantom 6 High Elite FG` and `Phantom 6 Low
+    Elite FG`: one silo, one generation, one tier, two collars, observed together on
+    teamsport.lv. `cut` is part of the price-log identity for exactly this reason.
+
+    So a card labelled only "Phantom 6 Elite" cannot be drawn collared or low, and the
+    height must not appear as a tier difference.
+
+    The distinction this guard has to keep is between HEIGHT and MATERIAL. "lower-profile
+    mesh, not premium knit" is a real, sourced tier difference and must survive — the
+    takedown's collar is made of cheaper stuff whatever its height. Only words that assert a
+    height are banned, so the guard cannot be satisfied by deleting the true claim.
+    """
+    height_words = ("high-cut", "low-cut", "high cut", "low cut", "collar height", "ankle height")
+    offenders = []
+    for tier in _load(BROOM / "tiers.yaml")["tiers"]:
+        for item in tier.get("draw", {}).get("show", []):
+            text = " ".join(str(item.get(k, "")) for k in ("feature", "value", "note")).lower()
+            for word in height_words:
+                if word in text:
+                    offenders.append(f"{tier['tier']}/{item.get('feature')}: {word!r}")
+
+    assert not offenders, (
+        "collar HEIGHT is drawn as a tier difference, but Nike sells Phantom 6 High and Low "
+        "at one tier:\n  " + "\n  ".join(offenders)
+    )
+
+
+def test_the_collar_note_should_not_call_the_collar_a_silo_trait():
+    """The claim that was wrong, pinned so it cannot be restored by a well-meaning edit.
+
+    "Collar is a SILO trait" reads as a rule and is a generalisation from one line. Phantom 6
+    High and Low disprove it. The note may still say collar is not a TIER trait — that part
+    is true and load-bearing — but it must not promote the Mercurial's naming convention into
+    a law that the Phantom breaks.
+    """
+    notes = []
+    for tier in _load(BROOM / "tiers.yaml")["tiers"]:
+        for item in tier.get("draw", {}).get("drawable_by_silo", []):
+            if "collar" in str(item.get("feature", "")).lower():
+                notes.append(str(item.get("note", "")))
+
+    assert notes, "expected a collar entry in drawable_by_silo"
+    for note in notes:
+        low = " ".join(note.lower().split())
+        assert "collar is a silo trait" not in low, (
+            "the collar note calls collar a silo trait; Phantom 6 High and Low are one silo, "
+            "one generation and one tier with two collars"
+        )
+        assert "phantom" in low, (
+            "the collar note must name the counter-example it is qualified by, or the "
+            "qualification is a claim without evidence"
+        )
