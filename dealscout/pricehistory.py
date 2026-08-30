@@ -64,7 +64,16 @@ logger = logging.getLogger(__name__)
 # "this boot has been cheaper than this". It is stored as an attribute on the observation
 # all the same, because a discontinued colourway is often *why* a price fell — the drop is
 # real, and the colourway is the explanation the renderer may want to show.
-_IDENTITY_ATTRS: tuple[str, ...] = ("brand", "silo", "generation", "tier", "soleplate", "cut", "closure")
+_IDENTITY_ATTRS: tuple[str, ...] = (
+    "brand",
+    "silo",
+    "generation",
+    "tier",
+    "soleplate",
+    "cut",
+    "closure",
+    "rung",
+)
 
 DEFAULT_HISTORY_PATH = Path("state/prices.jsonl")
 # Where the durable log lives: a directory of monthly shards (``prices/2026-08.jsonl``),
@@ -200,8 +209,17 @@ def boot_key(attrs: dict[str, str]) -> str:
     Collar cut follows that rule exactly, for the same reason. Nike sells "Phantom 6 High"
     and "Phantom 6 Low" as separate boots under one model name, priced €30 apart on the
     same shelf, and the production log had 64 observations pooled across three such keys
-    with spreads up to €82. It is appended rather than inserted so the field order of every
-    existing key is unchanged, and it is last because it is the newest and least certain.
+    with spreads up to €82.
+
+    The takedown rung is the same problem one level up, and larger. `takedown` is the right
+    answer for the judge, whose question is "flagship or not"; it is the wrong answer for
+    an identity, because Pro, League, Club and Academy are different boots. The production
+    log pooled a Superfly 11 Club at €60 with a Superfly 11 Pro at €180 under one key — 371
+    observations across 36 keys, with spreads reaching €223. A flagship has no rung, so it
+    keys as ``unknown`` and nothing about flagship pooling changes.
+
+    Both are appended rather than inserted, so the field order of every earlier key is
+    unchanged and an old key still reads the same for its leading segments.
 
     Closure follows it once more, and for a distinction adidas draws by word rather than by
     silo: "Predator Elite Laceless FG" is a different, pricier boot than "Predator Elite
@@ -217,13 +235,13 @@ def boot_key(attrs: dict[str, str]) -> str:
     key that would merge every unclassified boot into one.
     """
     parts = [str(attrs.get(name) or "").strip().lower() for name in _IDENTITY_ATTRS]
-    brand, silo, generation, tier, soleplate, cut, closure = parts
+    brand, silo, generation, tier, soleplate, cut, closure, rung = parts
     if not brand or not tier or tier == "unknown":
         return ""
     audience = _audience(attrs)
     return (
         f"{brand}/{silo}/{generation}/{tier}/{soleplate or 'unknown'}/{audience}"
-        f"/{cut or 'unknown'}/{closure or 'unknown'}"
+        f"/{cut or 'unknown'}/{closure or 'unknown'}/{rung or 'unknown'}"
     )
 
 

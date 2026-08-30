@@ -76,7 +76,7 @@ STATUSES: tuple[str, ...] = ("current", "superseded", "discontinued", "evergreen
 #: REPLACE the vocabulary's reading rather than merging with it — including the right to
 #: say nothing, which is the whole point of consulting it first.
 MANAGED_ATTRS: frozenset[str] = frozenset(
-    {"tier", "silo", "generation", "generation_status", "generation_year"}
+    {"tier", "silo", "generation", "generation_status", "generation_year", "rung"}
 )
 
 
@@ -92,6 +92,7 @@ class BootTier:
     brand: str = ""
     line: str = ""  # model line / silo, e.g. "mercurial superfly"
     generation: str = ""  # e.g. "10", or a name like "phantom gx"
+    rung: str = ""  # which rung of the takedown ladder: pro | league | club | academy | ...
     status: str = ""  # current | superseded | discontinued | evergreen
     year: int | None = None
     launch_rrp_eur: float | None = None
@@ -116,6 +117,8 @@ class BootTier:
             attrs["silo"] = self.line
         if self.generation:
             attrs["generation"] = self.generation
+        if self.rung:
+            attrs["rung"] = self.rung
         if self.status:
             attrs["generation_status"] = self.status
         if self.year:
@@ -226,6 +229,21 @@ class Catalogue:
         hits = [m.start() for t in tokens if (m := _compiled_token(str(t)).search(text))]
         return min(hits) if hits else -1
 
+    def _first_token(self, text: str, tokens: list[str]) -> str:
+        """*Which* of these tokens appears earliest, or "".
+
+        The companion to ``_first_hit``, which answers where and throws away what. The rung
+        of the takedown ladder — Pro, League, Club, Academy — is decided here and was being
+        discarded one step before anything could use it, exactly as the catalogue's brand
+        was before it was folded back in.
+        """
+        hits = [
+            (m.start(), str(t))
+            for t in tokens
+            if (m := _compiled_token(str(t)).search(text))
+        ]
+        return min(hits)[1].lower() if hits else ""
+
     def _stated_generation(self, normalised: str, patterns: list) -> str:
         """The generation number a title states for this line, or "" if it states none.
 
@@ -314,11 +332,23 @@ class Catalogue:
             note = "junior inferred from RRP — the title carries no junior marker"
 
         band = bands.get(tier)
+        # The rung of the takedown ladder, kept only when the boot IS a takedown. Pro,
+        # League, Club and Academy are different boots at very different prices — a
+        # Superfly 11 Club at €60 beside a Superfly 11 Pro at €180 — and the tier alone
+        # cannot separate them. `takedown` remains the right answer for the judge, whose
+        # question is "flagship or not"; the price log asks a different question and needs
+        # the finer answer. Read from `cleaned`, so the soleplate suffixes are already
+        # stripped and "SG-Pro" cannot be mistaken for the Pro rung — the same trap the
+        # tier reading above is arranged to avoid.
+        rung = ""
+        if tier == TAKEDOWN:
+            rung = self._first_token(cleaned, list(spec.get("takedown") or []))
         return BootTier(
             tier=tier,
             brand=resolved_brand,
             line=line,
             generation=str(generation.get("gen") or "") if generation else "",
+            rung=rung,
             status=str(generation.get("status") or "") if generation else "",
             year=generation.get("year") if generation else None,
             launch_rrp_eur=generation.get("launch_rrp_eur") if generation else None,
