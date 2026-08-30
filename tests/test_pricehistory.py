@@ -518,8 +518,8 @@ def test_boot_key_should_separate_the_collar_from_the_low_cut():
     low = boot_key({**base, "cut": "low"})
 
     assert high != low, "a collared boot and a low-cut boot are not one price history"
-    assert high.endswith("/high")
-    assert low.endswith("/low")
+    assert high.split("/")[6] == "high"
+    assert low.split("/")[6] == "low"
 
 
 def test_an_unstated_cut_should_not_merge_into_a_stated_one():
@@ -577,11 +577,114 @@ def test_the_cut_should_be_read_from_a_real_retailer_title():
 
     assert high and low, "both are readable Nike flagships and must be loggable"
     assert high != low
-    assert high.endswith("/high")
-    assert low.endswith("/low")
+    assert high.split("/")[6] == "high"
+    assert low.split("/")[6] == "low"
 
 
-def test_a_colourway_code_should_still_pool_with_its_own_boot():
+# ----------------------------------------------------------------------- closure
+#
+# adidas sells "Predator Elite Laceless FG" and "Predator Elite FG" as separate boots at
+# separate prices under one tier name. #42 correctly strips `laceless`/`ll` as tier *noise*
+# (a within-tier SKU variant must never be drawn as a tier trait), which means the two share
+# a tier — and without closure in the identity they therefore shared a price history. In the
+# production log that pooled 32 keys across adidas Copa/F50/Predator, the laced low standing
+# in €55 under the true laceless low on Predator Elite FG (€75 pooled vs €130 laceless).
+# Closure joins the key under the soleplate/cut rule: an unstated closure keys as `unknown`
+# (the laced default), never folded into a stated one.
+
+
+def test_boot_key_should_separate_laceless_from_laced():
+    base = {
+        "brand": "adidas",
+        "silo": "predator",
+        "tier": "adult-flagship",
+        "soleplate": "FG",
+    }
+    laceless = boot_key({**base, "closure": "laceless"})
+    laced = boot_key(base)
+
+    assert laceless != laced, "a laceless boot and a laced boot are not one price history"
+    assert laceless.endswith("/laceless")
+    assert laced.endswith("/unknown")
+
+
+def test_an_unstated_closure_should_not_merge_into_laceless():
+    # The laced default is silent — adidas titles say "laceless" but never "laced" — so an
+    # unstated closure must be its own `unknown` bucket, not folded into the stated laceless
+    # one. Missing a pooling is cheap; quoting the laced clearance as the laceless low is the
+    # confident-and-wrong claim this project refuses.
+    base = {
+        "brand": "adidas",
+        "silo": "f50",
+        "tier": "adult-flagship",
+        "soleplate": "FG",
+    }
+    stated = boot_key({**base, "closure": "laceless"})
+    silent = boot_key(base)
+
+    assert stated != silent
+    assert silent.endswith("/unknown")
+
+
+def test_closure_should_be_read_from_real_retailer_titles():
+    # End-to-end through the resolver, on adidas titles as feeds and slugs actually carry
+    # them — the full word "laceless" and adidas' own "ll" shorthand, neither naming the
+    # brand. If the vocabulary stops reading these, the pair collapses to one identity and
+    # the laceless low is pooled away.
+    from dealscout.hunt import product_identity
+    from dealscout.models import Hunt
+
+    hunt = Hunt.from_dict(
+        {
+            "id": "probe",
+            "category": "football_boots",
+            "brands": ["Nike", "adidas"],
+            "brands_only": True,
+            "require": {},
+            "price": {},
+        }
+    )
+
+    def key(title: str) -> str:
+        product = Product(
+            title=title,
+            category="football_boots",
+            price=130.00,
+            reference_price=None,
+            currency="EUR",
+            url="https://www.teamsport.lv/x",
+            source="teamsport.lv",
+            brand="",
+        )
+        return product_identity(product, hunt)[0]
+
+    laced = key("adidas predator elite fg")
+    laceless_word = key("adidas predator elite laceless fg")
+    laceless_ll = key("adidas f50 elite ll fg")
+    laced_f50 = key("adidas f50 elite fg")
+
+    assert laced and laceless_word, "both are readable adidas flagships and must be loggable"
+    assert laced != laceless_word
+    assert laceless_word.endswith("/laceless")
+    assert laced.endswith("/unknown")
+    assert laceless_ll != laced_f50, "adidas' own 'll' shorthand must read as laceless"
+    assert laceless_ll.endswith("/laceless")
+
+
+def test_closure_should_not_be_read_from_an_ordinary_word():
+    # The boundary-safe matcher is what makes the bare "ll" shorthand usable: without it
+    # every "yellow" and "elite ll"-lookalike would name a laceless boot. "ll" must match
+    # only as its own token, never inside another word.
+    from dealscout.spec import extract_attrs
+
+    for title in (
+        "adidas Predator Elite FG Yellow",  # 'll' inside 'yellow'
+        "adidas F50 Elite FG Solar Yellow Full Kit",  # 'll' inside 'full'
+    ):
+        assert "closure" not in extract_attrs(title, "football_boots"), title
+
+
+
     # The counterpart, and the reason this is a narrow change rather than "put every word
     # in the key". teamsport.lv appends colourway codes — "... FG T", "... FG NU3",
     # "... FG LV8" — to one boot. Those ARE the same boot and must keep sharing a history,
