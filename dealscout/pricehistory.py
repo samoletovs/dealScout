@@ -75,6 +75,27 @@ _IDENTITY_ATTRS: tuple[str, ...] = (
     "rung",
 )
 
+# The key's field order, written once so ``boot_key`` and ``parse_boot_key`` cannot drift.
+# ``audience`` sits between soleplate and cut: it is derived rather than read from a title,
+# so it is absent from ``_IDENTITY_ATTRS`` but present here.
+KEY_FIELDS: tuple[str, ...] = (
+    "brand",
+    "silo",
+    "generation",
+    "tier",
+    "soleplate",
+    "audience",
+    "cut",
+    "closure",
+    "rung",
+)
+
+# Fields that key as the literal ``unknown`` when a listing does not state them, rather than
+# as empty. The distinction is deliberate and load-bearing: an unstated soleplate must be
+# its own bucket and never fold into a stated one, whereas an unstated silo or audience is
+# simply absent from the identity.
+_KEY_DEFAULTS_UNKNOWN: frozenset[str] = frozenset({"soleplate", "cut", "closure", "rung"})
+
 DEFAULT_HISTORY_PATH = Path("state/prices.jsonl")
 # Where the durable log lives: a directory of monthly shards (``prices/2026-08.jsonl``),
 # committed to a dedicated ``price-history`` git branch by the workflows rather than kept in
@@ -234,15 +255,33 @@ def boot_key(attrs: dict[str, str]) -> str:
     declined to name a tier. An empty key is the signal to fall back to the URL, never a
     key that would merge every unclassified boot into one.
     """
-    parts = [str(attrs.get(name) or "").strip().lower() for name in _IDENTITY_ATTRS]
-    brand, silo, generation, tier, soleplate, cut, closure, rung = parts
-    if not brand or not tier or tier == "unknown":
+    values = {name: str(attrs.get(name) or "").strip().lower() for name in _IDENTITY_ATTRS}
+    if not values["brand"] or not values["tier"] or values["tier"] == "unknown":
         return ""
-    audience = _audience(attrs)
-    return (
-        f"{brand}/{silo}/{generation}/{tier}/{soleplate or 'unknown'}/{audience}"
-        f"/{cut or 'unknown'}/{closure or 'unknown'}/{rung or 'unknown'}"
+    values["audience"] = _audience(attrs)
+    return "/".join(
+        values.get(field) or ("unknown" if field in _KEY_DEFAULTS_UNKNOWN else "")
+        for field in KEY_FIELDS
     )
+
+
+def parse_boot_key(key: str) -> dict[str, str]:
+    """A boot key read back as named fields.
+
+    Exists so a test can say which field it means. Assertions on ``key.split("/")[7]`` —
+    or worse, ``key.endswith("/laceless")`` — broke three times in two days as fields were
+    appended, and once they broke *silently*: a check for a trailing ``unknown`` kept
+    passing after a new field landed, because the new field was also ``unknown``. A test
+    that passes for the wrong reason is worse than one that fails.
+
+    Reads the same ``KEY_FIELDS`` that ``boot_key`` writes, so the two cannot drift apart.
+    Returns ``{}`` for an empty or malformed key rather than raising, because the caller is
+    usually inspecting a log line whose provenance it does not control.
+    """
+    parts = key.split("/")
+    if not key or len(parts) != len(KEY_FIELDS):
+        return {}
+    return dict(zip(KEY_FIELDS, parts, strict=True))
 
 
 def _audience(attrs: dict[str, str]) -> str:
