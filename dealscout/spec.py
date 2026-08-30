@@ -47,6 +47,30 @@ DEFAULT_VOCAB: dict[str, dict[str, dict[str, list[str]]]] = {
             "TF": ["tf", "turf", "astro turf"],
             "IC": ["ic", "indoor", "futsal", "sala"],
         },
+        # Collar height, which Nike and adidas both sell as separate boots at separate
+        # prices under ONE model name: teamsport.lv lists "PHANTOM 6 HIGH ELITE FG" at
+        # €329.99 beside "PHANTOM 6 LOW ELITE FG" at €299.99. Without this they resolve to
+        # the same identity and their prices pool, so "cheapest seen" for the High can
+        # quote the Low. It is the same distinction the Mercurial line expresses by *name*
+        # — Superfly is the collar, Vapor the low — which the catalogue already keeps
+        # apart as two silos; Phantom says it in a word instead, and nothing was reading it.
+        #
+        # Only the bare words, because the matcher is boundary-safe: "low" cannot match
+        # inside "below" and "high" cannot match inside "highlight".
+        #
+        # Known and accepted limitation: a colourway written "green HIGH VIS yellow" reads
+        # as a collar. Measured on 1,987 real product slugs from the production log, that
+        # is 1 false positive against 231 correct reads, and the one is an Under Armour
+        # boot no Nike/adidas hunt would keep. It also fails in the safe direction — a
+        # spurious cut splits a boot from its own history rather than pooling two boots,
+        # and this file already prefers a missed pooling to a wrong one. Excluding it would
+        # mean teaching a category-neutral matcher about football colourways, which costs
+        # more than the mistake.
+        "cut": {
+            "high": ["high"],
+            "mid": ["mid"],
+            "low": ["low"],
+        },
         "silo": {
             # Nike
             "mercurial superfly": ["mercurial superfly", "superfly"],
