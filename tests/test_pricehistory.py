@@ -518,6 +518,9 @@ def test_boot_key_should_separate_the_collar_from_the_low_cut():
     low = boot_key({**base, "cut": "low"})
 
     assert high != low, "a collared boot and a low-cut boot are not one price history"
+    # Assert the cut *segment*, not the end of the key. I wrote this as `endswith` and it
+    # broke the next time a field was appended — the same brittleness the audience tests
+    # above were already fixed for.
     assert high.split("/")[6] == "high"
     assert low.split("/")[6] == "low"
 
@@ -537,7 +540,7 @@ def test_an_unstated_cut_should_not_merge_into_a_stated_one():
     silent = boot_key(base)
 
     assert stated != silent
-    assert silent.endswith("/unknown")
+    assert silent.split("/")[6] == "unknown"
 
 
 def test_the_cut_should_be_read_from_a_real_retailer_title():
@@ -604,8 +607,8 @@ def test_boot_key_should_separate_laceless_from_laced():
     laced = boot_key(base)
 
     assert laceless != laced, "a laceless boot and a laced boot are not one price history"
-    assert laceless.endswith("/laceless")
-    assert laced.endswith("/unknown")
+    assert laceless.split("/")[7] == "laceless"
+    assert laced.split("/")[7] == "unknown"
 
 
 def test_an_unstated_closure_should_not_merge_into_laceless():
@@ -623,7 +626,9 @@ def test_an_unstated_closure_should_not_merge_into_laceless():
     silent = boot_key(base)
 
     assert stated != silent
-    assert silent.endswith("/unknown")
+    # The closure segment specifically, not the end of the key — a trailing `unknown` would
+    # also be satisfied by the rung field, so `endswith` here passed for the wrong reason.
+    assert silent.split("/")[7] == "unknown"
 
 
 def test_closure_should_be_read_from_real_retailer_titles():
@@ -665,10 +670,10 @@ def test_closure_should_be_read_from_real_retailer_titles():
 
     assert laced and laceless_word, "both are readable adidas flagships and must be loggable"
     assert laced != laceless_word
-    assert laceless_word.endswith("/laceless")
-    assert laced.endswith("/unknown")
+    assert laceless_word.split("/")[7] == "laceless"
+    assert laced.split("/")[7] == "unknown"
     assert laceless_ll != laced_f50, "adidas' own 'll' shorthand must read as laceless"
-    assert laceless_ll.endswith("/laceless")
+    assert laceless_ll.split("/")[7] == "laceless"
 
 
 def test_closure_should_not_be_read_from_an_ordinary_word():
@@ -960,3 +965,89 @@ def test_a_high_visibility_colourway_is_a_known_false_positive():
 
     title = "Under Armour Shadow Elite 4.0 Mach FG Arden Green High Vis Yellow"
     assert extract_attrs(title, "football_boots").get("cut") == "high"
+
+
+# --------------------------------------------------------------------- takedown rung
+#
+# `takedown` is the right answer for the JUDGE: its question is "flagship or not", and the
+# rung does not change the buy signal. It is the wrong answer for an IDENTITY. Pro, League,
+# Club and Academy are different boots with different plates, uppers and prices, and the
+# production log pooled a Superfly 11 Club at EUR 60 with a Superfly 11 Pro at EUR 180 --
+# 371 observations across 36 keys, spreads reaching EUR 223. Quoting the Club as the low for
+# the Pro is the same dishonesty the soleplate rule was written to refuse.
+
+
+def test_boot_key_should_separate_the_rungs_of_the_takedown_ladder():
+    base = {
+        "brand": "nike",
+        "silo": "mercurial superfly",
+        "generation": "11",
+        "tier": "takedown",
+        "soleplate": "FG",
+    }
+    pro = boot_key({**base, "rung": "pro"})
+    club = boot_key({**base, "rung": "club"})
+
+    assert pro != club, "a Pro and a Club are not one price history"
+    assert pro.split("/")[8] == "pro"
+    assert club.split("/")[8] == "club"
+
+
+def test_a_flagship_should_be_unaffected_by_the_rung():
+    # A flagship has no rung, so every flagship keys as `unknown` and flagship pooling is
+    # unchanged. Worth pinning: this field exists to split takedowns, and if it ever split
+    # flagships as well it would be quietly halving the history the Scout depends on.
+    flagship = {
+        "brand": "adidas",
+        "silo": "predator",
+        "generation": "26",
+        "tier": "adult-flagship",
+        "soleplate": "FG",
+    }
+    assert boot_key(flagship).split("/")[8] == "unknown"
+    assert boot_key(flagship) == boot_key({**flagship, "rung": ""})
+
+
+def test_the_rung_should_be_read_from_a_real_retailer_title():
+    # End to end through the resolver, on titles as voetbalshop.nl writes them. These two
+    # shared a key in production and are EUR 47 apart.
+    from dealscout.hunt import product_identity
+    from dealscout.models import Hunt
+
+    hunt = Hunt.from_dict(
+        {"id": "probe", "category": "football_boots", "brands": ["Nike", "adidas"], "require": {}}
+    )
+
+    def key(title: str, price: float) -> str:
+        product = Product(
+            title=title,
+            category="football_boots",
+            price=price,
+            reference_price=None,
+            currency="EUR",
+            url="https://example.test/x",
+            source="voetbalshop.nl",
+            brand="",
+        )
+        return product_identity(product, hunt)[0]
+
+    league = key("adidas Copa Pure IV League Gras Football Boots (FG)", 56.99)
+    pro = key("adidas Copa Pure IV Pro Gras Football Boots (FG)", 104.99)
+
+    assert league and pro
+    assert league != pro
+    assert league.split("/")[8] == "league"
+    assert pro.split("/")[8] == "pro"
+
+
+def test_a_soft_ground_flagship_is_not_read_as_the_pro_rung():
+    # The trap the catalogue is already arranged to avoid, now load-bearing for a second
+    # reason. Nike's soft-ground soleplate is literally named "SG-Pro", so a naive read of
+    # the word "pro" would give every soft-ground flagship a Pro rung -- splitting it from
+    # its own firm-ground-priced history and mislabelling the boot. The rung is read from
+    # the title AFTER soleplate suffixes are stripped, which is why this holds.
+    from dealscout.catalogue import classify
+
+    c = classify("Nike Mercurial Superfly 10 Elite SG-Pro", category="football_boots")
+    assert c.tier == "adult-flagship"
+    assert c.rung == ""
