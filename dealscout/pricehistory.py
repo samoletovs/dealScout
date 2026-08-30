@@ -64,7 +64,7 @@ logger = logging.getLogger(__name__)
 # "this boot has been cheaper than this". It is stored as an attribute on the observation
 # all the same, because a discontinued colourway is often *why* a price fell — the drop is
 # real, and the colourway is the explanation the renderer may want to show.
-_IDENTITY_ATTRS: tuple[str, ...] = ("brand", "silo", "generation", "tier", "soleplate", "cut")
+_IDENTITY_ATTRS: tuple[str, ...] = ("brand", "silo", "generation", "tier", "soleplate", "cut", "closure")
 
 DEFAULT_HISTORY_PATH = Path("state/prices.jsonl")
 # Where the durable log lives: a directory of monthly shards (``prices/2026-08.jsonl``),
@@ -185,11 +185,11 @@ class Observation:
 def boot_key(attrs: dict[str, str]) -> str:
     """A stable identity string for a boot, from already-resolved attributes.
 
-    ``brand/silo/generation/tier/soleplate/audience/cut`` — the fields that make two
-    listings the same boot. Pure and closed over its input: the caller resolves attributes
-    via the catalogue (the same path the judge uses) and passes them here, so this module
-    needs no catalogue dependency and can never read a title by an older rule than the
-    judge.
+    ``brand/silo/generation/tier/soleplate/audience/cut/closure`` — the fields that make
+    two listings the same boot. Pure and closed over its input: the caller resolves
+    attributes via the catalogue (the same path the judge uses) and passes them here, so
+    this module needs no catalogue dependency and can never read a title by an older rule
+    than the judge.
 
     Soleplate carries a hard rule: it is part of the key, and an *unstated* soleplate keys
     as ``unknown`` rather than being folded into any stated one. FG and SG are different
@@ -203,18 +203,27 @@ def boot_key(attrs: dict[str, str]) -> str:
     with spreads up to €82. It is appended rather than inserted so the field order of every
     existing key is unchanged, and it is last because it is the newest and least certain.
 
+    Closure follows it once more, and for a distinction adidas draws by word rather than by
+    silo: "Predator Elite Laceless FG" is a different, pricier boot than "Predator Elite
+    FG", yet #42 correctly strips ``laceless`` as tier *noise* so the two share a tier — and
+    without closure in the key they therefore shared an identity. The production log pooled
+    32 keys across adidas Copa/F50/Predator, the laced low standing in €55 under the true
+    laceless low on Predator Elite FG. An unstated closure keys as ``unknown`` (the laced
+    default), never folded into a stated one; appended last for the same field-stability
+    reason as cut.
+
     Returns ``""`` when the identity is too thin to trust — no brand, or the catalogue
     declined to name a tier. An empty key is the signal to fall back to the URL, never a
     key that would merge every unclassified boot into one.
     """
     parts = [str(attrs.get(name) or "").strip().lower() for name in _IDENTITY_ATTRS]
-    brand, silo, generation, tier, soleplate, cut = parts
+    brand, silo, generation, tier, soleplate, cut, closure = parts
     if not brand or not tier or tier == "unknown":
         return ""
     audience = _audience(attrs)
     return (
         f"{brand}/{silo}/{generation}/{tier}/{soleplate or 'unknown'}/{audience}"
-        f"/{cut or 'unknown'}"
+        f"/{cut or 'unknown'}/{closure or 'unknown'}"
     )
 
 
