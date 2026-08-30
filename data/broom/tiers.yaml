@@ -66,7 +66,16 @@ tiers:
            note: "carbon/Pebax composite; draw as the most rigid plate"}
         - {feature: "profile", value: "lowest, thinnest upper and lining", confidence: directional}
       drawable_by_silo:
-        - {feature: "collar", note: "Nike Superfly Elite = high knit Dynamic Fit collar; Nike Vapor Elite = low-cut, laced. adidas Predator Elite = Primeknit collar. Collar is a SILO trait, not a tier trait — draw per silo, not per tier. Source: thesoccerfactory Superfly-vs-Vapor; adidas.com."}
+        - {feature: "collar", note: "Collar is never a TIER trait. For the Mercurial the silo
+             NAME carries it — Superfly Elite = high knit Dynamic Fit collar, Vapor Elite =
+             low-cut and laced — so there it is drawable per silo. adidas Predator Elite =
+             Primeknit collar. But it is NOT a silo trait in general: Nike sells `Phantom 6
+             High Elite FG` and `Phantom 6 Low Elite FG` as separate SKUs at one silo, one
+             generation and one tier (observed together on teamsport.lv 2026-08-30, and
+             `cut` is part of the price-log identity because of it). So a card labelled only
+             `Phantom 6 Elite` must NOT be drawn either collared or low — draw a collar only
+             where the silo name settles it, or the card names the specific SKU. Source:
+             thesoccerfactory Superfly-vs-Vapor; adidas.com; teamsport.lv listing."}
         - {feature: "closure", note: "Closure is a within-tier SKU VARIANT, never a tier
              property. adidas sells `Predator Elite FG` (laced) and `Predator Elite Laceless
              FG` at the SAME tier, and data/football_boots.yaml encodes exactly this: it
