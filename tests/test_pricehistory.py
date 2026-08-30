@@ -14,6 +14,8 @@ from pathlib import Path
 from dealscout.models import Product
 from dealscout import pricehistory
 from dealscout.pricehistory import (
+    KEY_FIELDS,
+    _IDENTITY_ATTRS,
     DEFAULT_HISTORY_DIR,
     HistoryConfig,
     Observation,
@@ -26,6 +28,7 @@ from dealscout.pricehistory import (
     load_history,
     load_history_dir,
     observe,
+    parse_boot_key,
     prune,
     rewrite,
     rewrite_dir,
@@ -463,8 +466,8 @@ def test_boot_key_should_separate_a_junior_flagship_from_an_adult_one():
     # Assert the audience *segment* rather than the end of the string: the key gains
     # fields over time (cut was appended after this test was written), and a test that
     # pins a field to the end of the key fails on a change that did not touch it.
-    assert adult.split("/")[5] == "adult"
-    assert junior.split("/")[5] == "junior"
+    assert parse_boot_key(adult)["audience"] == "adult"
+    assert parse_boot_key(junior)["audience"] == "junior"
 
 
 # --------------------------------------------------------------------- soleplate
@@ -482,7 +485,7 @@ def test_boot_key_should_separate_the_firm_ground_boot_from_the_soft_ground_one(
     soft = boot_key({**base, "soleplate": "SG"})
 
     assert firm != soft
-    assert firm.split("/")[5] == "adult"  # audience keeps its position
+    assert parse_boot_key(firm)["audience"] == "adult"  # audience keeps its position
     assert "/fg/" in firm
     assert "/sg/" in soft
 
@@ -521,8 +524,8 @@ def test_boot_key_should_separate_the_collar_from_the_low_cut():
     # Assert the cut *segment*, not the end of the key. I wrote this as `endswith` and it
     # broke the next time a field was appended — the same brittleness the audience tests
     # above were already fixed for.
-    assert high.split("/")[6] == "high"
-    assert low.split("/")[6] == "low"
+    assert parse_boot_key(high)["cut"] == "high"
+    assert parse_boot_key(low)["cut"] == "low"
 
 
 def test_an_unstated_cut_should_not_merge_into_a_stated_one():
@@ -540,7 +543,7 @@ def test_an_unstated_cut_should_not_merge_into_a_stated_one():
     silent = boot_key(base)
 
     assert stated != silent
-    assert silent.split("/")[6] == "unknown"
+    assert parse_boot_key(silent)["cut"] == "unknown"
 
 
 def test_the_cut_should_be_read_from_a_real_retailer_title():
@@ -580,8 +583,8 @@ def test_the_cut_should_be_read_from_a_real_retailer_title():
 
     assert high and low, "both are readable Nike flagships and must be loggable"
     assert high != low
-    assert high.split("/")[6] == "high"
-    assert low.split("/")[6] == "low"
+    assert parse_boot_key(high)["cut"] == "high"
+    assert parse_boot_key(low)["cut"] == "low"
 
 
 # ----------------------------------------------------------------------- closure
@@ -607,8 +610,8 @@ def test_boot_key_should_separate_laceless_from_laced():
     laced = boot_key(base)
 
     assert laceless != laced, "a laceless boot and a laced boot are not one price history"
-    assert laceless.split("/")[7] == "laceless"
-    assert laced.split("/")[7] == "unknown"
+    assert parse_boot_key(laceless)["closure"] == "laceless"
+    assert parse_boot_key(laced)["closure"] == "unknown"
 
 
 def test_an_unstated_closure_should_not_merge_into_laceless():
@@ -628,7 +631,7 @@ def test_an_unstated_closure_should_not_merge_into_laceless():
     assert stated != silent
     # The closure segment specifically, not the end of the key — a trailing `unknown` would
     # also be satisfied by the rung field, so `endswith` here passed for the wrong reason.
-    assert silent.split("/")[7] == "unknown"
+    assert parse_boot_key(silent)["closure"] == "unknown"
 
 
 def test_closure_should_be_read_from_real_retailer_titles():
@@ -670,10 +673,10 @@ def test_closure_should_be_read_from_real_retailer_titles():
 
     assert laced and laceless_word, "both are readable adidas flagships and must be loggable"
     assert laced != laceless_word
-    assert laceless_word.split("/")[7] == "laceless"
-    assert laced.split("/")[7] == "unknown"
+    assert parse_boot_key(laceless_word)["closure"] == "laceless"
+    assert parse_boot_key(laced)["closure"] == "unknown"
     assert laceless_ll != laced_f50, "adidas' own 'll' shorthand must read as laceless"
-    assert laceless_ll.split("/")[7] == "laceless"
+    assert parse_boot_key(laceless_ll)["closure"] == "laceless"
 
 
 def test_closure_should_not_be_read_from_an_ordinary_word():
@@ -989,8 +992,8 @@ def test_boot_key_should_separate_the_rungs_of_the_takedown_ladder():
     club = boot_key({**base, "rung": "club"})
 
     assert pro != club, "a Pro and a Club are not one price history"
-    assert pro.split("/")[8] == "pro"
-    assert club.split("/")[8] == "club"
+    assert parse_boot_key(pro)["rung"] == "pro"
+    assert parse_boot_key(club)["rung"] == "club"
 
 
 def test_a_flagship_should_be_unaffected_by_the_rung():
@@ -1004,7 +1007,7 @@ def test_a_flagship_should_be_unaffected_by_the_rung():
         "tier": "adult-flagship",
         "soleplate": "FG",
     }
-    assert boot_key(flagship).split("/")[8] == "unknown"
+    assert parse_boot_key(boot_key(flagship))["rung"] == "unknown"
     assert boot_key(flagship) == boot_key({**flagship, "rung": ""})
 
 
@@ -1036,8 +1039,8 @@ def test_the_rung_should_be_read_from_a_real_retailer_title():
 
     assert league and pro
     assert league != pro
-    assert league.split("/")[8] == "league"
-    assert pro.split("/")[8] == "pro"
+    assert parse_boot_key(league)["rung"] == "league"
+    assert parse_boot_key(pro)["rung"] == "pro"
 
 
 def test_a_soft_ground_flagship_is_not_read_as_the_pro_rung():
@@ -1051,3 +1054,66 @@ def test_a_soft_ground_flagship_is_not_read_as_the_pro_rung():
     c = classify("Nike Mercurial Superfly 10 Elite SG-Pro", category="football_boots")
     assert c.tier == "adult-flagship"
     assert c.rung == ""
+
+
+# ------------------------------------------------------------------ key field naming
+#
+# Three times in two days a test asserted a key field by position and broke when a field
+# was appended -- and once it broke SILENTLY, because `endswith("/unknown")` kept passing
+# after a new field landed that was also `unknown`. The index is not the thing being
+# tested; the field is. `parse_boot_key` exists so a test can say which one it means.
+
+
+def test_parse_boot_key_should_name_every_field_boot_key_writes():
+    key = boot_key(
+        {
+            "brand": "nike",
+            "silo": "phantom",
+            "generation": "6",
+            "tier": "takedown",
+            "soleplate": "FG",
+            "cut": "high",
+            "closure": "laceless",
+            "rung": "academy",
+        }
+    )
+    fields = parse_boot_key(key)
+
+    assert fields == {
+        "brand": "nike",
+        "silo": "phantom",
+        "generation": "6",
+        "tier": "takedown",
+        "soleplate": "fg",
+        "audience": "",
+        "cut": "high",
+        "closure": "laceless",
+        "rung": "academy",
+    }
+    # The parser reads what the writer wrote: rejoining in field order rebuilds the key.
+    assert "/".join(fields[name] for name in KEY_FIELDS) == key
+
+
+def test_the_key_writer_and_the_key_reader_should_agree_on_the_field_list():
+    """The drift this pair exists to prevent, asserted directly.
+
+    ``boot_key`` and ``parse_boot_key`` both read ``KEY_FIELDS``, so they cannot disagree
+    about order — but a field could still be added to the identity and forgotten in
+    ``KEY_FIELDS``, which would silently drop it from every parse. Every identity attribute
+    must appear in the key, plus ``audience``, which is derived rather than read.
+    """
+    assert set(KEY_FIELDS) == set(_IDENTITY_ATTRS) | {"audience"}
+    assert len(KEY_FIELDS) == len(set(KEY_FIELDS)), "a field is listed twice"
+
+    # ...and the key really has that many segments.
+    key = boot_key({"brand": "adidas", "silo": "copa", "tier": "adult-flagship"})
+    assert len(key.split("/")) == len(KEY_FIELDS)
+
+
+def test_parse_boot_key_should_refuse_a_key_it_cannot_trust():
+    # A caller is usually inspecting a log line whose provenance it does not control -- an
+    # unkeyed observation, or one written before a field existed. Returning {} lets it ask
+    # and move on; raising would make reading old history a crash.
+    assert parse_boot_key("") == {}
+    assert parse_boot_key("nike/phantom") == {}
+    assert parse_boot_key("a/b/c/d/e/f/g/h/i/j/k") == {}
