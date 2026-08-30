@@ -71,6 +71,33 @@ DEFAULT_VOCAB: dict[str, dict[str, dict[str, list[str]]]] = {
             "mid": ["mid"],
             "low": ["low"],
         },
+        # Closure, which adidas sells as separate boots at separate prices under ONE tier
+        # name: "adidas predator elite laceless fg" and "adidas predator elite fg" are a
+        # laceless boot and a laced boot, priced apart on the same shelf. Without this they
+        # resolve to the same identity and their prices pool, so "cheapest seen" for the
+        # laceless can quote the laced — and in the production log the laced low is €55
+        # under the true laceless low on Predator Elite FG (€75 pooled vs €130 laceless),
+        # €48 on F50 Elite FG. It is the collar case (#49) again: a within-tier SKU variant
+        # the tier explainer must NOT draw (#42 put `laceless`/`ll` in catalogue `noise`,
+        # stripped before tier is read) but which the price identity still has to see, or it
+        # pools two boots.
+        #
+        # Only the marked value `laceless` is vocab'd; laced is the unstated default and
+        # keys as `unknown`. Adding an explicit `laced` token would split silently-laced
+        # listings ("predator elite fg") from explicitly-laced ones and pool nothing useful,
+        # so it is deliberately absent. `ll` is adidas' own shorthand ("f50 elite ll fg",
+        # "copa pure iv elite ll fg") and is included; the boundary-safe matcher keeps it
+        # from matching inside "elite" or "yellow".
+        #
+        # False positives were measured, not assumed: across 1,987 real product slugs from
+        # the production log the vocabulary reads `laceless` 95 times, every one a genuine
+        # laceless adidas/Puma boot and zero spurious — the bare `ll` shorthand (22 of the
+        # 95) never appears except adjacent to a silo name. It also fails in the safe
+        # direction: a spurious closure splits a boot from its own history rather than
+        # pooling two boots, which this file already prefers.
+        "closure": {
+            "laceless": ["laceless", "ll"],
+        },
         "silo": {
             # Nike
             "mercurial superfly": ["mercurial superfly", "superfly"],
