@@ -460,8 +460,11 @@ def test_boot_key_should_separate_a_junior_flagship_from_an_adult_one():
     junior = boot_key({"brand": "nike", "silo": "mercurial", "tier": "junior-flagship"})
 
     assert adult != junior
-    assert adult.endswith("/adult")
-    assert junior.endswith("/junior")
+    # Assert the audience *segment* rather than the end of the string: the key gains
+    # fields over time (cut was appended after this test was written), and a test that
+    # pins a field to the end of the key fails on a change that did not touch it.
+    assert adult.split("/")[5] == "adult"
+    assert junior.split("/")[5] == "junior"
 
 
 # --------------------------------------------------------------------- soleplate
@@ -479,7 +482,7 @@ def test_boot_key_should_separate_the_firm_ground_boot_from_the_soft_ground_one(
     soft = boot_key({**base, "soleplate": "SG"})
 
     assert firm != soft
-    assert firm.endswith("/adult")  # audience stays the trailing segment
+    assert firm.split("/")[5] == "adult"  # audience keeps its position
     assert "/fg/" in firm
     assert "/sg/" in soft
 
@@ -492,6 +495,119 @@ def test_an_unstated_soleplate_should_not_merge_into_a_stated_one():
     # The silent listing is honestly "unknown", not quietly folded into the FG history.
     assert stated != silent
     assert "/unknown/" in silent
+
+
+# --------------------------------------------------------------------- collar cut
+#
+# Nike sells "Phantom 6 High" and "Phantom 6 Low" as separate boots under one model name,
+# on one shelf, £30 apart — the collar is the difference. The Mercurial line makes the same
+# split by *name* (Superfly has the collar, Vapor does not) and the catalogue keeps those
+# apart as two silos; Phantom says it in a word, and nothing was reading the word. In the
+# production log that pooled 64 observations across three keys, with spreads up to €82.
+
+
+def test_boot_key_should_separate_the_collar_from_the_low_cut():
+    base = {
+        "brand": "nike",
+        "silo": "phantom",
+        "generation": "6",
+        "tier": "adult-flagship",
+        "soleplate": "FG",
+    }
+    high = boot_key({**base, "cut": "high"})
+    low = boot_key({**base, "cut": "low"})
+
+    assert high != low, "a collared boot and a low-cut boot are not one price history"
+    assert high.endswith("/high")
+    assert low.endswith("/low")
+
+
+def test_an_unstated_cut_should_not_merge_into_a_stated_one():
+    # Same rule as the soleplate, for the same reason: a listing that does not say is its
+    # own bucket. Missing a pooling is cheap; quoting the Low's clearance as the High's
+    # price is the confident-and-wrong claim this project refuses.
+    base = {
+        "brand": "nike",
+        "silo": "phantom",
+        "generation": "6",
+        "tier": "adult-flagship",
+        "soleplate": "FG",
+    }
+    stated = boot_key({**base, "cut": "low"})
+    silent = boot_key(base)
+
+    assert stated != silent
+    assert silent.endswith("/unknown")
+
+
+def test_the_cut_should_be_read_from_a_real_retailer_title():
+    # End-to-end through the resolver, on titles copied verbatim from teamsport.lv, whose
+    # listings name neither the brand nor a separator: "PHANTOM 6 HIGH ELITE FG T". If the
+    # vocabulary stops reading the word, these two collapse back into one identity and the
+    # test that catches it must be the one that uses the retailer's own wording.
+    from dealscout.hunt import product_identity
+    from dealscout.models import Hunt
+
+    hunt = Hunt.from_dict(
+        {
+            "id": "probe",
+            "category": "football_boots",
+            "brands": ["Nike", "adidas"],
+            "brands_only": True,
+            "require": {},
+            "price": {},
+        }
+    )
+
+    def key(title: str) -> str:
+        product = Product(
+            title=title,
+            category="football_boots",
+            price=299.99,
+            reference_price=None,
+            currency="EUR",
+            url="https://www.teamsport.lv/x",
+            source="teamsport.lv",
+            brand="",
+        )
+        return product_identity(product, hunt)[0]
+
+    high = key("PHANTOM 6 HIGH ELITE FG T")
+    low = key("PHANTOM 6 LOW ELITE FG")
+
+    assert high and low, "both are readable Nike flagships and must be loggable"
+    assert high != low
+    assert high.endswith("/high")
+    assert low.endswith("/low")
+
+
+def test_a_colourway_code_should_still_pool_with_its_own_boot():
+    # The counterpart, and the reason this is a narrow change rather than "put every word
+    # in the key". teamsport.lv appends colourway codes — "... FG T", "... FG NU3",
+    # "... FG LV8" — to one boot. Those ARE the same boot and must keep sharing a history,
+    # or "cheapest seen" stops meaning anything. Only the collar splits.
+    from dealscout.hunt import product_identity
+    from dealscout.models import Hunt
+
+    hunt = Hunt.from_dict(
+        {"id": "probe", "category": "football_boots", "brands": ["Nike"], "require": {}}
+    )
+
+    def key(title: str) -> str:
+        product = Product(
+            title=title,
+            category="football_boots",
+            price=329.99,
+            reference_price=None,
+            currency="EUR",
+            url="https://www.teamsport.lv/x",
+            source="teamsport.lv",
+            brand="",
+        )
+        return product_identity(product, hunt)[0]
+
+    assert key("VAPOR 17 ELITE FG T") == key("VAPOR 17 ELITE FG")
+    assert key("VAPOR 17 ELITE FG NU3") == key("VAPOR 17 ELITE FG")
 
 
 def test_two_shops_of_one_boot_with_the_same_soleplate_still_share_history(tmp_path):
@@ -715,3 +831,29 @@ def test_load_history_dir_defaults_to_reading_the_legacy_file():
         f"`legacy_path` defaults to {default!r}, not DEFAULT_HISTORY_PATH. The migration "
         "would read somewhere other than where the legacy log actually lives."
     )
+
+
+def test_the_cut_should_not_be_read_from_an_ordinary_word():
+    # The boundary-safe matcher is what makes bare "high"/"low" usable at all: without it
+    # every "below", "highlight" and "yellow" would name a collar.
+    from dealscout.spec import extract_attrs
+
+    for title in (
+        "adidas Predator Elite FG Yellow",  # 'low' inside 'yellow'
+        "Nike Mercurial Vapor 16 Elite Highlight Pack FG",  # 'high' inside 'highlight'
+        "adidas Copa Pure 4 Elite FG Below Zero",  # 'low' inside 'below'
+    ):
+        assert "cut" not in extract_attrs(title, "football_boots"), title
+
+
+def test_a_high_visibility_colourway_is_a_known_false_positive():
+    # Pinned deliberately, as a decision rather than an oversight. "green high vis yellow"
+    # reads as a collar; measured on 1,987 real slugs it is 1 wrong read against 231 right
+    # ones, on an Under Armour boot no Nike/adidas hunt keeps. It fails in the safe
+    # direction — the boot is split from its own history rather than pooled with another —
+    # and excluding it would mean teaching a category-neutral matcher about football
+    # colourways. If this test ever needs to change, that is the trade being revisited.
+    from dealscout.spec import extract_attrs
+
+    title = "Under Armour Shadow Elite 4.0 Mach FG Arden Green High Vis Yellow"
+    assert extract_attrs(title, "football_boots").get("cut") == "high"

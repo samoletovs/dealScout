@@ -64,7 +64,7 @@ logger = logging.getLogger(__name__)
 # "this boot has been cheaper than this". It is stored as an attribute on the observation
 # all the same, because a discontinued colourway is often *why* a price fell — the drop is
 # real, and the colourway is the explanation the renderer may want to show.
-_IDENTITY_ATTRS: tuple[str, ...] = ("brand", "silo", "generation", "tier", "soleplate")
+_IDENTITY_ATTRS: tuple[str, ...] = ("brand", "silo", "generation", "tier", "soleplate", "cut")
 
 DEFAULT_HISTORY_PATH = Path("state/prices.jsonl")
 # Where the durable log lives: a directory of monthly shards (``prices/2026-08.jsonl``),
@@ -110,13 +110,13 @@ class Observation:
 
     ``url`` keys the retailer's listing (tracking-stripped), so a run can link exactly what
     it saw. ``boot_key`` keys the *boot* — a stable identity (brand, silo, generation, tier,
-    soleplate, audience) resolved from the catalogue — so price memory can answer "cheapest
-    this boot has been, at any shop". It is empty when the boot could not be classified (the
-    catalogue's honest ``unknown``), in which case the memory falls back to the URL rather
-    than merging two boots it cannot tell apart. ``size`` pins the specific EU size a
-    per-size price refers to, so a junior EU 37 low is never contaminated by an adult EU 44
-    of the "same" model — just as the soleplate in ``boot_key`` keeps an SG price from ever
-    standing in for an FG one.
+    soleplate, audience, collar cut) resolved from the catalogue — so price memory can answer
+    "cheapest this boot has been, at any shop". It is empty when the boot could not be
+    classified (the catalogue's honest ``unknown``), in which case the memory falls back to
+    the URL rather than merging two boots it cannot tell apart. ``size`` pins the specific EU
+    size a per-size price refers to, so a junior EU 37 low is never contaminated by an adult
+    EU 44 of the "same" model — just as the soleplate in ``boot_key`` keeps an SG price from
+    ever standing in for an FG one.
     """
 
     url: str  # canonical (tracking-stripped), so it keys the same across runs
@@ -185,10 +185,11 @@ class Observation:
 def boot_key(attrs: dict[str, str]) -> str:
     """A stable identity string for a boot, from already-resolved attributes.
 
-    ``brand/silo/generation/tier/soleplate/audience`` — the fields that make two listings
-    the same boot. Pure and closed over its input: the caller resolves attributes via the
-    catalogue (the same path the judge uses) and passes them here, so this module needs no
-    catalogue dependency and can never read a title by an older rule than the judge.
+    ``brand/silo/generation/tier/soleplate/audience/cut`` — the fields that make two
+    listings the same boot. Pure and closed over its input: the caller resolves attributes
+    via the catalogue (the same path the judge uses) and passes them here, so this module
+    needs no catalogue dependency and can never read a title by an older rule than the
+    judge.
 
     Soleplate carries a hard rule: it is part of the key, and an *unstated* soleplate keys
     as ``unknown`` rather than being folded into any stated one. FG and SG are different
@@ -196,16 +197,25 @@ def boot_key(attrs: dict[str, str]) -> str:
     other is the dishonesty this project refuses — the missed pooling of a silent listing
     is the cheaper mistake.
 
+    Collar cut follows that rule exactly, for the same reason. Nike sells "Phantom 6 High"
+    and "Phantom 6 Low" as separate boots under one model name, priced €30 apart on the
+    same shelf, and the production log had 64 observations pooled across three such keys
+    with spreads up to €82. It is appended rather than inserted so the field order of every
+    existing key is unchanged, and it is last because it is the newest and least certain.
+
     Returns ``""`` when the identity is too thin to trust — no brand, or the catalogue
     declined to name a tier. An empty key is the signal to fall back to the URL, never a
     key that would merge every unclassified boot into one.
     """
     parts = [str(attrs.get(name) or "").strip().lower() for name in _IDENTITY_ATTRS]
-    brand, silo, generation, tier, soleplate = parts
+    brand, silo, generation, tier, soleplate, cut = parts
     if not brand or not tier or tier == "unknown":
         return ""
     audience = _audience(attrs)
-    return f"{brand}/{silo}/{generation}/{tier}/{soleplate or 'unknown'}/{audience}"
+    return (
+        f"{brand}/{silo}/{generation}/{tier}/{soleplate or 'unknown'}/{audience}"
+        f"/{cut or 'unknown'}"
+    )
 
 
 def _audience(attrs: dict[str, str]) -> str:
