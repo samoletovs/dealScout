@@ -725,6 +725,46 @@ boots:
     last_verified: "2026-08"
 
   - brand: nike
+    silo: mercurial vapor
+    generation: "17"
+    audience: adult
+    tier: academy               # the tier immediately below Elite for Nike
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Nike takedown RRP band €40–190 (catalogue)."
+    upper:
+      tech: "NikeSkin synthetic mesh (no Atomknit)"
+      plain: >-
+        The tier below Elite: a synthetic mesh upper instead of Atomknit, a NikeLite plate
+        instead of the Elite's FlyLite, heavier and with a more forgiving fit. Same Vapor
+        name, a training-grade boot at roughly a third of the price.
+      source: "https://www.sportsdirect.com/the-zone/football/nike-mercurial-vapor-superfly-which-boot-which-tier"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite: sintētiska sieta virsma Atomknit vietā, NikeLite pamatne Elite
+            FlyLite vietā, smagāka un ar pielaidīgāku pieguļumu. Tas pats Vapor nosaukums,
+            treniņa klases bute par aptuveni trešdaļu cenas.
+        ru:
+          plain: >-
+            Класс ниже Elite: синтетический сетчатый верх вместо Atomknit, подошва NikeLite
+            вместо FlyLite у Elite, тяжелее и с более свободной посадкой. То же имя Vapor,
+            бутса тренировочного класса примерно за треть цены.
+    plate:
+      material: "NikeLite plate (not FlyLite)"
+      source: "https://www.sportsdirect.com/the-zone/football/nike-mercurial-vapor-superfly-which-boot-which-tier"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "mercurial-vapor-17-academy-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
     silo: phantom
     generation: "6"
     audience: adult
@@ -1308,5 +1348,86 @@ boots:
     signature_source: UNVERIFIED
     colourway_packs: []
     retailer_handle: "predator-26-league-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: adidas
+    silo: predator
+    generation: "26"
+    audience: junior
+    tier: junior-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "adidas junior Elite RRP band €110–150 (PR #30, measured on prodirectsport.ie 2026-08-28, n=34)."
+    upper:
+      tech: "HybridTouch (junior construction, fewer grip elements)"
+      plain: >-
+        The junior Predator 26 Elite: a TPU plate rather than the adult StrikeFrame, fewer
+        rubber grip elements, and a roomier last. Same Predator Elite name, a genuinely
+        different boot for growing feet.
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Junioru Predator 26 Elite: TPU pamatne, nevis pieaugušo StrikeFrame, mazāk gumijas
+            satveres elementu un plašāka kurpes forma. Tas pats Predator Elite nosaukums, patiešām
+            cita bute augošām pēdām.
+        ru:
+          plain: >-
+            Юниорский Predator 26 Elite: подошва TPU вместо взрослой StrikeFrame, меньше резиновых
+            элементов сцепления и более просторная колодка. То же имя Predator Elite, но совершенно
+            другая бутса для растущей стопы.
+    plate:
+      material: "TPU plate (not the adult StrikeFrame)"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "jr-predator-26-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: adidas
+    silo: f50
+    generation: "f50"
+    audience: adult
+    tier: league               # the tier immediately below Elite for adidas
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "adidas takedown RRP band €40–180 (catalogue)."
+    upper:
+      tech: "Fiberskin synthetic (no Fibertouch)"
+      plain: >-
+        The tier below Elite: a thicker Fiberskin synthetic instead of the Elite's thin
+        Fibertouch, a Sprintplate 360 instead of the Elite's Sprintframe 360, heavier
+        (~232 g vs ~185 g). Same F50 name, a club boot at a fraction of the price.
+      source: "https://shoesmatrix.com/adidas-f50-league-vs-pro-vs-elite-key-differences-explained/"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite: biezāka Fiberskin sintētika Elite plānās Fibertouch vietā,
+            Sprintplate 360 Elite Sprintframe 360 vietā, smagāka (~232 g pret ~185 g). Tas
+            pats F50 nosaukums, kluba bute par daļu cenas.
+        ru:
+          plain: >-
+            Класс ниже Elite: более плотная синтетика Fiberskin вместо тонкой Fibertouch у Elite,
+            подошва Sprintplate 360 вместо Sprintframe 360, тяжелее (~232 г против ~185 г). То же
+            имя F50, клубная бутса за долю цены.
+    plate:
+      material: "Sprintplate 360 (not Sprintframe 360)"
+      source: "https://shoesmatrix.com/adidas-f50-league-vs-pro-vs-elite-key-differences-explained/"
+    weight_g: UNVERIFIED
+    weight_note: "Reported ~232 g for League; not independently verified."
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "f50-league-{soleplate}-{colour}"
     retailer_handle_source: UNVERIFIED
     last_verified: "2026-08"
