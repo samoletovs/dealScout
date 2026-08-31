@@ -359,12 +359,12 @@ boots:
           plain: "GX laikmeta pieķerošais kontroles adījums; Phantom 6 Tuned Gripknit priekštecis."
         ru:
           plain: "Цепкое контрольное вязаное полотно эпохи GX; предшественник Tuned Gripknit у Phantom 6."
-      source: UNVERIFIED
+      source: "https://cleatshub.com/review/nike-phantom-gx-2-elite"
     plate:
       material: "Cyclone 360 soleplate"
-      source: UNVERIFIED
-    weight_g: UNVERIFIED
-    weight_source: UNVERIFIED
+      source: "https://cleatshub.com/review/nike-phantom-gx-2-elite"
+    weight_g: 196
+    weight_source: "https://cleatshub.com/review/nike-phantom-gx-2-elite"
     soleplates: [FG, SG, AG]
     soleplate_source: UNVERIFIED
     signature_players: [Erling Haaland]
@@ -390,10 +390,10 @@ boots:
           plain: "Pirmā Gripknit paaudze — pieķerošā kontroles virsma, kas nomainīja GT līnijas tekstūru."
         ru:
           plain: "Первое поколение Gripknit — цепкий контрольный верх, сменивший фактуру линии GT."
-      source: UNVERIFIED
+      source: "https://www.footyheadlines.com/2022/10/new-nike-phantom-gx-2023-boots.html"
     plate:
       material: "Cyclone 360 soleplate"
-      source: UNVERIFIED
+      source: "https://www.footyheadlines.com/2022/10/new-nike-phantom-gx-2023-boots.html"
     weight_g: UNVERIFIED
     weight_source: UNVERIFIED
     soleplates: [FG, SG, AG]
@@ -669,8 +669,8 @@ boots:
     plate:
       material: "Hyperstability plate"
       source: "https://www.footyheadlines.com/2025/12/nike-tiempo-maestro-vs.html"
-    weight_g: UNVERIFIED
-    weight_source: UNVERIFIED
+    weight_g: 207
+    weight_source: "https://www.soccerbible.com/performance/football-boots/2021/07/nike-launch-the-tiempo-legend-9/"
     soleplates: [FG, SG, AG]
     soleplate_source: UNVERIFIED
     signature_players: [Sergio Ramos]
@@ -1100,7 +1100,7 @@ boots:
       source: "https://www.worldsoccershop.com/guide/adidas-predator-soccer-cleat-guide"
     plate:
       material: "Controlframe soleplate"
-      source: UNVERIFIED
+      source: "https://www.footyheadlines.com/2024/01/adidas-predator-2024-vivid-horizon-boots.html"
     weight_g: UNVERIFIED
     weight_source: UNVERIFIED
     soleplates: [FG, SG, AG, TF]
@@ -1378,9 +1378,9 @@ boots:
       source: "https://www.footballboots.co.uk/review-copa.html"
     plate:
       material: "Comfort Frame soleplate"
-      source: UNVERIFIED
-    weight_g: UNVERIFIED
-    weight_source: UNVERIFIED
+      source: "https://cleatshub.com/review/adidas-copa-pure-3-elite"
+    weight_g: 220
+    weight_source: "https://cleatshub.com/review/adidas-copa-pure-3-elite"
     soleplates: [FG, SG, AG, TF, IC]
     soleplate_source: UNVERIFIED
     signature_players: []
