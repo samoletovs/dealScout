@@ -601,3 +601,100 @@ def test_the_collar_note_should_not_call_the_collar_a_silo_trait():
             "the collar note must name the counter-example it is qualified by, or the "
             "qualification is a claim without evidence"
         )
+
+
+# --------------------------------------------------- cross-generation source guard
+
+
+def _url_generation_matches_row(url: str, silo: str, generation: str) -> str | None:
+    """Return an error string if *url* names *silo* with a **different** generation.
+
+    Returns ``None`` (no problem) when:
+    - the URL does not mention the silo at all (generic source)
+    - the silo is mentioned but no generation appears after it
+
+    A generation is detected as:
+    - a bare integer following the silo slug  (``vapor-17``, ``predator-26``)
+    - a known named-generation suffix         (``phantom-gx-2``, ``phantom-gt``)
+    """
+    silo_slug = silo.replace(" ", "-")
+    gen_slug = generation.replace(" ", "-")
+    low = url.lower()
+
+    # Does the URL mention this silo at all?
+    idx = low.find(silo_slug)
+    if idx < 0:
+        return None  # generic source, no flag
+
+    after = low[idx + len(silo_slug):]
+
+    # Named-generation suffixes: only test those that belong to THIS silo.
+    # Maps suffix → canonical generation slug (with silo prefix).
+    # E.g. "phantom" silo: suffix "-gt-2" or "-gt2" both → "phantom-gt-2".
+    _NAMED_SUFFIXES: dict[str, list[tuple[str, str]]] = {
+        "phantom": [
+            ("-gx-2", "phantom-gx-2"), ("-gx2", "phantom-gx-2"),
+            ("-gx", "phantom-gx"),
+            ("-gt-2", "phantom-gt-2"), ("-gt2", "phantom-gt-2"),
+            ("-gt", "phantom-gt"),
+        ],  # longest first per family
+    }
+    suffixes = _NAMED_SUFFIXES.get(silo_slug, [])
+    for suffix, canonical in suffixes:
+        if after.startswith(suffix):
+            if gen_slug == canonical:
+                return None  # match
+            canon_name = canonical.replace("-", " ")
+            return f"URL names '{canon_name}' but row generation is '{generation}'"
+
+    # Try numeric: expect a hyphen then digits
+    m = re.match(r"-(\d+)", after)
+    if not m:
+        return None  # no generation in URL → no flag
+
+    url_gen_num = m.group(1)
+
+    # The row's generation might be numeric ("17") or named with a number
+    if generation == url_gen_num:
+        return None  # match
+
+    return f"URL names generation {url_gen_num} but row generation is '{generation}'"
+
+
+def test_a_source_url_must_not_cite_a_different_generation(boots):
+    """Where a source URL names this silo AND a generation, the generation must match.
+
+    Citing a Phantom 6 review for a Phantom GX claim reproduces, in the citations,
+    exactly the confusion the site exists to remove. A reader who checks the source
+    finds the wrong boot.
+
+    A source with no generation in the URL (a tier explainer) does not flag.
+    """
+    problems: list[str] = []
+    for row in boots["boots"]:
+        rid = f"{row['brand']}/{row['silo']}/{row['generation']}/{row.get('audience')}"
+        silo = row["silo"]
+        gen = str(row["generation"])
+
+        # Collect all source URLs on this row
+        sources: list[tuple[str, str]] = []
+        for block in ("upper", "plate"):
+            b = row.get(block) or {}
+            src = b.get("source", "")
+            if isinstance(src, str) and src.startswith("http"):
+                sources.append((f"{block}.source", src))
+        for field in ("weight_source", "soleplate_source", "signature_source",
+                       "street_price_source"):
+            src = row.get(field, "")
+            if isinstance(src, str) and src.startswith("http"):
+                sources.append((field, src))
+
+        for field_name, url in sources:
+            err = _url_generation_matches_row(url, silo, gen)
+            if err:
+                problems.append(f"{rid}: {field_name} — {err} ({url})")
+
+    assert not problems, (
+        "source URLs cite a different generation than the row they belong to:\n  "
+        + "\n  ".join(problems)
+    )
