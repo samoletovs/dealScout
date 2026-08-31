@@ -206,7 +206,7 @@ boots:
       tech: "Vaporposite+"
       plain: >-
         A thin knit over a grippy textured skin and foam — secure at pace with clean strike-zone touch.
-      source: UNVERIFIED
+      source: "https://cleatshub.com/review/nike-mercurial-vapor-16-elite"
       i18n:
         lv:
           plain: >-
@@ -218,9 +218,9 @@ boots:
             чистым чувством в зоне удара.
     plate:
       material: "Full-length carbon-fibre composite, bladed studs"
-      source: UNVERIFIED
-    weight_g: UNVERIFIED
-    weight_source: UNVERIFIED
+      source: "https://cleatshub.com/review/nike-mercurial-vapor-16-elite"
+    weight_g: 190
+    weight_source: "https://cleatshub.com/review/nike-mercurial-vapor-16-elite"
     soleplates: [FG, SG, AG]
     soleplate_source: UNVERIFIED
     signature_players: [Kylian Mbappé]
