@@ -523,7 +523,7 @@ boots:
     weight_note: "~227 g (US 9), per Lockhart Boot Blog / Footy Headlines comparison."
     weight_source: "https://www.footyheadlines.com/2025/12/nike-tiempo-maestro-vs.html"
     soleplates: [FG, AG, SG]
-    soleplate_source: UNVERIFIED
+    soleplate_source: "https://cleatshub.com/review/nike-tiempo-maestro-elite"
     signature_players: [Jamal Musiala]
     signature_source: "https://www.footyheadlines.com/2025/10/new-limited-edition-next-gen-nike-tiempo-maestro-2026-boots.html"
     colourway_packs: []
@@ -630,10 +630,11 @@ boots:
     plate:
       material: "One-piece traditional soleplate"
       source: "https://www.footyheadlines.com/2025/12/nike-tiempo-maestro-vs.html"
-    weight_g: UNVERIFIED
-    weight_source: UNVERIFIED
+    weight_g: 196
+    weight_note: "196 g per shoe, per Cleats Hub review."
+    weight_source: "https://cleatshub.com/review/nike-tiempo-legend-10-elite"
     soleplates: [FG, SG, AG]
-    soleplate_source: UNVERIFIED
+    soleplate_source: "https://cleatshub.com/review/nike-tiempo-legend-10-elite"
     signature_players: []
     signature_source: UNVERIFIED
     colourway_packs: []
@@ -1065,14 +1066,15 @@ boots:
           plain: "Сразу же сменённый контрольный верх Predator с резиновыми рёбрами для вращения."
       source: "https://www.worldsoccershop.com/guide/adidas-predator-soccer-cleat-guide"
     plate:
-      material: "Controlframe / PowerSpine soleplate"
-      source: UNVERIFIED
-    weight_g: UNVERIFIED
-    weight_source: UNVERIFIED
+      material: "Controlframe 2.0 soleplate"
+      source: "https://cleatshub.com/review/adidas-predator-25-elite"
+    weight_g: 213
+    weight_note: "213 g per shoe, per Cleats Hub review. BOOTHYPE reports 215 g (US 9)."
+    weight_source: "https://cleatshub.com/review/adidas-predator-25-elite"
     soleplates: [FG, SG, AG]
-    soleplate_source: UNVERIFIED
+    soleplate_source: "https://cleatshub.com/review/adidas-predator-25-elite"
     signature_players: ["Jude Bellingham"]
-    signature_source: UNVERIFIED
+    signature_source: "https://news.adidas.com/football/adidas-challenges-players-to-choose-a-side--as-lamine-yamal-and-jude-bellingham-front-latest-predato/s/27064bd7-62bd-45b6-b1ed-82474fc69cdc"
     colourway_packs: []
     retailer_handle: "predator-25-elite-{soleplate}-{colour}"
     retailer_handle_source: UNVERIFIED
@@ -1186,7 +1188,7 @@ boots:
       plain: >-
         A thin, lightweight synthetic with targeted support — the F50 is pure speed and
         agility, the relaunch of a name adidas retired for nine years.
-      source: "https://cleatshub.com/review/adidas-predator-26-pro"
+      source: "https://cleatshub.com/review/adidas-f50-elite"
       i18n:
         lv:
           plain: >-
@@ -1198,10 +1200,10 @@ boots:
             возвращение имени, которое adidas откладывал девять лет.
     plate:
       material: "Sprintframe 360 soleplate"
-      source: "https://cleatshub.com/review/adidas-predator-26-pro"
-    weight_g: UNVERIFIED
-    weight_note: "Reported ~185–200 g for the speed Elite; exact Elite figure not separately verified."
-    weight_source: "https://cleatshub.com/review/adidas-predator-26-pro"
+      source: "https://cleatshub.com/review/adidas-f50-elite"
+    weight_g: 179
+    weight_note: "179 g per shoe, per Cleats Hub review."
+    weight_source: "https://cleatshub.com/review/adidas-f50-elite"
     soleplates: [FG, SG, AG]
     soleplate_source: "https://www.voetbalshop.nl/"
     signature_players: ["Lamine Yamal"]
