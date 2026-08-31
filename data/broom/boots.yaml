@@ -404,6 +404,92 @@ boots:
     retailer_handle_source: UNVERIFIED
     last_verified: "2026-08"
 
+  # ---- Phantom GT2 (control, Generative Texture second generation) ----
+  - brand: nike
+    silo: phantom
+    generation: "phantom gt 2"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Catalogue launch RRP €280."
+    upper:
+      tech: "Flyknit + Generative Texture (GT2)"
+      plain: >-
+        The second Generative Texture upper — a full Flyknit base with chevron-shaped raised
+        texturing for grip across the strike zone. Wider-fitting than most Nike boots, with
+        ACC coating for wet/dry consistency. The GT line was the Phantom's texture era before
+        Gripknit replaced it.
+      source: "https://www.upper90football.com/nike-phantom-gt-2-review/"
+      i18n:
+        lv:
+          plain: >-
+            Otrā Generative Texture virsma — pilns Flyknit pamats ar ševrona formas izvirzījumiem
+            satverei pa visu sitiena zonu. Platāks izmērs nekā vairumam Nike butu, ar ACC pārklājumu
+            slapja/sausa laika konsekvencei. GT līnija bija Phantom tekstūras laikmets pirms to
+            nomainīja Gripknit.
+        ru:
+          plain: >-
+            Второй верх Generative Texture — полная основа Flyknit с шевронной выступающей
+            фактурой для сцепления по всей зоне удара. Более широкая посадка, чем у большинства
+            бутс Nike, с покрытием ACC для стабильности в сырую и сухую погоду. Линия GT была эпохой
+            текстур у Phantom до появления Gripknit.
+    plate:
+      material: "HyperQuick outsole"
+      source: "https://www.soccertake.com/boots/boot-review-nike-phantom-gt2-elite"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "phantom-gt2-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  # ---- Phantom GT (control, first Generative Texture) ----
+  - brand: nike
+    silo: phantom
+    generation: "phantom gt"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Catalogue launch RRP €280."
+    upper:
+      tech: "Flyknit + Generative Texture"
+      plain: >-
+        The first Generative Texture (GT) Phantom — a Flyknit upper with data-driven 3D
+        texturing for grip and control. Off-centre lacing for a cleaner strike zone. The boot
+        that introduced the texture approach Gripknit later refined.
+      source: "https://igeeksoccer.com/nike-phantom-gt-elite-review/"
+      i18n:
+        lv:
+          plain: >-
+            Pirmais Generative Texture (GT) Phantom — Flyknit virsma ar datu vadītiem 3D
+            izvirzījumiem satverei un kontrolei. Ekscentrisks šņorējums tīrākai sitiena zonai.
+            Bute, kas ieveda tekstūras pieeju, kuru Gripknit vēlāk pilnveidoja.
+        ru:
+          plain: >-
+            Первый Phantom с Generative Texture (GT) — верх Flyknit с трёхмерной фактурой на
+            основе данных для сцепления и контроля. Смещённая шнуровка ради чистой зоны удара.
+            Бутса, которая ввела текстурный подход, позднее усовершенствованный Gripknit.
+    plate:
+      material: "HyperQuick outsole"
+      source: "https://igeeksoccer.com/nike-phantom-gt-elite-review/"
+    weight_g: 215
+    weight_note: "~215 g (US 9) for the synthetic Elite; leather Tech Craft variant ~190 g."
+    weight_source: "https://www.soccercleats101.com/2020/09/09/nike-phantom-gt-elite-boot-review/"
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "phantom-gt-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
   # ---- Tiempo (heritage control; 'Maestro' replaces 'Legend' from 2026) ----
   - brand: nike
     silo: tiempo
@@ -511,6 +597,88 @@ boots:
     signature_source: UNVERIFIED
     colourway_packs: []
     retailer_handle: "tiempo-legend-9-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: tiempo
+    generation: "8"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Catalogue launch RRP €210 (Legend 8)."
+    upper:
+      tech: "Kangaroo leather + Flyknit tunnel + Quadfit mesh"
+      plain: >-
+        A kangaroo-leather forefoot over a Flyknit inner tunnel and Quadfit mesh lining —
+        blending classic leather touch with modern lockdown. No conventional tongue; the
+        Flyknit wraps the midfoot for a sock-like fit.
+      source: "https://www.unisportstore.com/football-boots/nike-tiempo-legend-8-elite-fg-blackwhite/193613/"
+      i18n:
+        lv:
+          plain: >-
+            Ķengurādas priekšpēda pāri Flyknit iekšējam tunelim un Quadfit sieta oderei —
+            klasiska ādas sajūta apvienota ar modernu fiksāciju. Nav parastās mēles; Flyknit
+            aptver viduspēdu zeķveida pieguļumam.
+        ru:
+          plain: >-
+            Передняя часть из кожи кенгуру поверх внутреннего тоннеля Flyknit и подкладки Quadfit —
+            классическое кожаное касание в сочетании с современной фиксацией. Без обычного язычка;
+            Flyknit оборачивает среднюю часть стопы для носочной посадки.
+    plate:
+      material: "Hyperstability Pebax plate"
+      source: "https://www.unisportstore.com/football-boots/nike-tiempo-legend-8-elite-fg-blackwhite/193613/"
+    weight_g: 218
+    weight_note: "~218 g (US 9), per Unisport."
+    weight_source: "https://www.unisportstore.com/football-boots/nike-tiempo-legend-8-elite-fg-blackwhite/193613/"
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: [Sergio Ramos]
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "tiempo-legend-8-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: tiempo
+    generation: "7"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Catalogue launch RRP €230 (Legend 7)."
+    upper:
+      tech: "Kangaroo leather + Flyknit heel/tongue + Flywire"
+      plain: >-
+        A four-layer kangaroo-leather upper (leather, foam skeleton, nylon insert, Fit-Mesh
+        lining) with a Flyknit heel and tongue for breathability. Flywire cables through the
+        lacing for lockdown. The last Tiempo before the Flyknit tunnel era.
+      source: "https://www.unisportstore.com/football-boots/nike-tiempo-legend-7-elite-fg-whiteblack/177987/"
+      i18n:
+        lv:
+          plain: >-
+            Četru slāņu ķengurādas virsma (āda, putu skelets, neilona ieliktnis, Fit-Mesh
+            odere) ar Flyknit papēdi un mēli elpojamībai. Flywire kabeļi caur šņorējumu
+            fiksācijai. Pēdējais Tiempo pirms Flyknit tuneļa laikmeta.
+        ru:
+          plain: >-
+            Четырёхслойный верх из кожи кенгуру (кожа, пенный каркас, нейлоновая вставка, подкладка
+            Fit-Mesh) с пяткой и язычком Flyknit для воздухопроницаемости. Тросы Flywire через
+            шнуровку для фиксации. Последний Tiempo перед эпохой тоннеля Flyknit.
+    plate:
+      material: "Hyperstability Pebax plate"
+      source: "https://www.unisportstore.com/football-boots/nike-tiempo-legend-7-elite-fg-whiteblack/177987/"
+    weight_g: 208
+    weight_note: "~208 g (US 9), per Unisport — one of the lightest Tiempos."
+    weight_source: "https://www.unisportstore.com/football-boots/nike-tiempo-legend-7-elite-fg-whiteblack/177987/"
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: [Sergio Ramos]
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "tiempo-legend-7-elite-{soleplate}-{colour}"
     retailer_handle_source: UNVERIFIED
     last_verified: "2026-08"
 
@@ -970,6 +1138,96 @@ boots:
     signature_source: UNVERIFIED
     colourway_packs: []
     retailer_handle: "copa-pure-2-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: adidas
+    silo: copa
+    generation: "copa pure"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Catalogue launch RRP €250. The first Copa Pure — cow leather (not kangaroo) with Fusionskin."
+    upper:
+      tech: "Fusionskin"
+      plain: >-
+        The first Copa Pure Elite — a cow-leather forefoot (kangaroo was dropped due to
+        supply/regulatory reasons) fused with a synthetic mesh midfoot. Thinner and lighter
+        than the Copa Sense it replaced, with a Torsion Frame outsole carried over from the
+        old Nemeziz speed boots.
+      source: "https://www.upper90football.com/adidas-copa-pure-review/"
+      i18n:
+        lv:
+          plain: >-
+            Pirmais Copa Pure Elite — govs ādas priekšpēda (ķengurāda tika atmesta piegādes un
+            regulējuma iemeslu dēļ), sakausēta ar sintētisku sieta viduspēdu. Plānāka un vieglāka
+            nekā Copa Sense, ko tā nomainīja, ar Torsion Frame pamatni no vecajām Nemeziz ātruma
+            butēm.
+        ru:
+          plain: >-
+            Первый Copa Pure Elite — передняя часть из телячьей кожи (от кожи кенгуру отказались
+            из-за поставок и регуляторных причин), сплавленная с синтетической сеткой в средней
+            части. Тоньше и легче, чем заменённый Copa Sense, с подошвой Torsion Frame от старых
+            скоростных бутс Nemeziz.
+    plate:
+      material: "Torsion Frame soleplate (from the Nemeziz speed line)"
+      source: "https://www.upper90football.com/adidas-copa-pure-review/"
+    weight_g: UNVERIFIED
+    weight_note: "Reported ~210 g; not separately verified for this generation."
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "copa-pure-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  # ---- Copa Mundial (the eternal one; made in Germany since 1979) ----
+  - brand: adidas
+    silo: copa mundial
+    generation: "copa mundial"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Catalogue launch RRP €140. The evergreen — still in production, same design since 1979."
+    upper:
+      tech: "Kangaroo leather (double-layered)"
+      plain: >-
+        Premium kangaroo leather, double-layered in key areas for durability — the
+        construction has barely changed since 1979. Made in Germany. The Mundial is not a
+        performance flagship by modern standards (heavy, no carbon plate, no grip tech) but
+        it is the most enduring boot design in the sport and still in adidas's catalogue.
+      source: "https://www.footballboots.co.uk/review-mundial.html"
+      i18n:
+        lv:
+          plain: >-
+            Augstākās kvalitātes ķengurāda, divslāņu konstrukcija galvenajās zonās izturībai —
+            uzbūve kopš 1979. gada praktiski nav mainījusies. Ražota Vācijā. Mundial nav moderns
+            veiktspējas flagmanis (smaga, bez oglekļa pamatnes, bez satveres tehnoloģijas), taču tā
+            ir visilgāk pastāvošā butu konstrukcija sportā un joprojām adidas katalogā.
+        ru:
+          plain: >-
+            Кожа кенгуру премиум-класса, двойная в ключевых зонах для прочности — конструкция
+            почти не изменилась с 1979 года. Сделана в Германии. Mundial — не современный
+            перформанс-флагман (тяжёлая, без карбоновой подошвы, без технологий сцепления), но это
+            самый долговечный дизайн бутс в спорте и он по-прежнему в каталоге adidas.
+    plate:
+      material: "Dual-density direct-injected polyurethane, 12 conical studs"
+      source: "https://www.footballboots.co.uk/review-mundial.html"
+    weight_g: 320
+    weight_note: "~320 g (US 8.5); heavy by modern standards."
+    weight_source: "https://www.reviewgem.com/adidas-copa-mundial/"
+    soleplates: [FG]
+    soleplate_note: "FG only; no SG/AG/TF variants."
+    soleplate_source: "https://www.footballboots.co.uk/review-mundial.html"
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "copa-mundial-{colour}"
     retailer_handle_source: UNVERIFIED
     last_verified: "2026-08"
 
