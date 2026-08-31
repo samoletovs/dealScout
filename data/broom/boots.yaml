@@ -90,7 +90,7 @@ boots:
       plain: >-
         A thin knit backed by a grippy micro-textured skin and a foam layer, tuned for a
         secure lock at speed with just enough touch.
-      source: "https://www.unisportstore.com/guides/nike-mercurial-superfly-11-elite-fg-breakout-review/"
+      source: UNVERIFIED
       i18n:
         lv:
           plain: >-
@@ -125,7 +125,7 @@ boots:
       tech: "Vaporposite+"
       plain: >-
         The knit-plus-grip-skin upper that defined this Superfly era; close, secure, speed-first.
-      source: "https://www.unisportstore.com/guides/nike-mercurial-superfly-11-elite-fg-breakout-review/"
+      source: UNVERIFIED
       i18n:
         lv:
           plain: >-
@@ -205,7 +205,7 @@ boots:
       tech: "Vaporposite+"
       plain: >-
         A thin knit over a grippy textured skin and foam — secure at pace with clean strike-zone touch.
-      source: "https://www.prodirectsport.com/blogs/football/nike-mercurial-vapor-17-first-look"
+      source: UNVERIFIED
       i18n:
         lv:
           plain: >-
@@ -239,7 +239,7 @@ boots:
     upper:
       tech: "Vaporposite+"
       plain: "Knit-plus-grip-skin speed upper of the previous Mercurial generation."
-      source: "https://www.prodirectsport.com/blogs/football/nike-mercurial-vapor-17-first-look"
+      source: UNVERIFIED
       i18n:
         lv:
           plain: "Iepriekšējās Mercurial paaudzes ātruma virsma no adījuma un pieķerošā pārklājuma."
@@ -358,10 +358,10 @@ boots:
           plain: "GX laikmeta pieķerošais kontroles adījums; Phantom 6 Tuned Gripknit priekštecis."
         ru:
           plain: "Цепкое контрольное вязаное полотно эпохи GX; предшественник Tuned Gripknit у Phantom 6."
-      source: "https://cleatshub.com/review/nike-phantom-6-elite"
+      source: UNVERIFIED
     plate:
       material: "Cyclone 360 soleplate"
-      source: "https://about.nike.com/en/newsroom/releases/nike-phantom-6-official-images"
+      source: UNVERIFIED
     weight_g: UNVERIFIED
     weight_source: UNVERIFIED
     soleplates: [FG, SG, AG]
@@ -389,10 +389,10 @@ boots:
           plain: "Pirmā Gripknit paaudze — pieķerošā kontroles virsma, kas nomainīja GT līnijas tekstūru."
         ru:
           plain: "Первое поколение Gripknit — цепкий контрольный верх, сменивший фактуру линии GT."
-      source: "https://cleatshub.com/review/nike-phantom-6-elite"
+      source: UNVERIFIED
     plate:
       material: "Cyclone 360 soleplate"
-      source: "https://about.nike.com/en/newsroom/releases/nike-phantom-6-official-images"
+      source: UNVERIFIED
     weight_g: UNVERIFIED
     weight_source: UNVERIFIED
     soleplates: [FG, SG, AG]
