@@ -1,0 +1,209 @@
+# Wikimedia Commons photographs licensed for commercial use.
+#
+# Every entry was verified against the Commons imageinfo API on 2026-08-31.
+# Attribution is a licence condition (CC BY / BY-SA), not a courtesy.
+# CC0 needs no attribution but we credit anyway.
+#
+# bRoom fetches thumbnails at build time via the Commons thumb URL pattern:
+#   https://commons.wikimedia.org/w/thumb.php?f={filename}&w={width}
+# No image binary is committed to this repo.
+#
+# RULE: caption must name the actual boot in the photo, not a current model.
+# A 1994 Predator is not a Predator 26. Mis-captioning a heritage boot as
+# current would reproduce, in pictures, the exact confusion the site exists
+# to remove.
+
+last_verified: "2026-08"
+
+photos:
+  # ========================= PREDATOR HERITAGE =========================
+  # The Pangalau collection: player-issue boots photographed at Orchard
+  # Weston Corp Singapore, April 2024. All CC BY-SA 4.0, 6960×4640.
+
+  - id: predator-og-1994
+    silo: predator
+    commons_file: "Adidas Predator OG 1994 Soft Ground (John Collins) 01.jpg"
+    author: Pangalau
+    licence: CC BY-SA 4.0
+    licence_url: "https://creativecommons.org/licenses/by-sa/4.0"
+    source_url: "https://commons.wikimedia.org/wiki/File:Adidas_Predator_OG_1994_Soft_Ground_(John_Collins)_01.jpg"
+    width: 6960
+    height: 4640
+    caption:
+      en: "Adidas Predator OG (1994) — John Collins' player-issue pair. The boot that started the Predator line."
+      lv: "Adidas Predator OG (1994) — Džona Kolinsa spēlētāja pāris. Bute, ar kuru sākās Predator līnija."
+      ru: "Adidas Predator OG (1994) — игровая пара Джона Коллинза. Бутса, с которой началась линейка Predator."
+
+  - id: predator-accelerator-1998
+    silo: predator
+    commons_file: "Adidas Predator Accelerator \"Electricity\" Firm Ground (Zinedine Zidane) 01.jpg"
+    author: Pangalau
+    licence: CC BY-SA 4.0
+    licence_url: "https://creativecommons.org/licenses/by-sa/4.0"
+    source_url: "https://commons.wikimedia.org/wiki/File:Adidas_Predator_Accelerator_%22Electricity%22_Firm_Ground_(Zinedine_Zidane)_01.jpg"
+    width: 4311
+    height: 6466
+    caption:
+      en: "Adidas Predator Accelerator 'Electricity' (1998) — Zinedine Zidane's pair. Worn at the 1998 World Cup."
+      lv: "Adidas Predator Accelerator 'Electricity' (1998) — Zinedina Zidāna pāris. Spēlēts 1998. gada Pasaules kausā."
+      ru: "Adidas Predator Accelerator 'Electricity' (1998) — пара Зинедина Зидана. В этих бутсах он играл на ЧМ-1998."
+
+  - id: predator-mania-2002
+    silo: predator
+    commons_file: "Adidas Predator Mania Firm Ground (Zinedine Zidane) 01.jpg"
+    author: Pangalau
+    licence: CC BY-SA 4.0
+    licence_url: "https://creativecommons.org/licenses/by-sa/4.0"
+    source_url: "https://commons.wikimedia.org/wiki/File:Adidas_Predator_Mania_Firm_Ground_(Zinedine_Zidane)_01.jpg"
+    width: 6960
+    height: 4640
+    caption:
+      en: "Adidas Predator Mania (2002) — Zinedine Zidane's pair. Perhaps the most iconic Predator ever made."
+      lv: "Adidas Predator Mania (2002) — Zinedina Zidāna pāris. Iespējams, ikoniskākais Predator, kāds jebkad radīts."
+      ru: "Adidas Predator Mania (2002) — пара Зинедина Зидана. Возможно, самая культовая модель Predator в истории."
+
+  - id: predator-pulse-2004
+    silo: predator
+    commons_file: "Adidas Predator Pulse Firm Ground (Zinedine Zidane) 01.jpg"
+    author: Pangalau
+    licence: CC BY-SA 4.0
+    licence_url: "https://creativecommons.org/licenses/by-sa/4.0"
+    source_url: "https://commons.wikimedia.org/wiki/File:Adidas_Predator_Pulse_Firm_Ground_(Zinedine_Zidane)_01.jpg"
+    width: 6960
+    height: 4640
+    caption:
+      en: "Adidas Predator Pulse (2004) — Zinedine Zidane's pair."
+      lv: "Adidas Predator Pulse (2004) — Zinedina Zidāna pāris."
+      ru: "Adidas Predator Pulse (2004) — пара Зинедина Зидана."
+
+  - id: predator-absolute-2006
+    silo: predator
+    commons_file: "Adidas Predator Absolute Soft Ground (Kaká) 01.jpg"
+    author: Pangalau
+    licence: CC BY-SA 4.0
+    licence_url: "https://creativecommons.org/licenses/by-sa/4.0"
+    source_url: "https://commons.wikimedia.org/wiki/File:Adidas_Predator_Absolute_Soft_Ground_(Kak%C3%A1)_01.jpg"
+    width: 4385
+    height: 6577
+    caption:
+      en: "Adidas Predator Absolute (2006) — Kaká's player-issue pair."
+      lv: "Adidas Predator Absolute (2006) — Kaká spēlētāja pāris."
+      ru: "Adidas Predator Absolute (2006) — игровая пара Кака."
+
+  - id: predator-adipower-2012
+    silo: predator
+    commons_file: "Adidas Predator AdiPower Firm Ground (Robin van Persie) 01.jpg"
+    author: Pangalau
+    licence: CC BY-SA 4.0
+    licence_url: "https://creativecommons.org/licenses/by-sa/4.0"
+    source_url: "https://commons.wikimedia.org/wiki/File:Adidas_Predator_AdiPower_Firm_Ground_(Robin_van_Persie)_01.jpg"
+    width: 5588
+    height: 4470
+    caption:
+      en: "Adidas Predator AdiPower (2012) — Robin van Persie's pair."
+      lv: "Adidas Predator AdiPower (2012) — Robina van Persī pāris."
+      ru: "Adidas Predator AdiPower (2012) — пара Робина ван Перси."
+
+  - id: predator-lz-2012
+    silo: predator
+    commons_file: "Adidas Predator LZ (Edin Džeko) 01.jpg"
+    author: Pangalau
+    licence: CC BY-SA 4.0
+    licence_url: "https://creativecommons.org/licenses/by-sa/4.0"
+    source_url: "https://commons.wikimedia.org/wiki/File:Adidas_Predator_LZ_(Edin_D%C5%BEeko)_01.jpg"
+    width: 6424
+    height: 4283
+    caption:
+      en: "Adidas Predator Lethal Zones (2012) — Edin Džeko's pair."
+      lv: "Adidas Predator Lethal Zones (2012) — Edina Džeko pāris."
+      ru: "Adidas Predator Lethal Zones (2012) — пара Эдина Джеко."
+
+  - id: predator-touch-1996
+    silo: predator
+    commons_file: "Adidas Predator Touch 96 (David Beckham) 01.jpg"
+    author: Pangalau
+    licence: CC BY-SA 4.0
+    licence_url: "https://creativecommons.org/licenses/by-sa/4.0"
+    source_url: "https://commons.wikimedia.org/wiki/File:Adidas_Predator_Touch_96_(David_Beckham)_01.jpg"
+    width: 6960
+    height: 4640
+    caption:
+      en: "Adidas Predator Touch (1996) — David Beckham's pair."
+      lv: "Adidas Predator Touch (1996) — Deivida Bekhema pāris."
+      ru: "Adidas Predator Touch (1996) — пара Дэвида Бекхэма."
+
+  - id: predator-18-2018
+    silo: predator
+    commons_file: "Adidas Predator 18 Firm Ground (Paul Pogba) 01.jpg"
+    author: Pangalau
+    licence: CC BY-SA 4.0
+    licence_url: "https://creativecommons.org/licenses/by-sa/4.0"
+    source_url: "https://commons.wikimedia.org/wiki/File:Adidas_Predator_18_Firm_Ground_(Paul_Pogba)_01.jpg"
+    width: 6960
+    height: 4640
+    caption:
+      en: "Adidas Predator 18 (2018) — Paul Pogba's pair."
+      lv: "Adidas Predator 18 (2018) — Pola Pogbā pāris."
+      ru: "Adidas Predator 18 (2018) — пара Поля Погба."
+
+  # ========================= COPA =========================
+
+  - id: copa-mundial
+    silo: copa
+    commons_file: "Adidas Copa Mundial.jpg"
+    author: Niek Beck
+    licence: CC BY 2.0
+    licence_url: "https://creativecommons.org/licenses/by/2.0"
+    source_url: "https://commons.wikimedia.org/wiki/File:Adidas_Copa_Mundial.jpg"
+    width: 800
+    height: 533
+    caption:
+      en: "Adidas Copa Mundial — the longest-running football boot in production, first made in 1979."
+      lv: "Adidas Copa Mundial — visilgāk ražotā futbola bute, pirmo reizi izgatavota 1979. gadā."
+      ru: "Adidas Copa Mundial — самая долго выпускаемая футбольная бутса, впервые изготовленная в 1979 году."
+
+  # ========================= TIEMPO =========================
+
+  - id: tiempo-legend-iv-2011
+    silo: tiempo
+    commons_file: "Nike Tiempo Legend IV Elite.jpg"
+    author: Erin Corey
+    licence: CC BY-SA 3.0
+    licence_url: "https://creativecommons.org/licenses/by-sa/3.0"
+    source_url: "https://commons.wikimedia.org/wiki/File:Nike_Tiempo_Legend_IV_Elite.jpg"
+    width: 2592
+    height: 1936
+    caption:
+      en: "Nike Tiempo Legend IV Elite (2011) — White/Gold/Volt colourway."
+      lv: "Nike Tiempo Legend IV Elite (2011) — baltā/zelta/Volt krāsu versija."
+      ru: "Nike Tiempo Legend IV Elite (2011) — расцветка White/Gold/Volt."
+
+  # ========================= MERCURIAL =========================
+
+  - id: mercurial-superfly-i-2009
+    silo: mercurial superfly
+    commons_file: "Nike Mercurial Vapor Superfly I Black and Orange.jpg"
+    author: CLF
+    licence: CC BY 2.0
+    licence_url: "https://creativecommons.org/licenses/by/2.0"
+    source_url: "https://commons.wikimedia.org/wiki/File:Nike_Mercurial_Vapor_Superfly_I_Black_and_Orange.jpg"
+    width: 2816
+    height: 2112
+    caption:
+      en: "Nike Mercurial Vapor Superfly I (2009) — customised Black/Orange pair. The first Superfly, with a carbon-fibre plate and Flywire cables."
+      lv: "Nike Mercurial Vapor Superfly I (2009) — pielāgots melns/oranžs pāris. Pirmais Superfly ar oglekļa šķiedras pamatni un Flywire kabeļiem."
+      ru: "Nike Mercurial Vapor Superfly I (2009) — кастомизированная чёрно-оранжевая пара. Первый Superfly с карбоновой подошвой и тросами Flywire."
+
+  - id: mercurial-astroturf
+    silo: mercurial vapor
+    commons_file: "Nike Mercurial astro turf shoes.jpg"
+    author: Goodreg3
+    licence: CC0
+    licence_url: "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+    source_url: "https://commons.wikimedia.org/wiki/File:Nike_Mercurial_astro_turf_shoes.jpg"
+    width: 623
+    height: 713
+    caption:
+      en: "Nike Mercurial astro-turf boots — a lower-tier turf version of the Mercurial line."
+      lv: "Nike Mercurial mākslīgā zālāja butes — zemāka līmeņa Mercurial līnijas versija mākslīgajam segumam."
+      ru: "Бутсы Nike Mercurial для искусственного покрытия — версия линейки Mercurial для синтетических полей."
