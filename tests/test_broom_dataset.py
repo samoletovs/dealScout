@@ -642,6 +642,11 @@ def _url_generation_matches_row(url: str, silo: str, generation: str) -> str | N
     suffixes = _NAMED_SUFFIXES.get(silo_slug, [])
     for suffix, canonical in suffixes:
         if after.startswith(suffix):
+            # Ensure the suffix is a complete token — not a prefix of a year like
+            # "-gx-2023" matching the "-gx-2" suffix meant for "phantom gx 2".
+            rest = after[len(suffix):]
+            if rest and rest[0].isdigit():
+                continue  # e.g. "-gx-2023" is a year, not "-gx-2"
             if gen_slug == canonical:
                 return None  # match
             canon_name = canonical.replace("-", " ")
@@ -654,9 +659,12 @@ def _url_generation_matches_row(url: str, silo: str, generation: str) -> str | N
 
     url_gen_num = m.group(1)
 
-    # The row's generation might be numeric ("17") or named with a number
+    # The row's generation might be numeric ("17") or named with a number.
+    # Also accept a four-digit year matching the two-digit gen (e.g. "2024" for "24").
     if generation == url_gen_num:
         return None  # match
+    if len(url_gen_num) == 4 and generation == url_gen_num[2:]:
+        return None  # "2024" in URL matches gen "24"
 
     return f"URL names generation {url_gen_num} but row generation is '{generation}'"
 
