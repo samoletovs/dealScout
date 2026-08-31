@@ -90,7 +90,7 @@ boots:
       plain: >-
         A thin knit backed by a grippy micro-textured skin and a foam layer, tuned for a
         secure lock at speed with just enough touch.
-      source: UNVERIFIED
+      source: "https://cleatshub.com/review/nike-zoom-mercurial-superfly-10-elite"
       i18n:
         lv:
           plain: >-
@@ -103,8 +103,9 @@ boots:
     plate:
       material: "Full-length carbon-fibre composite with forefoot Air Zoom unit"
       source: "https://www.footyheadlines.com/2026/01/blog-post_27.html"
-    weight_g: UNVERIFIED
-    weight_source: UNVERIFIED
+    weight_g: 190
+    weight_note: "190 g per shoe, per Cleats Hub review."
+    weight_source: "https://cleatshub.com/review/nike-zoom-mercurial-superfly-10-elite"
     soleplates: [FG, SG, AG]
     soleplate_source: "https://www.prodirectsport.com/collections/football-nike-mercurial-superfly-boots"
     signature_players: [Kylian Mbappé, Vinícius Júnior]
