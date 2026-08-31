@@ -1463,52 +1463,6 @@ boots:
     retailer_handle_source: UNVERIFIED
     last_verified: "2026-08"
 
-  # ---- Copa Mundial (the eternal one; made in Germany since 1979) ----
-  - brand: adidas
-    silo: copa mundial
-    generation: "copa mundial"
-    audience: adult
-    tier: adult-flagship
-    street_price_eur: UNVERIFIED
-    street_price_source: UNVERIFIED
-    rrp_note: "Catalogue launch RRP €140. The evergreen — still in production, same design since 1979."
-    upper:
-      tech: "Kangaroo leather (double-layered)"
-      plain: >-
-        Premium kangaroo leather, double-layered in key areas for durability — the
-        construction has barely changed since 1979. Made in Germany. The Mundial is not a
-        performance flagship by modern standards (heavy, no carbon plate, no grip tech) but
-        it is the most enduring boot design in the sport and still in adidas's catalogue.
-      source: "https://www.footballboots.co.uk/review-mundial.html"
-      i18n:
-        lv:
-          plain: >-
-            Augstākās kvalitātes ķengurāda, divslāņu konstrukcija galvenajās zonās izturībai —
-            uzbūve kopš 1979. gada praktiski nav mainījusies. Ražota Vācijā. Mundial nav moderns
-            veiktspējas flagmanis (smaga, bez oglekļa pamatnes, bez satveres tehnoloģijas), taču tā
-            ir visilgāk pastāvošā butu konstrukcija sportā un joprojām adidas katalogā.
-        ru:
-          plain: >-
-            Кожа кенгуру премиум-класса, двойная в ключевых зонах для прочности — конструкция
-            почти не изменилась с 1979 года. Сделана в Германии. Mundial — не современный
-            перформанс-флагман (тяжёлая, без карбоновой подошвы, без технологий сцепления), но это
-            самый долговечный дизайн бутс в спорте и он по-прежнему в каталоге adidas.
-    plate:
-      material: "Dual-density direct-injected polyurethane, 12 conical studs"
-      source: "https://www.footballboots.co.uk/review-mundial.html"
-    weight_g: 320
-    weight_note: "~320 g (US 8.5); heavy by modern standards."
-    weight_source: "https://www.reviewgem.com/adidas-copa-mundial/"
-    soleplates: [FG]
-    soleplate_note: "FG only; no SG/AG/TF variants."
-    soleplate_source: "https://www.footballboots.co.uk/review-mundial.html"
-    signature_players: []
-    signature_source: UNVERIFIED
-    colourway_packs: []
-    retailer_handle: "copa-mundial-{colour}"
-    retailer_handle_source: UNVERIFIED
-    last_verified: "2026-08"
-
   # ---- adidas teaching trios (current silos): junior Elite + the tier below ----
   - brand: adidas
     silo: copa
@@ -2300,5 +2254,42 @@ boots:
     signature_source: UNVERIFIED
     colourway_packs: []
     retailer_handle: "copa-pure-ii-league-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: adidas
+    silo: predator
+    generation: "predator edge"
+    audience: adult
+    tier: league
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "adidas takedown RRP band €40–180 (catalogue)."
+    upper:
+      tech: "Synthetic / textile (no Zone Skin)"
+      plain: >-
+        The tier below Elite in the Predator Edge generation: synthetic upper without
+        the Zone Skin grip, basic plate. Same Edge name, a value boot.
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite Predator Edge paaudzē: sintētiska virsma bez Zone Skin satveres,
+            vienkārša pamatne. Tas pats Edge nosaukums, budžeta bute.
+        ru:
+          plain: >-
+            Класс ниже Elite в поколении Predator Edge: синтетический верх без Zone Skin,
+            простая подошва. То же имя Edge, бюджетная бутса.
+    plate:
+      material: "Basic TPU soleplate"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "predator-edge-league-{soleplate}-{colour}"
     retailer_handle_source: UNVERIFIED
     last_verified: "2026-08"
