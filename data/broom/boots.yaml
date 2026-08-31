@@ -404,6 +404,92 @@ boots:
     retailer_handle_source: UNVERIFIED
     last_verified: "2026-08"
 
+  # ---- Phantom GT2 (control, Generative Texture second generation) ----
+  - brand: nike
+    silo: phantom
+    generation: "phantom gt 2"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Catalogue launch RRP €280."
+    upper:
+      tech: "Flyknit + Generative Texture (GT2)"
+      plain: >-
+        The second Generative Texture upper — a full Flyknit base with chevron-shaped raised
+        texturing for grip across the strike zone. Wider-fitting than most Nike boots, with
+        ACC coating for wet/dry consistency. The GT line was the Phantom's texture era before
+        Gripknit replaced it.
+      source: "https://www.upper90football.com/nike-phantom-gt-2-review/"
+      i18n:
+        lv:
+          plain: >-
+            Otrā Generative Texture virsma — pilns Flyknit pamats ar ševrona formas izvirzījumiem
+            satverei pa visu sitiena zonu. Platāks izmērs nekā vairumam Nike butu, ar ACC pārklājumu
+            slapja/sausa laika konsekvencei. GT līnija bija Phantom tekstūras laikmets pirms to
+            nomainīja Gripknit.
+        ru:
+          plain: >-
+            Второй верх Generative Texture — полная основа Flyknit с шевронной выступающей
+            фактурой для сцепления по всей зоне удара. Более широкая посадка, чем у большинства
+            бутс Nike, с покрытием ACC для стабильности в сырую и сухую погоду. Линия GT была эпохой
+            текстур у Phantom до появления Gripknit.
+    plate:
+      material: "HyperQuick outsole"
+      source: "https://www.soccertake.com/boots/boot-review-nike-phantom-gt2-elite"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "phantom-gt2-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  # ---- Phantom GT (control, first Generative Texture) ----
+  - brand: nike
+    silo: phantom
+    generation: "phantom gt"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Catalogue launch RRP €280."
+    upper:
+      tech: "Flyknit + Generative Texture"
+      plain: >-
+        The first Generative Texture (GT) Phantom — a Flyknit upper with data-driven 3D
+        texturing for grip and control. Off-centre lacing for a cleaner strike zone. The boot
+        that introduced the texture approach Gripknit later refined.
+      source: "https://igeeksoccer.com/nike-phantom-gt-elite-review/"
+      i18n:
+        lv:
+          plain: >-
+            Pirmais Generative Texture (GT) Phantom — Flyknit virsma ar datu vadītiem 3D
+            izvirzījumiem satverei un kontrolei. Ekscentrisks šņorējums tīrākai sitiena zonai.
+            Bute, kas ieveda tekstūras pieeju, kuru Gripknit vēlāk pilnveidoja.
+        ru:
+          plain: >-
+            Первый Phantom с Generative Texture (GT) — верх Flyknit с трёхмерной фактурой на
+            основе данных для сцепления и контроля. Смещённая шнуровка ради чистой зоны удара.
+            Бутса, которая ввела текстурный подход, позднее усовершенствованный Gripknit.
+    plate:
+      material: "HyperQuick outsole"
+      source: "https://igeeksoccer.com/nike-phantom-gt-elite-review/"
+    weight_g: 215
+    weight_note: "~215 g (US 9) for the synthetic Elite; leather Tech Craft variant ~190 g."
+    weight_source: "https://www.soccercleats101.com/2020/09/09/nike-phantom-gt-elite-boot-review/"
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "phantom-gt-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
   # ---- Tiempo (heritage control; 'Maestro' replaces 'Legend' from 2026) ----
   - brand: nike
     silo: tiempo
@@ -443,6 +529,84 @@ boots:
     colourway_packs: []
     retailer_handle: "tiempo-maestro-elite-{soleplate}-{colour}"
     retailer_handle_source: "https://www.footyheadlines.com/2025/10/new-limited-edition-next-gen-nike-tiempo-maestro-2026-boots.html"
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: tiempo
+    generation: "maestro"
+    audience: junior
+    tier: junior-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Nike junior Elite RRP band €150–175 (PR #30, measured on prodirectsport.ie 2026-08-28, n=11)."
+    upper:
+      tech: "Techleather (junior construction)"
+      plain: >-
+        The junior Tiempo Maestro Elite: same calfskin-based Techleather look, simplified
+        plate, roomier fit for growing feet. Priced in the €150–175 band rather than the
+        adult €275.
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Junioru Tiempo Maestro Elite: tā pati Techleather virsma uz teļādas bāzes,
+            vienkāršāka pamatne, plašāks pieguļums augošām pēdām. Cena €150–175 joslā,
+            nevis pieaugušo €275.
+        ru:
+          plain: >-
+            Юниорский Tiempo Maestro Elite: тот же верх Techleather на основе телячьей кожи,
+            упрощённая подошва, более просторная колодка. Цена в диапазоне €150–175, а не
+            взрослые €275.
+    plate:
+      material: "Simplified composite plate"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "jr-tiempo-maestro-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: tiempo
+    generation: "maestro"
+    audience: adult
+    tier: academy
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Nike takedown RRP band €40–190 (catalogue)."
+    upper:
+      tech: "Synthetic leather (no Techleather)"
+      plain: >-
+        The tier below Elite: a synthetic upper mimicking the Techleather look without
+        real leather, a basic TPU plate, heavier. Same Maestro branding at a fraction
+        of the price.
+      source: "https://www.sportsdirect.com/the-zone/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite: sintētiska virsma, kas atdarina Techleather izskatu bez īstas
+            ādas, vienkārša TPU pamatne, smagāka. Tas pats Maestro zīmols par daļu cenas.
+        ru:
+          plain: >-
+            Класс ниже Elite: синтетический верх, имитирующий Techleather без натуральной
+            кожи, простая подошва TPU, тяжелее. Тот же бренд Maestro за долю цены.
+    plate:
+      material: "Basic TPU soleplate"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "tiempo-maestro-academy-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
     last_verified: "2026-08"
 
   - brand: nike
@@ -514,6 +678,88 @@ boots:
     retailer_handle_source: UNVERIFIED
     last_verified: "2026-08"
 
+  - brand: nike
+    silo: tiempo
+    generation: "8"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Catalogue launch RRP €210 (Legend 8)."
+    upper:
+      tech: "Kangaroo leather + Flyknit tunnel + Quadfit mesh"
+      plain: >-
+        A kangaroo-leather forefoot over a Flyknit inner tunnel and Quadfit mesh lining —
+        blending classic leather touch with modern lockdown. No conventional tongue; the
+        Flyknit wraps the midfoot for a sock-like fit.
+      source: "https://www.unisportstore.com/football-boots/nike-tiempo-legend-8-elite-fg-blackwhite/193613/"
+      i18n:
+        lv:
+          plain: >-
+            Ķengurādas priekšpēda pāri Flyknit iekšējam tunelim un Quadfit sieta oderei —
+            klasiska ādas sajūta apvienota ar modernu fiksāciju. Nav parastās mēles; Flyknit
+            aptver viduspēdu zeķveida pieguļumam.
+        ru:
+          plain: >-
+            Передняя часть из кожи кенгуру поверх внутреннего тоннеля Flyknit и подкладки Quadfit —
+            классическое кожаное касание в сочетании с современной фиксацией. Без обычного язычка;
+            Flyknit оборачивает среднюю часть стопы для носочной посадки.
+    plate:
+      material: "Hyperstability Pebax plate"
+      source: "https://www.unisportstore.com/football-boots/nike-tiempo-legend-8-elite-fg-blackwhite/193613/"
+    weight_g: 218
+    weight_note: "~218 g (US 9), per Unisport."
+    weight_source: "https://www.unisportstore.com/football-boots/nike-tiempo-legend-8-elite-fg-blackwhite/193613/"
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: [Sergio Ramos]
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "tiempo-legend-8-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: tiempo
+    generation: "7"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Catalogue launch RRP €230 (Legend 7)."
+    upper:
+      tech: "Kangaroo leather + Flyknit heel/tongue + Flywire"
+      plain: >-
+        A four-layer kangaroo-leather upper (leather, foam skeleton, nylon insert, Fit-Mesh
+        lining) with a Flyknit heel and tongue for breathability. Flywire cables through the
+        lacing for lockdown. The last Tiempo before the Flyknit tunnel era.
+      source: "https://www.unisportstore.com/football-boots/nike-tiempo-legend-7-elite-fg-whiteblack/177987/"
+      i18n:
+        lv:
+          plain: >-
+            Četru slāņu ķengurādas virsma (āda, putu skelets, neilona ieliktnis, Fit-Mesh
+            odere) ar Flyknit papēdi un mēli elpojamībai. Flywire kabeļi caur šņorējumu
+            fiksācijai. Pēdējais Tiempo pirms Flyknit tuneļa laikmeta.
+        ru:
+          plain: >-
+            Четырёхслойный верх из кожи кенгуру (кожа, пенный каркас, нейлоновая вставка, подкладка
+            Fit-Mesh) с пяткой и язычком Flyknit для воздухопроницаемости. Тросы Flywire через
+            шнуровку для фиксации. Последний Tiempo перед эпохой тоннеля Flyknit.
+    plate:
+      material: "Hyperstability Pebax plate"
+      source: "https://www.unisportstore.com/football-boots/nike-tiempo-legend-7-elite-fg-whiteblack/177987/"
+    weight_g: 208
+    weight_note: "~208 g (US 9), per Unisport — one of the lightest Tiempos."
+    weight_source: "https://www.unisportstore.com/football-boots/nike-tiempo-legend-7-elite-fg-whiteblack/177987/"
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: [Sergio Ramos]
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "tiempo-legend-7-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
   # ---- Nike teaching trios (current silos): junior Elite + the tier below ----
   # These share the current generation's silo/generation key so they join to the catalogue;
   # `audience` and `tier` are what separate them on the site's three-price-band screen.
@@ -553,6 +799,166 @@ boots:
     signature_source: UNVERIFIED
     colourway_packs: []
     retailer_handle: "jr-mercurial-superfly-11-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: mercurial superfly
+    generation: "11"
+    audience: adult
+    tier: academy               # the tier immediately below Elite for Nike
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Nike takedown RRP band €40–190 (catalogue)."
+    upper:
+      tech: "NikeSkin synthetic mesh (no FlyWeave Ultra)"
+      plain: >-
+        The tier below Elite: a synthetic mesh upper instead of FlyWeave Ultra, a NikeLite
+        plate without Air Zoom, heavier and with a more forgiving fit. Same Superfly name,
+        a training-grade boot at a fraction of the price.
+      source: "https://www.sportsdirect.com/the-zone/football/nike-mercurial-vapor-superfly-which-boot-which-tier"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite: sintētiska sieta virsma FlyWeave Ultra vietā, NikeLite pamatne
+            bez Air Zoom, smagāka un ar pielaidīgāku pieguļumu. Tas pats Superfly nosaukums,
+            treniņa klases bute par daļu cenas.
+        ru:
+          plain: >-
+            Класс ниже Elite: синтетический сетчатый верх вместо FlyWeave Ultra, подошва NikeLite
+            без Air Zoom, тяжелее и с более свободной посадкой. То же имя Superfly, бутса
+            тренировочного класса за долю цены.
+    plate:
+      material: "NikeLite plate (no Air Zoom unit)"
+      source: "https://www.sportsdirect.com/the-zone/football/nike-mercurial-vapor-superfly-which-boot-which-tier"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "mercurial-superfly-11-academy-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: mercurial vapor
+    generation: "17"
+    audience: junior
+    tier: junior-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Nike junior Elite RRP band €150–175 (PR #30, measured on prodirectsport.ie 2026-08-28, n=11)."
+    upper:
+      tech: "Atomknit (junior construction)"
+      plain: >-
+        The junior Vapor 17 Elite: same silo, de-specced for growing feet. Keeps the look
+        and often a Pebax (not full FlyLite) plate, with a roomier last. A different boot,
+        same name.
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Junioru Vapor 17 Elite: tas pats silo, ar pazeminātu specifikāciju augošām pēdām.
+            Saglabā izskatu un bieži Pebax (nevis pilnu FlyLite) pamatni, ar plašāku kurpes
+            formu. Cita bute, tas pats nosaukums.
+        ru:
+          plain: >-
+            Юниорский Vapor 17 Elite: тот же силуэт, но с урезанной спецификацией под растущую
+            стопу. Сохраняет вид и часто подошву Pebax (не полноценную FlyLite), с более
+            просторной колодкой. Другая бутса под тем же именем.
+    plate:
+      material: "Pebax/TPU composite (not full FlyLite)"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "jr-mercurial-vapor-17-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: mercurial vapor
+    generation: "17"
+    audience: adult
+    tier: academy               # the tier immediately below Elite for Nike
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Nike takedown RRP band €40–190 (catalogue)."
+    upper:
+      tech: "NikeSkin synthetic mesh (no Atomknit)"
+      plain: >-
+        The tier below Elite: a synthetic mesh upper instead of Atomknit, a NikeLite plate
+        instead of the Elite's FlyLite, heavier and with a more forgiving fit. Same Vapor
+        name, a training-grade boot at roughly a third of the price.
+      source: "https://www.sportsdirect.com/the-zone/football/nike-mercurial-vapor-superfly-which-boot-which-tier"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite: sintētiska sieta virsma Atomknit vietā, NikeLite pamatne Elite
+            FlyLite vietā, smagāka un ar pielaidīgāku pieguļumu. Tas pats Vapor nosaukums,
+            treniņa klases bute par aptuveni trešdaļu cenas.
+        ru:
+          plain: >-
+            Класс ниже Elite: синтетический сетчатый верх вместо Atomknit, подошва NikeLite
+            вместо FlyLite у Elite, тяжелее и с более свободной посадкой. То же имя Vapor,
+            бутса тренировочного класса примерно за треть цены.
+    plate:
+      material: "NikeLite plate (not FlyLite)"
+      source: "https://www.sportsdirect.com/the-zone/football/nike-mercurial-vapor-superfly-which-boot-which-tier"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "mercurial-vapor-17-academy-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: phantom
+    generation: "6"
+    audience: junior
+    tier: junior-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Nike junior Elite RRP band €150–175 (PR #30, measured on prodirectsport.ie 2026-08-28, n=11)."
+    upper:
+     tech: "Gripknit (junior construction)"
+     plain: >-
+       The junior Phantom 6 Elite: same Gripknit surface scaled for growing feet, a
+       simplified plate construction, roomier fit. Looks identical in the box; built
+       differently underneath.
+     source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+     i18n:
+       lv:
+         plain: >-
+           Junioru Phantom 6 Elite: tā pati Gripknit virsma, pielāgota augošām pēdām, ar
+           vienkāršāku pamatnes konstrukciju un plašāku pieguļumu. Kastē izskatās identiska;
+           zem virsmas būvēta citādi.
+       ru:
+         plain: >-
+           Юниорский Phantom 6 Elite: та же поверхность Gripknit, масштабированная под растущую
+           стопу, упрощённая конструкция подошвы, более просторная колодка. В коробке выглядит
+           идентично; сделана по-другому.
+    plate:
+     material: "Simplified composite plate (not full Cyclone 360)"
+     source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "jr-phantom-6-elite-{soleplate}-{colour}"
     retailer_handle_source: UNVERIFIED
     last_verified: "2026-08"
 
@@ -807,6 +1213,46 @@ boots:
 
   - brand: adidas
     silo: f50
+    generation: "f50"
+    audience: junior
+    tier: junior-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "adidas junior Elite RRP band €120–160 (catalogue)."
+    upper:
+      tech: "Fibertouch (junior construction)"
+      plain: >-
+        The junior F50 Elite: same Fibertouch name, built on a junior last with a simplified
+        Sprintframe plate. Lighter than the League, but specced differently from the adult
+        Elite. The speed boot scaled down for young players.
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Junioru F50 Elite: tas pats Fibertouch nosaukums, būvēts uz junioru kurpes formas ar
+            vienkāršāku Sprintframe pamatni. Vieglāka par League, bet ar citām specifikācijām
+            nekā pieaugušo Elite. Ātruma bute, samazināta jaunajiem spēlētājiem.
+        ru:
+          plain: >-
+            Юниорский F50 Elite: то же имя Fibertouch, построен на юниорской колодке с
+            упрощённой подошвой Sprintframe. Легче League, но со спецификациями, отличными от
+            взрослого Elite. Скоростная бутса, уменьшенная для молодых игроков.
+    plate:
+      material: "Simplified Sprintframe plate"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "jr-f50-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: adidas
+    silo: f50
     generation: "x crazyfast"
     audience: adult
     tier: adult-flagship
@@ -973,6 +1419,96 @@ boots:
     retailer_handle_source: UNVERIFIED
     last_verified: "2026-08"
 
+  - brand: adidas
+    silo: copa
+    generation: "copa pure"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Catalogue launch RRP €250. The first Copa Pure — cow leather (not kangaroo) with Fusionskin."
+    upper:
+      tech: "Fusionskin"
+      plain: >-
+        The first Copa Pure Elite — a cow-leather forefoot (kangaroo was dropped due to
+        supply/regulatory reasons) fused with a synthetic mesh midfoot. Thinner and lighter
+        than the Copa Sense it replaced, with a Torsion Frame outsole carried over from the
+        old Nemeziz speed boots.
+      source: "https://www.upper90football.com/adidas-copa-pure-review/"
+      i18n:
+        lv:
+          plain: >-
+            Pirmais Copa Pure Elite — govs ādas priekšpēda (ķengurāda tika atmesta piegādes un
+            regulējuma iemeslu dēļ), sakausēta ar sintētisku sieta viduspēdu. Plānāka un vieglāka
+            nekā Copa Sense, ko tā nomainīja, ar Torsion Frame pamatni no vecajām Nemeziz ātruma
+            butēm.
+        ru:
+          plain: >-
+            Первый Copa Pure Elite — передняя часть из телячьей кожи (от кожи кенгуру отказались
+            из-за поставок и регуляторных причин), сплавленная с синтетической сеткой в средней
+            части. Тоньше и легче, чем заменённый Copa Sense, с подошвой Torsion Frame от старых
+            скоростных бутс Nemeziz.
+    plate:
+      material: "Torsion Frame soleplate (from the Nemeziz speed line)"
+      source: "https://www.upper90football.com/adidas-copa-pure-review/"
+    weight_g: UNVERIFIED
+    weight_note: "Reported ~210 g; not separately verified for this generation."
+    weight_source: UNVERIFIED
+    soleplates: [FG, SG, AG]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "copa-pure-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  # ---- Copa Mundial (the eternal one; made in Germany since 1979) ----
+  - brand: adidas
+    silo: copa mundial
+    generation: "copa mundial"
+    audience: adult
+    tier: adult-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Catalogue launch RRP €140. The evergreen — still in production, same design since 1979."
+    upper:
+      tech: "Kangaroo leather (double-layered)"
+      plain: >-
+        Premium kangaroo leather, double-layered in key areas for durability — the
+        construction has barely changed since 1979. Made in Germany. The Mundial is not a
+        performance flagship by modern standards (heavy, no carbon plate, no grip tech) but
+        it is the most enduring boot design in the sport and still in adidas's catalogue.
+      source: "https://www.footballboots.co.uk/review-mundial.html"
+      i18n:
+        lv:
+          plain: >-
+            Augstākās kvalitātes ķengurāda, divslāņu konstrukcija galvenajās zonās izturībai —
+            uzbūve kopš 1979. gada praktiski nav mainījusies. Ražota Vācijā. Mundial nav moderns
+            veiktspējas flagmanis (smaga, bez oglekļa pamatnes, bez satveres tehnoloģijas), taču tā
+            ir visilgāk pastāvošā butu konstrukcija sportā un joprojām adidas katalogā.
+        ru:
+          plain: >-
+            Кожа кенгуру премиум-класса, двойная в ключевых зонах для прочности — конструкция
+            почти не изменилась с 1979 года. Сделана в Германии. Mundial — не современный
+            перформанс-флагман (тяжёлая, без карбоновой подошвы, без технологий сцепления), но это
+            самый долговечный дизайн бутс в спорте и он по-прежнему в каталоге adidas.
+    plate:
+      material: "Dual-density direct-injected polyurethane, 12 conical studs"
+      source: "https://www.footballboots.co.uk/review-mundial.html"
+    weight_g: 320
+    weight_note: "~320 g (US 8.5); heavy by modern standards."
+    weight_source: "https://www.reviewgem.com/adidas-copa-mundial/"
+    soleplates: [FG]
+    soleplate_note: "FG only; no SG/AG/TF variants."
+    soleplate_source: "https://www.footballboots.co.uk/review-mundial.html"
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "copa-mundial-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
   # ---- adidas teaching trios (current silos): junior Elite + the tier below ----
   - brand: adidas
     silo: copa
@@ -1015,6 +1551,45 @@ boots:
     last_verified: "2026-08"
 
   - brand: adidas
+    silo: copa
+    generation: "4"
+    audience: adult
+    tier: league
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "adidas takedown RRP band €40–180 (catalogue)."
+    upper:
+      tech: "Synthetic leather (no Fusionskin)"
+      plain: >-
+        The tier below Elite: a plain synthetic upper without the Fusionskin leather blend,
+        a basic TPU plate instead of Comfort Frame, heavier. Same Copa name, a club boot
+        at a fraction of the price.
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite: vienkārša sintētiska virsma bez Fusionskin ādas maisījuma, vienkārša
+            TPU pamatne Comfort Frame vietā, smagāka. Tas pats Copa nosaukums, kluba bute par
+            daļu cenas.
+        ru:
+          plain: >-
+            Класс ниже Elite: простой синтетический верх без кожаной смеси Fusionskin, простая
+            подошва TPU вместо Comfort Frame, тяжелее. То же имя Copa, клубная бутса за долю цены.
+    plate:
+      material: "Basic TPU soleplate"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "copa-pure-iv-league-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: adidas
     silo: predator
     generation: "26"
     audience: adult
@@ -1050,5 +1625,680 @@ boots:
     signature_source: UNVERIFIED
     colourway_packs: []
     retailer_handle: "predator-26-league-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: adidas
+    silo: predator
+    generation: "26"
+    audience: junior
+    tier: junior-flagship
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "adidas junior Elite RRP band €110–150 (PR #30, measured on prodirectsport.ie 2026-08-28, n=34)."
+    upper:
+      tech: "HybridTouch (junior construction, fewer grip elements)"
+      plain: >-
+        The junior Predator 26 Elite: a TPU plate rather than the adult StrikeFrame, fewer
+        rubber grip elements, and a roomier last. Same Predator Elite name, a genuinely
+        different boot for growing feet.
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Junioru Predator 26 Elite: TPU pamatne, nevis pieaugušo StrikeFrame, mazāk gumijas
+            satveres elementu un plašāka kurpes forma. Tas pats Predator Elite nosaukums, patiešām
+            cita bute augošām pēdām.
+        ru:
+          plain: >-
+            Юниорский Predator 26 Elite: подошва TPU вместо взрослой StrikeFrame, меньше резиновых
+            элементов сцепления и более просторная колодка. То же имя Predator Elite, но совершенно
+            другая бутса для растущей стопы.
+    plate:
+      material: "TPU plate (not the adult StrikeFrame)"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "jr-predator-26-elite-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: adidas
+    silo: f50
+    generation: "f50"
+    audience: adult
+    tier: league               # the tier immediately below Elite for adidas
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "adidas takedown RRP band €40–180 (catalogue)."
+    upper:
+      tech: "Fiberskin synthetic (no Fibertouch)"
+      plain: >-
+        The tier below Elite: a thicker Fiberskin synthetic instead of the Elite's thin
+        Fibertouch, a Sprintplate 360 instead of the Elite's Sprintframe 360, heavier
+        (~232 g vs ~185 g). Same F50 name, a club boot at a fraction of the price.
+      source: "https://shoesmatrix.com/adidas-f50-league-vs-pro-vs-elite-key-differences-explained/"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite: biezāka Fiberskin sintētika Elite plānās Fibertouch vietā,
+            Sprintplate 360 Elite Sprintframe 360 vietā, smagāka (~232 g pret ~185 g). Tas
+            pats F50 nosaukums, kluba bute par daļu cenas.
+        ru:
+          plain: >-
+            Класс ниже Elite: более плотная синтетика Fiberskin вместо тонкой Fibertouch у Elite,
+            подошва Sprintplate 360 вместо Sprintframe 360, тяжелее (~232 г против ~185 г). То же
+            имя F50, клубная бутса за долю цены.
+    plate:
+      material: "Sprintplate 360 (not Sprintframe 360)"
+      source: "https://shoesmatrix.com/adidas-f50-league-vs-pro-vs-elite-key-differences-explained/"
+    weight_g: UNVERIFIED
+    weight_note: "Reported ~232 g for League; not independently verified."
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "f50-league-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+  # ---- Historical-generation takedowns (same name, different boot) ----
+
+  - brand: nike
+    silo: mercurial superfly
+    generation: "10"
+    audience: adult
+    tier: academy
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Nike takedown RRP band €40–190 (catalogue)."
+    upper:
+      tech: "NikeSkin synthetic mesh (no Vaporposite+)"
+      plain: >-
+        The tier below Elite in the Superfly 10 generation: a synthetic mesh upper
+        without the Vaporposite+ panel, a basic plate without Air Zoom. Same Superfly 10
+        name, a training boot.
+      source: "https://www.sportsdirect.com/the-zone/football/nike-mercurial-vapor-superfly-which-boot-which-tier"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite Superfly 10 paaudzē: sintētiska sieta virsma bez Vaporposite+
+            paneļa, vienkārša pamatne bez Air Zoom. Tas pats Superfly 10 nosaukums, treniņa bute.
+        ru:
+          plain: >-
+            Класс ниже Elite в поколении Superfly 10: синтетический сетчатый верх без панели
+            Vaporposite+, простая подошва без Air Zoom. То же имя Superfly 10, тренировочная бутса.
+    plate:
+      material: "NikeLite plate (no Air Zoom unit)"
+      source: "https://www.sportsdirect.com/the-zone/football/nike-mercurial-vapor-superfly-which-boot-which-tier"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "mercurial-superfly-10-academy-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: mercurial superfly
+    generation: "9"
+    audience: adult
+    tier: academy
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Nike takedown RRP band €40–190 (catalogue)."
+    upper:
+      tech: "NikeSkin synthetic mesh (no Vaporposite+)"
+      plain: >-
+        The tier below Elite in the Superfly 9 generation: a synthetic mesh upper
+        without the Vaporposite+ panel, basic plate. Same Superfly 9 name, a training boot.
+      source: "https://www.sportsdirect.com/the-zone/football/nike-mercurial-vapor-superfly-which-boot-which-tier"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite Superfly 9 paaudzē: sintētiska sieta virsma bez Vaporposite+
+            paneļa, vienkārša pamatne. Tas pats Superfly 9 nosaukums, treniņa bute.
+        ru:
+          plain: >-
+            Класс ниже Elite в поколении Superfly 9: синтетический сетчатый верх без панели
+            Vaporposite+, простая подошва. То же имя Superfly 9, тренировочная бутса.
+    plate:
+      material: "NikeLite plate"
+      source: "https://www.sportsdirect.com/the-zone/football/nike-mercurial-vapor-superfly-which-boot-which-tier"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "mercurial-superfly-9-academy-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: mercurial vapor
+    generation: "16"
+    audience: adult
+    tier: academy
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Nike takedown RRP band €40–190 (catalogue)."
+    upper:
+      tech: "NikeSkin synthetic mesh (no Speed Cage)"
+      plain: >-
+        The tier below Elite in the Vapor 16 generation: a synthetic upper without
+        the Speed Cage feature, basic plate. Same Vapor 16 name, a training boot.
+      source: "https://www.sportsdirect.com/the-zone/football/nike-mercurial-vapor-superfly-which-boot-which-tier"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite Vapor 16 paaudzē: sintētiska virsma bez Speed Cage funkcijas,
+            vienkārša pamatne. Tas pats Vapor 16 nosaukums, treniņa bute.
+        ru:
+          plain: >-
+            Класс ниже Elite в поколении Vapor 16: синтетический верх без функции Speed Cage,
+            простая подошва. То же имя Vapor 16, тренировочная бутса.
+    plate:
+      material: "NikeLite plate"
+      source: "https://www.sportsdirect.com/the-zone/football/nike-mercurial-vapor-superfly-which-boot-which-tier"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "mercurial-vapor-16-academy-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: mercurial vapor
+    generation: "15"
+    audience: adult
+    tier: academy
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Nike takedown RRP band €40–190 (catalogue)."
+    upper:
+      tech: "NikeSkin synthetic mesh"
+      plain: >-
+        The tier below Elite in the Vapor 15 generation: synthetic mesh upper, basic
+        plate, heavier. Same Vapor 15 name, a training boot.
+      source: "https://www.sportsdirect.com/the-zone/football/nike-mercurial-vapor-superfly-which-boot-which-tier"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite Vapor 15 paaudzē: sintētiska sieta virsma, vienkārša pamatne,
+            smagāka. Tas pats Vapor 15 nosaukums, treniņa bute.
+        ru:
+          plain: >-
+            Класс ниже Elite в поколении Vapor 15: синтетический сетчатый верх, простая
+            подошва, тяжелее. То же имя Vapor 15, тренировочная бутса.
+    plate:
+      material: "NikeLite plate"
+      source: "https://www.sportsdirect.com/the-zone/football/nike-mercurial-vapor-superfly-which-boot-which-tier"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "mercurial-vapor-15-academy-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: phantom
+    generation: "phantom gx 2"
+    audience: adult
+    tier: academy
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Nike takedown RRP band €40–190 (catalogue)."
+    upper:
+      tech: "Synthetic / textile (no NikeSkin Grip)"
+      plain: >-
+        The tier below Elite in the Phantom GX 2 generation: a plain synthetic upper
+        without the NikeSkin Grip surface, basic TPU plate. Same GX 2 name, a training boot.
+      source: "https://www.sportsdirect.com/the-zone/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite Phantom GX 2 paaudzē: vienkārša sintētiska virsma bez NikeSkin
+            Grip, vienkārša TPU pamatne. Tas pats GX 2 nosaukums, treniņa bute.
+        ru:
+          plain: >-
+            Класс ниже Elite в поколении Phantom GX 2: простой синтетический верх без NikeSkin
+            Grip, простая подошва TPU. То же имя GX 2, тренировочная бутса.
+    plate:
+      material: "Basic TPU soleplate"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "phantom-gx-2-academy-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: phantom
+    generation: "phantom gx"
+    audience: adult
+    tier: academy
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Nike takedown RRP band €40–190 (catalogue)."
+    upper:
+      tech: "Synthetic / textile (no NikeSkin Grip)"
+      plain: >-
+        The tier below Elite in the Phantom GX generation: synthetic upper without
+        the NikeSkin Grip, basic plate. Same GX name, a training boot.
+      source: "https://www.sportsdirect.com/the-zone/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite Phantom GX paaudzē: sintētiska virsma bez NikeSkin Grip,
+            vienkārša pamatne. Tas pats GX nosaukums, treniņa bute.
+        ru:
+          plain: >-
+            Класс ниже Elite в поколении Phantom GX: синтетический верх без NikeSkin Grip,
+            простая подошва. То же имя GX, тренировочная бутса.
+    plate:
+      material: "Basic TPU soleplate"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "phantom-gx-academy-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: phantom
+    generation: "phantom gt 2"
+    audience: adult
+    tier: academy
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Nike takedown RRP band €40–190 (catalogue)."
+    upper:
+      tech: "Synthetic / textile (no Flyknit)"
+      plain: >-
+        The tier below Elite in the Phantom GT2 generation: synthetic upper without
+        the Flyknit, basic plate. Same GT2 name, a training boot.
+      source: "https://www.sportsdirect.com/the-zone/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite Phantom GT2 paaudzē: sintētiska virsma bez Flyknit, vienkārša
+            pamatne. Tas pats GT2 nosaukums, treniņa bute.
+        ru:
+          plain: >-
+            Класс ниже Elite в поколении Phantom GT2: синтетический верх без Flyknit, простая
+            подошва. То же имя GT2, тренировочная бутса.
+    plate:
+      material: "Basic TPU soleplate"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "phantom-gt2-academy-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: phantom
+    generation: "phantom gt"
+    audience: adult
+    tier: academy
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Nike takedown RRP band €40–190 (catalogue)."
+    upper:
+      tech: "Synthetic / textile (no Flyknit)"
+      plain: >-
+        The tier below Elite in the Phantom GT generation: synthetic upper without
+        the Flyknit, basic plate. Same GT name, a training boot.
+      source: "https://www.sportsdirect.com/the-zone/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite Phantom GT paaudzē: sintētiska virsma bez Flyknit, vienkārša
+            pamatne. Tas pats GT nosaukums, treniņa bute.
+        ru:
+          plain: >-
+            Класс ниже Elite в поколении Phantom GT: синтетический верх без Flyknit, простая
+            подошва. То же имя GT, тренировочная бутса.
+    plate:
+      material: "Basic TPU soleplate"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "phantom-gt-academy-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: tiempo
+    generation: "10"
+    audience: adult
+    tier: academy
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Nike takedown RRP band €40–190 (catalogue)."
+    upper:
+      tech: "Synthetic leather (no FlyTouch Plus)"
+      plain: >-
+        The tier below Elite in the Legend 10 generation: a synthetic upper without the
+        FlyTouch Plus, basic plate. Same Legend 10 name, a training boot.
+      source: "https://www.sportsdirect.com/the-zone/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite Legend 10 paaudzē: sintētiska virsma bez FlyTouch Plus, vienkārša
+            pamatne. Tas pats Legend 10 nosaukums, treniņa bute.
+        ru:
+          plain: >-
+            Класс ниже Elite в поколении Legend 10: синтетический верх без FlyTouch Plus,
+            простая подошва. То же имя Legend 10, тренировочная бутса.
+    plate:
+      material: "Basic TPU soleplate"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "tiempo-legend-10-academy-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: nike
+    silo: tiempo
+    generation: "9"
+    audience: adult
+    tier: academy
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "Nike takedown RRP band €40–190 (catalogue)."
+    upper:
+      tech: "Synthetic leather"
+      plain: >-
+        The tier below Elite in the Legend 9 generation: synthetic upper, basic plate.
+        Same Legend 9 name, a training boot.
+      source: "https://www.sportsdirect.com/the-zone/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite Legend 9 paaudzē: sintētiska virsma, vienkārša pamatne.
+            Tas pats Legend 9 nosaukums, treniņa bute.
+        ru:
+          plain: >-
+            Класс ниже Elite в поколении Legend 9: синтетический верх, простая подошва.
+            То же имя Legend 9, тренировочная бутса.
+    plate:
+      material: "Basic TPU soleplate"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "tiempo-legend-9-academy-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: adidas
+    silo: predator
+    generation: "25"
+    audience: adult
+    tier: league
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "adidas takedown RRP band €40–180 (catalogue)."
+    upper:
+      tech: "Synthetic / textile (no rubber grip elements)"
+      plain: >-
+        The tier below Elite in the Predator 25 generation: synthetic upper without
+        the rubber grip elements, basic plate. Same Predator 25 name, a value boot.
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite Predator 25 paaudzē: sintētiska virsma bez gumijas saķeres
+            elementiem, vienkārša pamatne. Tas pats Predator 25 nosaukums, budžeta bute.
+        ru:
+          plain: >-
+            Класс ниже Elite в поколении Predator 25: синтетический верх без резиновых
+            элементов сцепления, простая подошва. То же имя Predator 25, бюджетная бутса.
+    plate:
+      material: "Basic TPU soleplate"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "predator-25-league-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: adidas
+    silo: predator
+    generation: "24"
+    audience: adult
+    tier: league
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "adidas takedown RRP band €40–180 (catalogue)."
+    upper:
+      tech: "Synthetic / textile"
+      plain: >-
+        The tier below Elite in the Predator 24 generation: synthetic upper, basic plate.
+        Same Predator 24 name, a value boot.
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite Predator 24 paaudzē: sintētiska virsma, vienkārša pamatne.
+            Tas pats Predator 24 nosaukums, budžeta bute.
+        ru:
+          plain: >-
+            Класс ниже Elite в поколении Predator 24: синтетический верх, простая подошва.
+            То же имя Predator 24, бюджетная бутса.
+    plate:
+      material: "Basic TPU soleplate"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "predator-24-league-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: adidas
+    silo: predator
+    generation: "predator accuracy"
+    audience: adult
+    tier: league
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "adidas takedown RRP band €40–180 (catalogue)."
+    upper:
+      tech: "Synthetic / textile (no rubber grip zones)"
+      plain: >-
+        The tier below Elite in the Predator Accuracy generation: synthetic upper without
+        the rubber grip zones, basic plate. Same Accuracy name, a value boot.
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite Predator Accuracy paaudzē: sintētiska virsma bez gumijas saķeres
+            zonām, vienkārša pamatne. Tas pats Accuracy nosaukums, budžeta bute.
+        ru:
+          plain: >-
+            Класс ниже Elite в поколении Predator Accuracy: синтетический верх без резиновых
+            зон сцепления, простая подошва. То же имя Accuracy, бюджетная бутса.
+    plate:
+      material: "Basic TPU soleplate"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "predator-accuracy-league-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: adidas
+    silo: f50
+    generation: "x crazyfast"
+    audience: adult
+    tier: league
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "adidas takedown RRP band €40–180 (catalogue)."
+    upper:
+      tech: "Synthetic (no Aeropacity)"
+      plain: >-
+        The tier below Elite in the X Crazyfast generation: synthetic upper without the
+        Aeropacity skin, basic plate. Same Crazyfast name, a value boot.
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite X Crazyfast paaudzē: sintētiska virsma bez Aeropacity, vienkārša
+            pamatne. Tas pats Crazyfast nosaukums, budžeta bute.
+        ru:
+          plain: >-
+            Класс ниже Elite в поколении X Crazyfast: синтетический верх без Aeropacity,
+            простая подошва. То же имя Crazyfast, бюджетная бутса.
+    plate:
+      material: "Basic TPU soleplate"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "x-crazyfast-league-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: adidas
+    silo: copa
+    generation: "3"
+    audience: adult
+    tier: league
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "adidas takedown RRP band €40–180 (catalogue)."
+    upper:
+      tech: "Synthetic leather (no Fusionskin)"
+      plain: >-
+        The tier below Elite in the Copa Pure 3 generation: synthetic upper without
+        Fusionskin, basic plate. Same Copa Pure 3 name, a value boot.
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite Copa Pure 3 paaudzē: sintētiska virsma bez Fusionskin, vienkārša
+            pamatne. Tas pats Copa Pure 3 nosaukums, budžeta bute.
+        ru:
+          plain: >-
+            Класс ниже Elite в поколении Copa Pure 3: синтетический верх без Fusionskin,
+            простая подошва. То же имя Copa Pure 3, бюджетная бутса.
+    plate:
+      material: "Basic TPU soleplate"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "copa-pure-iii-league-{soleplate}-{colour}"
+    retailer_handle_source: UNVERIFIED
+    last_verified: "2026-08"
+
+  - brand: adidas
+    silo: copa
+    generation: "2"
+    audience: adult
+    tier: league
+    street_price_eur: UNVERIFIED
+    street_price_source: UNVERIFIED
+    rrp_note: "adidas takedown RRP band €40–180 (catalogue)."
+    upper:
+      tech: "Synthetic leather (no Softskin)"
+      plain: >-
+        The tier below Elite in the Copa Pure 2 generation: synthetic upper without
+        the Softskin, basic plate. Same Copa Pure 2 name, a value boot.
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+      i18n:
+        lv:
+          plain: >-
+            Klase zem Elite Copa Pure 2 paaudzē: sintētiska virsma bez Softskin, vienkārša
+            pamatne. Tas pats Copa Pure 2 nosaukums, budžeta bute.
+        ru:
+          plain: >-
+            Класс ниже Elite в поколении Copa Pure 2: синтетический верх без Softskin,
+            простая подошва. То же имя Copa Pure 2, бюджетная бутса.
+    plate:
+      material: "Basic TPU soleplate"
+      source: "https://www.prodirectsport.com/blogs/football/football-boot-tiers-explained"
+    weight_g: UNVERIFIED
+    weight_source: UNVERIFIED
+    soleplates: [FG, MG, TF, IC]
+    soleplate_source: UNVERIFIED
+    signature_players: []
+    signature_source: UNVERIFIED
+    colourway_packs: []
+    retailer_handle: "copa-pure-ii-league-{soleplate}-{colour}"
     retailer_handle_source: UNVERIFIED
     last_verified: "2026-08"
