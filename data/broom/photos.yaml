@@ -236,3 +236,24 @@ photos:
       en: "adidas X Crazyfast Elite (2023) — the last boot to carry the X name, on display at adidas Orchard Road, Singapore."
       lv: "adidas X Crazyfast Elite (2023) — pēdējā bute ar nosaukumu X, izstādīta adidas veikalā Orchard Road, Singapūrā."
       ru: "adidas X Crazyfast Elite (2023) — последняя бутса под именем X, выставлена в магазине adidas на Орчард-роуд, Сингапур."
+  # The archive's Predator photographs stop at 2018, so every CURRENT generation
+  # renders without one. This is the first, and it is deliberately a PRO.
+  #
+  # The Predator 24 generation ships as Elite, Pro, League and Club. The only
+  # freely-licensed photograph of it is the Pro, so the caption says Pro. A site
+  # whose whole premise is that "Elite" on a listing rarely means the flagship
+  # cannot show a takedown and let a reader assume it is the flagship.
+
+  - id: predator-24-pro
+    silo: predator
+    commons_file: "Predator 24 Pro Firm Ground.jpg"
+    author: Pangalau
+    licence: CC BY-SA 4.0
+    licence_url: "https://creativecommons.org/licenses/by-sa/4.0"
+    source_url: "https://commons.wikimedia.org/wiki/File:Predator_24_Pro_Firm_Ground.jpg"
+    width: 6538
+    height: 3225
+    caption:
+      en: "adidas Predator 24 Pro FG — the Pro tier of the 2024 generation, not the Elite flagship. Same generation, different boot."
+      lv: "adidas Predator 24 Pro FG — 2024. gada paaudzes Pro līmenis, nevis Elite flagmanis. Tā pati paaudze, cita bute."
+      ru: "adidas Predator 24 Pro FG — уровень Pro поколения 2024 года, а не флагман Elite. То же поколение, другая бутса."
