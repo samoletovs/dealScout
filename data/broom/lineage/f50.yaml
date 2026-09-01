@@ -49,14 +49,15 @@ generations:
     innovation: >-
       Where the speed line begins. adidas launched the F50 around Euro 2004 as a
       deliberately light, stripped-down boot for quick attacking players, at a time when
-      most top boots were still built heavy for power and protection. It set the whole
-      idea the silo would chase for the next twenty years: take weight off the foot so the
-      player can get to the ball first.
+      most top boots were still built heavy for power and protection. Even the name is a
+      countdown: the "F" is for football and the "50" for the fifty days left until Euro
+      2004 when it launched. It set the whole idea the silo would chase for the next twenty
+      years: take weight off the foot so the player can get to the ball first.
     why: >-
       The Predator was adidas's power boot. The F50 was the opposite bet — that the next
       advantage was not a boot that did more to the ball, but a boot you barely noticed
-      while you ran.
-    players: UNVERIFIED
+      while you ran. Wingers made it their weapon of choice.
+    players: Arjen Robben
     sources:
       - https://euniqueboots.com/en-us/blogs/news/adidas-f50-history-classic-football-boots
 
@@ -196,9 +197,11 @@ generations:
       By 2021 every speed boot was already feather-light, so lightness alone no longer won.
       The new battleground was energy return: making the sole actively help the player
       accelerate, not just weigh less.
-    players: UNVERIFIED
+    players: Mohamed Salah
     sources:
-      - https://www.futbolemotion.com/en/blogs/the-diary-of-futbol-emotion/the-history-of-adidas-x
+      - https://www.soccerbible.com/performance/football-boots/2021/07/adidas-launch-the-x-speedflow/
+      - https://news.adidas.com/football/redefining-fast-in-football-with-x-speedflow/s/ec6b81a2-22e0-4455-9c62-213e955f9e39
+      - https://stockx.com/adidas-speedflow-mo-salah1-fg-gold-white-scarlet
 
   - brand: adidas
     silo: f50
@@ -215,9 +218,10 @@ generations:
       Real speed on a pitch is not only running fast in a line; it is stopping, turning and
       going again. This generation tried to serve both at once rather than optimising for
       the straight sprint alone.
-    players: UNVERIFIED
+    players: Mohamed Salah
     sources:
-      - https://www.futbolemotion.com/en/blogs/the-diary-of-futbol-emotion/the-history-of-adidas-x
+      - https://www.soccerbible.com/performance/football-boots/2022/07/adidas-officially-launch-the-next-generation-x-speedportal/
+      - https://www.arabnews.com/node/2126316/offbeat
 
   - brand: adidas
     silo: f50
@@ -227,16 +231,18 @@ generations:
     photo: UNVERIFIED
     innovation: >-
       The last boot to wear the X name. The Crazyfast pushed the speed formula to its
-      minimalist extreme — a pared-back upper over the carbon-tuned soleplate — and turned
-      out to be the end of the road for X: the following year adidas brought the F50 name
-      back and the X was gone.
+      minimalist extreme — a thin, semi-translucent Aeropacity Speedskin upper over a new
+      Aeroplate soleplate that dropped even the carbon insert to shave off a few more grams
+      — and it turned out to be the end of the road for X: the following year adidas brought
+      the F50 name back and the X was gone.
     why: >-
       After nine years the X had taken the "lighter, snappier, more minimal" idea about as
       far as a name could carry it. adidas judged that the story needed a reset — and that
       the reset should be a return to where the speed line started.
-    players: UNVERIFIED
+    players: Mohamed Salah
     sources:
-      - https://www.futbolemotion.com/en/blogs/the-diary-of-futbol-emotion/the-history-of-adidas-x
+      - https://www.soccerbible.com/performance/football-boots/2023/09/adidas-release-mo-salah-signature-x-crazyfast/
+      - https://www.soccercleats101.com/2023/09/03/desert-majesty-adidas-unveils-the-x-crazyfast-ms-for-mo-salah/
 
   - brand: adidas
     silo: f50
