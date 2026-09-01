@@ -1,0 +1,207 @@
+# bRoom lineage — Nike Phantom
+#
+# A *generation* in a silo's history. Not a buyable boot: see tests/test_broom_lineage.py
+# for why these are deliberately kept out of boots.yaml.
+#
+# `photo` is an id into data/broom/photos.yaml. The licence, author and source live there
+# and only there — an attribution that drifts is a licence breach, not a typo. There is NO
+# licence-verified Phantom photograph yet, so every generation here is honestly
+# `photo: UNVERIFIED` until the photos session adds one. Finding a freely-licensed Wikimedia
+# Commons photo of a Phantom is the single highest-value thing that can be added to this file.
+#
+# `innovation` is the heart of each record: what actually CHANGED, in language a
+# fourteen-year-old reads without a glossary. UNVERIFIED is an honest and acceptable value;
+# an invented one is not. Where a player is named, a source names them; otherwise the field
+# is UNVERIFIED rather than a guess.
+#
+# THE PREDECESSOR DECISION (Magista and Hypervenom). The Phantom is Nike's youngest control
+# silo, and it did not appear from nothing: in 2018 it replaced TWO older lines at once — the
+# Magista (control, for midfielders) and the Hypervenom (finishing, for strikers). Those two
+# are NOT generations of the Phantom, and neither is a line the classifier knows: they appear
+# only in comments in data/football_boots.yaml, never as a `lines:` key, so
+# tests/test_broom_lineage.py's classifier guard would reject any row tagged
+# `silo: magista` / `silo: hypervenom`. So they get NO rows here — but they are not silently
+# omitted either: their inheritance is told in the `why` of the two 2018/2019 boots that
+# replaced them. Every entry below carries `silo: phantom`, the line the classifier knows.
+#
+# THE BRANCHING. Unlike a single-file lineage, the Phantom repeatedly splits and re-merges,
+# and the timeline tells that honestly:
+#   2018 Vision (VSN, control)  +  2019 Venom (VNM, finishing)   — two boots at once
+#   2020 GT  — Nike merges Vision and Venom into one boot
+#   2023 GX  +  2023 Luna (women's-led)                          — the line splits again
+#   2024 GX II  — the second Gripknit generation
+#   2025 Phantom 6 — the letters give way to a plain number; one boot, women's and men's
+# Ties in `year` (two 2023 boots) are allowed by the sequence guard; the sequence still
+# orders them.
+#
+# SEEDED 2026-09 with the eight generations that can be sourced to a same-generation page.
+# Remaining research: Phantom VSN II (2019 refresh), any Phantom GT "Behind the Design"
+# special editions, the Luna II, and future Phantom 6 chapters — add them here with
+# same-generation sources and, ideally, a licence-verified photo id.
+
+last_verified: "2026-09"
+category: broom_lineage
+brand: nike
+silo: phantom
+
+generations:
+  - brand: nike
+    silo: phantom
+    sequence: 1
+    name: Phantom VSN (Vision)
+    year: 2018
+    photo: UNVERIFIED
+    innovation: >-
+      The control half of Nike's 2018 reset. Its headline trick is the Ghost-lace system:
+      the laces hide under a flap of Flyknit, so the whole front of the boot is one clean,
+      textured striking surface instead of a row of laces, with a large textured pad sitting
+      right in the passing area. Inside is the Quadfit mesh — a stretchy inner bootie that
+      wraps the foot so the boot feels locked-on from the very first wear, with almost no
+      breaking-in.
+    why: >-
+      Nike retired two older lines — the Magista (control) and the Hypervenom (finishing) —
+      and rebuilt both as one family called Phantom. The Vision (VSN) carried the control
+      idea the Magista had stood for: touch, passing and dribbling as the whole point.
+    players: Kevin De Bruyne, Mason Mount, Marco Verratti
+    sources:
+      - https://www.footballboots.co.uk/nike-vision.html
+      - https://www.footballboots.co.uk/nike.html
+
+  - brand: nike
+    silo: phantom
+    sequence: 2
+    name: Phantom VNM (Venom)
+    year: 2019
+    photo: UNVERIFIED
+    innovation: >-
+      The finishing half, launched alongside the Vision. Where the Vision was built for
+      control, the Phantom Venom (VNM) was shaped for power and swerve. Nike pushed the laces
+      off to the side and covered them so a bigger, cleaner strike zone sat over the ball's
+      sweet spot, and textured the upper where the foot meets the ball to grip it for extra
+      spin.
+    why: >-
+      It replaced the Hypervenom, Nike's old striker's boot. For a season the Phantom ran as
+      two boots at once — Vision for the creators, Venom for the finishers — before Nike
+      merged them into a single boot in 2020.
+    players: UNVERIFIED
+    sources:
+      - https://www.footballboots.co.uk/nike.html
+
+  - brand: nike
+    silo: phantom
+    sequence: 3
+    name: Phantom GT
+    year: 2020
+    photo: UNVERIFIED
+    innovation: >-
+      The merger, and the boot's biggest idea. Nike folded the Vision and Venom back into one
+      boot — the Phantom GT, for "Generative Texture". Working from Nike Sport Research Lab
+      data on exactly how the ball meets the boot when you pass, dribble and shoot, designers
+      grew a texture pattern and moulded it INTO the Flyknit upper rather than sticking it on
+      top — so it cannot peel off — placing grip precisely where each kind of touch happens.
+      The off-centre, covered lacing carried over from the Venom.
+    why: >-
+      Making and selling two boots for two kinds of player is costly and confusing. The GT's
+      pitch was that a single boot could do both control and finishing, with the texture doing
+      the work the two separate uppers used to.
+    players: UNVERIFIED
+    sources:
+      - https://www.nike.com/soccer/phantom-gt-btd
+      - https://www.soccerbible.com/performance/football-boots/2020/07/nike-launch-the-phantom-gt/
+
+  - brand: nike
+    silo: phantom
+    sequence: 4
+    name: Phantom GT2
+    year: 2021
+    photo: UNVERIFIED
+    innovation: >-
+      The second-generation Phantom GT. Nike kept the Generative Texture idea and reworked the
+      fit and the layout of the textured zones — tuning the boot rather than reinventing it.
+      It is the normal second step in a Nike silo: the first version proves the idea, the
+      second sands off its rough edges.
+    players: UNVERIFIED
+    sources:
+      - https://www.footballboots.co.uk/nike.html
+
+  - brand: nike
+    silo: phantom
+    sequence: 5
+    name: Phantom GX
+    year: 2023
+    photo: UNVERIFIED
+    innovation: >-
+      A new upper material. Nike replaced the printed texture with Gripknit — an exclusive
+      yarn coated in TPU that, melted to the right temperature, comes out grippy, flexible and
+      slightly tacky (Nike compares it to a fingerprint) for sharper control. The grip is
+      weatherised into the knit itself, so the touch stays consistent whether the pitch is
+      muddy or baking, with no separate waterproof skin added on top. Underneath sits an
+      agility plate with 13 studs, five of them star-shaped, built for quick cuts.
+    why: >-
+      The Phantom's whole promise is a clean, predictable touch. Gripknit chased that through
+      the material of the upper rather than a texture printed onto it.
+    players: UNVERIFIED
+    sources:
+      - https://about.nike.com/en/newsroom/releases/phantom-gx-official-images
+      - https://www.footballboots.co.uk/vsgxluna.html
+
+  - brand: nike
+    silo: phantom
+    sequence: 6
+    name: Phantom Luna
+    year: 2023
+    photo: UNVERIFIED
+    innovation: >-
+      The Phantom split in two again — and one half, the Phantom Luna, was Nike's first boot
+      designed women-first. After more than two years working with female footballers, Nike
+      rebuilt the traction from scratch: research shows women are three to five times more
+      likely than men to tear the ACL in the knee, and how a boot grips the turf during sharp
+      turns is part of that. The Luna's stud pattern is tuned so a player can dig in and change
+      direction without the boot catching and sticking. It shares the Gripknit upper with the
+      GX; the visible difference is the higher collar.
+    why: >-
+      Football boots had always been designed on men's feet and men's movement, then shrunk
+      for women. The Luna started from the women's game instead — Nike's "For Her, By Her"
+      boot — though it fits and suits male players too.
+    players: UNVERIFIED
+    sources:
+      - https://about.nike.com/en/newsroom/releases/nike-phantom-luna-boot-official-images
+      - https://www.footballboots.co.uk/vsgxluna.html
+
+  - brand: nike
+    silo: phantom
+    sequence: 7
+    name: Phantom GX II
+    year: 2024
+    photo: UNVERIFIED
+    innovation: >-
+      The second Gripknit generation. Nike kept the two-collar line-up the GX and Luna
+      established — a low-cut version and a high-collar version sharing the same Gripknit
+      technology — and refined the upper and the fit. By now the Phantom's identity had
+      settled: the control-and-precision boot, defined by the grippy Gripknit touch rather
+      than by a printed texture.
+    players: UNVERIFIED
+    sources:
+      - https://www.footballboots.co.uk/vsgxluna.html
+      - https://www.footballboots.co.uk/nike.html
+
+  - brand: nike
+    silo: phantom
+    sequence: 8
+    name: Phantom 6
+    year: 2025
+    photo: UNVERIFIED
+    innovation: >-
+      The current generation, and the first to drop the letters for a plain number. The upper
+      is "Tuned Gripknit", a refined version of the grippy yarn aimed at pinpoint strikes,
+      over an improved Cyclone 360 plate built for aggressive, unexpected changes of direction.
+      Nike built it from data gathered from players at every level who, above all, wanted a
+      boot that helped them take — and score — more shots.
+    why: >-
+      Six generations in, the Phantom stopped being sold as two competing ideas (control
+      versus finishing) and became one: the boot for precise attacking — creating chances and
+      scoring — for women's and men's players alike.
+    players: Alexia Putellas, Erling Haaland
+    sources:
+      - https://about.nike.com/en/newsroom/releases/nike-phantom-6-official-images
+      - https://www.footballboots.co.uk/nike.html
