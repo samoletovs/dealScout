@@ -1,0 +1,245 @@
+# bRoom lineage — Nike Tiempo
+#
+# A *generation* in a silo's history. Not a buyable boot: see tests/test_broom_lineage.py
+# for why these are deliberately kept out of boots.yaml.
+#
+# `photo` is an id into data/broom/photos.yaml. The licence, author and source live there
+# and only there — an attribution that drifts is a licence breach, not a typo. Only the
+# 2011 Tiempo Legend IV has a licence-verified photograph today (`tiempo-legend-iv-2011`);
+# every other generation is honestly `UNVERIFIED` until the photos session adds one. An
+# honest gap beats a photo sitting beside the wrong generation.
+#
+# `innovation` is the heart of each record: what actually CHANGED, in language a
+# fourteen-year-old reads without a glossary. UNVERIFIED is an honest and acceptable
+# value; an invented one is not.
+#
+# The Tiempo is Nike's leather / touch line — the control boot, the opposite of the speed
+# Mercurial. The name actually predates this timeline: Nike made a "Tiempo D" in 1984,
+# thirteen years after its first football boot. The cited history is explicit that the 1994
+# Premier "was the cleat that put the Tiempo name on the map", so this timeline opens at the
+# Premier rather than with the barely-documented D — a stated decision, not a silent
+# omission. The 1984 D is real and acknowledged here.
+#
+# CLASSIFIER NOTE — where "Maestro" lives. From 2026 Nike retired the "Legend" name after
+# ten generations and the flagship control boot became the Tiempo *Maestro*. In this repo's
+# data/football_boots.yaml the Maestro is modelled INSIDE the `tiempo` line's generations
+# (`note: "'Maestro' replaces the 'Legend' name from 2026"`), with a cheaper Ligera takedown
+# beneath it — not as a new line. The Archive follows that: the Maestro is the current
+# generation of the same silo, tagged `silo: tiempo`, one continuous story from 1994.
+#
+# SEEDED 2026-09-01 with the Premier origin and the Legend arc through the 2026 Maestro.
+# `players` is filled where a cited source names a wearer for *that* generation, and left
+# `UNVERIFIED` otherwise. A name is never carried across generations without a source that
+# puts it there: Ronaldinho fronting the 2005 Legend does not place him in the Legend II,
+# which is the cross-generation trap wearing a different coat.
+
+last_verified: "2026-09"
+category: broom_lineage
+brand: nike
+silo: tiempo
+
+generations:
+  - brand: nike
+    silo: tiempo
+    sequence: 1
+    name: Tiempo Premier
+    year: 1994
+    photo: UNVERIFIED
+    innovation: >-
+      The boot that fixed the Tiempo as Nike's leather control boot. A soft kangaroo-leather
+      upper with a fold-over tongue and simple conical studs — no gimmicks, just touch and a
+      broken-in feel, and it arrived around the 1994 World Cup in the United States. It is the
+      Nike answer to the adidas Copa Mundial: comfort and a clean strike surface over speed,
+      and every Tiempo since has chased the same "a boot you barely notice" idea.
+    why: >-
+      In the 1990s Nike was the newcomer in football and known for bright, aggressive boots.
+      The Tiempo Premier was the quiet one — proof Nike could make a plain, classic leather
+      boot as good as the European names, and it became the base the whole line grew from.
+    players: >-
+      Romário, Eric Cantona and Ian Wright wore it, and almost half of Brazil's 1994 World
+      Cup squad played in the Tiempo — the association that first sold the boot.
+    sources:
+      - https://soccerpost.com/blogs/news/a-deeper-look-at-nike-tiempos
+      - https://euniqueboots.com/blogs/news/nike-tiempo-classic-football-boots-history
+
+  - brand: nike
+    silo: tiempo
+    sequence: 2
+    name: Tiempo Legend
+    year: 2005
+    photo: UNVERIFIED
+    innovation: >-
+      The rename. Nike relaunched the leather Tiempo as the "Legend", keeping the kangaroo-
+      leather upper for touch but modernising underneath — a mesh tongue for breathability and
+      Zoom Air cushioning in the heel to soak up impact. It kept the soft-leather feel and made
+      the boot more comfortable to play ninety minutes in.
+    players: >-
+      Ronaldinho was the face of the boot, and his input shaped the iconic R10 signature
+      versions that followed.
+    sources:
+      - https://soccerpost.com/blogs/news/a-deeper-look-at-nike-tiempos
+      - https://www.worldsoccershop.com/guide/nike-tiempo-legend-soccer-cleat-guide
+
+  - brand: nike
+    silo: tiempo
+    sequence: 3
+    name: Tiempo Legend II
+    year: 2007
+    photo: UNVERIFIED
+    innovation: >-
+      A refinement more than a reinvention: the same kangaroo-leather upper on a slimmer tongue
+      and a reworked heel for a more secure, locked-down fit. The kind of quiet, tidy update the
+      Tiempo is built on.
+    players: UNVERIFIED
+    sources:
+      - https://www.bootsfinder.co.uk/post/the-timeless-appeal-of-nike-tiempo-legend-ii-a-2007-classic
+
+  - brand: nike
+    silo: tiempo
+    sequence: 4
+    name: Tiempo Legend III
+    year: 2009
+    photo: UNVERIFIED
+    innovation: >-
+      Thinner, softer kangaroo leather over a split, dual-density outsole that let the boot bend
+      more naturally with the foot. This is also the generation that spawned the first Tiempo
+      "Elite" — a lighter version built for the 2010 World Cup with a carbon-fibre chassis and a
+      part-synthetic upper, the first time the leather Tiempo borrowed from Nike's speed tech.
+    players: UNVERIFIED
+    sources:
+      - https://www.footy-boots.com/tiempo-legend-iii-5880/
+      - https://soccerpost.com/blogs/news/a-deeper-look-at-nike-tiempos
+
+  - brand: nike
+    silo: tiempo
+    sequence: 5
+    name: Tiempo Legend IV
+    year: 2011
+    photo: tiempo-legend-iv-2011
+    innovation: >-
+      Nike wove its Flywire cables into the midfoot — thin, strong threads that pull tight with
+      the laces to lock the foot down without adding weight or stiff panels. The upper stayed
+      kangaroo leather where you strike the ball, with tougher synthetic in the wear zones, so
+      the classic touch survived on a lighter, more supportive boot.
+    players: UNVERIFIED
+    sources:
+      - https://soccerpost.com/blogs/news/a-deeper-look-at-nike-tiempos
+      - https://www.worldsoccershop.com/guide/nike-tiempo-legend-soccer-cleat-guide
+
+  - brand: nike
+    silo: tiempo
+    sequence: 6
+    name: Tiempo Legend V
+    year: 2014
+    photo: UNVERIFIED
+    innovation: >-
+      A full redesign whose headline was Hypershield — a treatment that stops kangaroo leather
+      from drinking up water. A leather boot's old weakness is that it soaks up rain and grows
+      heavy; Hypershield kept the Legend V light and its leather soft in the wet, so the touch
+      you get in training is the touch you get in a downpour.
+    players: >-
+      Francesco Totti had a signature "Totti" Legend V Premium edition.
+    sources:
+      - https://www.footy-boots.com/nike-tiempo-legend-v/
+      - https://soccerpost.com/blogs/news/a-deeper-look-at-nike-tiempos
+
+  - brand: nike
+    silo: tiempo
+    sequence: 7
+    name: Tiempo Legend VI
+    year: 2016
+    photo: UNVERIFIED
+    innovation: >-
+      The Tiempo went tongueless. The upper became one seamless piece with the laces sitting on
+      top, and an internal cage held the leather so it could not overstretch and lose its shape.
+      Nike's All Conditions Control (ACC) coating kept grip on the ball consistent whether it was
+      dry or soaking. It looked far more modern than any Tiempo before it while keeping the
+      leather feel.
+    players: >-
+      Andrea Pirlo had a signature Legend VI "Pirlo Edition".
+    sources:
+      - https://www.kickscrew.com/blogs/sneakernews/the-ultimate-guide-to-nike-tiempos
+      - https://soccerpost.com/blogs/news/a-deeper-look-at-nike-tiempos
+      - https://www.worldsoccershop.com/guide/nike-tiempo-legend-soccer-cleat-guide
+
+  - brand: nike
+    silo: tiempo
+    sequence: 8
+    name: Tiempo Legend VII
+    year: 2017
+    photo: UNVERIFIED
+    innovation: >-
+      The first Tiempo to use Flyknit — Nike's knitted material — in the tongue and heel, giving
+      a stretchy, sock-like fit around the ankle while the front of the boot stayed kangaroo
+      leather for touch. A fitted mesh lining inside stopped the leather from stretching out over
+      time. Old-school strike surface, new-school fit.
+    players: UNVERIFIED
+    sources:
+      - https://www.kickscrew.com/blogs/sneakernews/the-ultimate-guide-to-nike-tiempos
+      - https://soccerpost.com/blogs/news/a-deeper-look-at-nike-tiempos
+
+  - brand: nike
+    silo: tiempo
+    sequence: 9
+    name: Tiempo Legend 8
+    year: 2019
+    photo: UNVERIFIED
+    innovation: >-
+      Nike dropped the Roman numerals for plain numbers and rebuilt the inside of the boot around
+      Quadfit mesh — a four-way stretch lining that moulds to different foot shapes so the leather
+      grips without a break-in period. The forefoot got a raised, textured pattern to add friction
+      and bite on the ball.
+    players: UNVERIFIED
+    sources:
+      - https://www.kickscrew.com/blogs/sneakernews/the-ultimate-guide-to-nike-tiempos
+      - https://www.worldsoccershop.com/guide/nike-tiempo-legend-soccer-cleat-guide
+
+  - brand: nike
+    silo: tiempo
+    sequence: 10
+    name: Tiempo Legend 9
+    year: 2021
+    photo: UNVERIFIED
+    innovation: >-
+      The lightest leather Tiempo up to that point, with a redesigned raised texture across the
+      forefoot for a more precise touch and a new soleplate tuned for quicker changes of
+      direction. It arrived as Nike was winding down kangaroo leather across its range, making it
+      one of the last true k-leather flagships in the line.
+    players: UNVERIFIED
+    sources:
+      - https://www.kickscrew.com/blogs/sneakernews/the-ultimate-guide-to-nike-tiempos
+      - https://soccerpost.com/blogs/news/a-deeper-look-at-nike-tiempos
+
+  - brand: nike
+    silo: tiempo
+    sequence: 11
+    name: Tiempo Legend 10
+    year: 2023
+    photo: UNVERIFIED
+    innovation: >-
+      The end of leather. For the first time in the line's history the Tiempo dropped kangaroo
+      leather entirely and switched to FlyTouch Plus, an engineered synthetic built to feel close
+      to leather while being lighter, stronger and far more water-resistant. A raised 3D texture
+      across the forefoot did the grip job the soft leather used to do. A genuine turning point,
+      and a controversial one for people who loved the old k-leather.
+    players: UNVERIFIED
+    sources:
+      - https://www.worldsoccershop.com/guide/nike-tiempo-legend-soccer-cleat-guide
+      - https://euniqueboots.com/blogs/news/nike-tiempo-classic-football-boots-history
+
+  - brand: nike
+    silo: tiempo
+    sequence: 12
+    name: Tiempo Maestro
+    year: 2026
+    photo: UNVERIFIED
+    innovation: >-
+      A clean reset. After ten Legends Nike retired the name and launched the Tiempo Maestro,
+      pitched at creative playmakers. Its upper is Techleather, a next-generation synthetic
+      engineered to mimic the suppleness of kangaroo leather with more consistency and better
+      wet-weather performance, over a split soleplate for flexibility and grip. A cheaper Ligera
+      version sits below it. It confirms the direction the Legend 10 set: the touch of leather,
+      without the leather.
+    players: UNVERIFIED
+    sources:
+      - https://www.worldsoccershop.com/guide/nike-tiempo-legend-soccer-cleat-guide
