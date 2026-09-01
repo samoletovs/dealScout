@@ -1,0 +1,352 @@
+# bRoom lineage — Nike Mercurial Vapor
+#
+# A *generation* in a silo's history. Not a buyable boot: see tests/test_broom_lineage.py
+# for why these are deliberately kept out of boots.yaml.
+#
+# `photo` is an id into data/broom/photos.yaml. The licence, author and source live there
+# and only there — an attribution that drifts is a licence breach, not a typo. The only
+# Vapor-tagged photo today is `mercurial-astroturf` (CC0), and it depicts a generic
+# lower-tier astro-turf Mercurial, NOT a datable generation — so it is attached to no
+# entry here. Every `photo` is honestly `UNVERIFIED` until the photos session adds a
+# licence-verified image of a specific generation.
+#
+# `innovation` is the heart of each record: what actually CHANGED, in language a
+# fourteen-year-old reads without a glossary. UNVERIFIED is an honest and acceptable
+# value; an invented one is not.
+#
+# SCOPE: the low-cut VAPOR silo only, plus the original 1998 Mercurial the line grew from.
+# The high-collar SUPERFLY silo is a separate file (mercurial-superfly.yaml). The
+# classifier keeps `mercurial vapor` and `mercurial superfly` as separate lines so the
+# engine prices them apart; the Archive tells one continuous Vapor story, so every entry
+# here carries `silo: mercurial vapor`, the line the classifier knows.
+#
+# SEEDED 2026-09-01; `innovation` and `players` filled 2026-09-01 from year-free, whole-silo
+# histories (chiefly Pro:Direct's Nike Mercurial history) that document what changed per
+# generation. Most entries now carry a sourced, plain-language "what changed"; the honest
+# exceptions are the mid-numbered Vapor V, VI and VII — whose 2009–2011 slots the sources give
+# to the Superfly, not the Vapor — and the just-launched Vapor 17, which stay
+# `innovation: UNVERIFIED`. The 2017 Vapor Flyknit Ultra, a knitted low-cut Vapor, is counted
+# as its own generation here rather than left as a silent gap between the XI and the 360.
+# `players` names a wearer only where a cited source ties that person to THIS boot; Mbappé is
+# deliberately absent, because across the modern Vapors his on-pitch boot was the high-collar
+# Superfly, not the low-cut Vapor.
+
+last_verified: "2026-09"
+category: broom_lineage
+brand: nike
+silo: mercurial vapor
+
+generations:
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 1
+    name: Nike Mercurial
+    year: 1998
+    photo: UNVERIFIED
+    innovation: >-
+      The one that started it. Nike built it for Ronaldo to wear at the 1998 World Cup and
+      threw out the heavy leather everyone else used, wrapping the foot in a thin synthetic
+      skin instead. The whole boot came out at roughly 200 grams when most rivals were well
+      over 300 — the idea was that you would barely feel it and so run faster in it. It was
+      finished in bright silver so nobody, defenders or television cameras, could miss it.
+    why: >-
+      Before it, a boot's upper was mostly there to protect and last. This was the first
+      mass-market boot designed around a single idea — be as light and as fast as possible —
+      and every Mercurial since has chased that same idea.
+    players: Ronaldo (Brazil)
+    sources:
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+      - https://soccersourcecoaching.com/nike-mercurial-history/
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 2
+    name: Mercurial Vapor
+    year: 2002
+    photo: UNVERIFIED
+    innovation: >-
+      The first boot to carry the "Vapor" name and the low-cut shape the line still has.
+      Nike called it a "track spike for the pitch": a paper-thin synthetic shell over a light
+      glass-fibre soleplate, stripped of everything that did not help you accelerate. Ronaldo
+      wore the gold pair through the 2002 World Cup as Brazil won it, which is why the boot is
+      remembered as much as the tournament.
+    why: >-
+      It turned the one-off 1998 idea into a permanent line. From here "Vapor" always meant
+      the lightest, fastest boot Nike made, with touch and speed put ahead of protection.
+    players: Ronaldo (Brazil)
+    sources:
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+      - https://soccersourcecoaching.com/nike-mercurial-history/
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 3
+    name: Mercurial Vapor II
+    year: 2004
+    photo: UNVERIFIED
+    innovation: >-
+      A refinement of the first Vapor rather than a new idea: Nike added cushioning and a little
+      more stability without letting the weight creep back up. The aim was to make the fastest boot
+      around wearable enough that players trusted it past the warm-up — the same thin, low, close
+      shape, made more liveable.
+    players: Cristiano Ronaldo, Ronaldo
+    sources:
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+      - https://www.footy-boots.com/cr7-cristiano-ronaldo-nike-football-75739/
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 4
+    name: Mercurial Vapor III
+    year: 2006
+    photo: UNVERIFIED
+    innovation: >-
+      The upper became a microfibre skin shaped to mould to the foot, and Nike added a carbon-fibre
+      insert in the sole for stability. It kept the thin, low Vapor feel but put a stiffer, stronger
+      spine underneath — the lightweight obsession meeting real support for the first time.
+    players: Ronaldo, Thierry Henry, Cristiano Ronaldo
+    sources:
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+      - https://soccersourcecoaching.com/nike-mercurial-history/
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 5
+    name: Mercurial Vapor IV
+    year: 2008
+    photo: UNVERIFIED
+    innovation: >-
+      A more streamlined, futuristic shape — most obviously a moulded cover over the laces that
+      smoothed the top of the boot into one clean striking surface. It pushed the Vapor further
+      towards looking like a piece of speed equipment rather than a traditional football boot.
+    players: Cristiano Ronaldo
+    sources:
+      - http://thebootarchive.com/nike-mercurial/
+      - https://www.footy-boots.com/cr7-cristiano-ronaldo-nike-football-75739/
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 6
+    name: Mercurial Vapor SL
+    year: 2008
+    photo: UNVERIFIED
+    innovation: >-
+      A limited "SL" (Superlight) edition that took the idea to its extreme: the upper AND the
+      soleplate were both moulded from carbon fibre, the same stiff, light material used in
+      racing bikes and Formula 1. It stripped the boot down to around 185 grams — about the
+      weight of a chocolate bar — and was sold as a numbered, top-price collector's boot
+      rather than a normal release.
+    why: >-
+      It was the line showing off how far "as light as possible" could actually go, and the
+      carbon-fibre ideas it tested fed back into the everyday Vapor soleplates that followed.
+    players: Cristiano Ronaldo
+    sources:
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+      - https://www.footy-boots.com/cr7-cristiano-ronaldo-nike-football-75739/
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 7
+    name: Mercurial Vapor V
+    year: 2009
+    photo: UNVERIFIED
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - http://thebootarchive.com/nike-mercurial/
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 8
+    name: Mercurial Vapor VI
+    year: 2010
+    photo: UNVERIFIED
+    innovation: UNVERIFIED
+    players: Neymar
+    sources:
+      - https://soccersourcecoaching.com/nike-mercurial-history/
+      - https://www.footyheadlines.com/2017/02/here-are-our-top-5-nike-neymar-boots.html
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 9
+    name: Mercurial Vapor VII
+    year: 2011
+    photo: UNVERIFIED
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - http://thebootarchive.com/nike-mercurial/
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 10
+    name: Mercurial Vapor VIII
+    year: 2012
+    photo: UNVERIFIED
+    innovation: >-
+      After a run of collar-and-cable Superfly boots, the Vapor VIII brought the line back to a
+      clean, low, direct speed shape. Its synthetic upper was given a suede-like finish to improve
+      the feel of the ball, and the heel was simplified to a two-stud layout. The bright "Mango"
+      launch colour made it one of the most recognisable Mercurials of its era.
+    why: >-
+      Up to here the Vapor had sold itself almost purely on being light and thin. This was the
+      point Nike gave attention back to touch — enough feel and grip on the ball to trust it at
+      speed — without letting the weight climb back.
+    players: Cristiano Ronaldo, Neymar
+    sources:
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+      - https://www.footy-boots.com/cr7-cristiano-ronaldo-nike-football-75739/
+      - https://www.footyheadlines.com/2017/02/here-are-our-top-5-nike-neymar-boots.html
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 11
+    name: Mercurial Vapor IX
+    year: 2013
+    photo: UNVERIFIED
+    innovation: >-
+      Mostly a surface change: a fine dimpled texture across the upper meant to grip and steady the
+      ball a little better at speed, without altering the boot's shape. It became one of Nike's most
+      heavily marketed Mercurials, released in dozens of colourways including rare CR7 pairs.
+    players: Cristiano Ronaldo
+    sources:
+      - https://soccersourcecoaching.com/nike-mercurial-history/
+      - https://www.footy-boots.com/cr7-cristiano-ronaldo-nike-football-75739/
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 12
+    name: Mercurial Vapor X
+    year: 2014
+    photo: UNVERIFIED
+    innovation: >-
+      The year the Superfly took on a knitted upper and an ankle collar, the Vapor X deliberately did
+      neither: it kept the low-cut, collar-free Mercurial shape for players who wanted the speed with
+      nothing around the ankle. Its role was to keep the pure low Vapor alive beside the bolder Superfly.
+    players: UNVERIFIED
+    sources:
+      - http://thebootarchive.com/nike-mercurial/
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 13
+    name: Mercurial Vapor XI
+    year: 2016
+    photo: UNVERIFIED
+    innovation: >-
+      A modern low-cut Vapor carrying the same job forward: light, streamlined and free of any collar,
+      the purist's Mercurial next to the knitted Superfly V. The clean low shape, not a new material,
+      was the whole point.
+    players: UNVERIFIED
+    sources:
+      - https://soccersourcecoaching.com/nike-mercurial-history/
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 14
+    name: Mercurial Vapor Flyknit Ultra
+    year: 2017
+    photo: UNVERIFIED
+    innovation: >-
+      A knitted low-cut Vapor — in effect a Flyknit version of the Vapor XI without the Superfly
+      collar. Its NikeSkin coating over the knit was made softer near the top of the foot and firmer
+      down towards the soleplate, with raised "Speedribs" for support. It showed the Vapor could take
+      the Flyknit idea the collared Superfly had owned and keep it low-cut.
+    players: Eden Hazard
+    sources:
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 15
+    name: Mercurial Vapor 360
+    year: 2018
+    photo: UNVERIFIED
+    innovation: >-
+      The biggest change in the boot's shape since 2002. Nike rebuilt the Vapor as a single
+      knitted piece — Flyknit "360" — that wrapped the whole foot with no separate tongue, so
+      the upper felt like a sock pulled tight over the plate. The "360" name meant the knit
+      ran all the way around the foot, chasing a cleaner, seam-free surface on the ball.
+    why: >-
+      A woven upper let Nike put stretch exactly where the foot needed to bend and hold
+      everywhere else, something a flat synthetic sheet could not do — a genuinely different
+      way of making the boot, not just a new pattern on the old one.
+    players: UNVERIFIED
+    sources:
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 16
+    name: Mercurial Vapor 13
+    year: 2019
+    photo: UNVERIFIED
+    innovation: >-
+      A refinement of the 2018 knit rather than a new shape: higher-strength yarns and a cleaner
+      upper feel, with the collar on the Superfly version now sitting lower. The knitted Mercurial
+      had stopped being a shock and was being made to feel steadier and more finished.
+    players: UNVERIFIED
+    sources:
+      - http://thebootarchive.com/nike-mercurial/
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 17
+    name: Mercurial Vapor 14
+    year: 2021
+    photo: UNVERIFIED
+    innovation: >-
+      The "Dragonfly" generation. Nike moved the upper away from pure knit to Vaporposite, a
+      composite material, and gave it a transparent, sectioned look that showed how the boot was
+      built. The point was that the knit no longer had to do everything.
+    players: UNVERIFIED
+    sources:
+      - https://soccersourcecoaching.com/nike-mercurial-history/
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 18
+    name: Mercurial Vapor 15
+    year: 2022
+    photo: UNVERIFIED
+    innovation: >-
+      The biggest modern change: Nike set a Zoom Air unit — a small sealed bag of pressurised air —
+      into the soleplate, so the boot pushed back and felt springy underfoot instead of only thin and
+      light. A "SpeedCage" and a Vaporposite+ upper held the foot down onto that new platform.
+    players: UNVERIFIED
+    sources:
+      - http://thebootarchive.com/nike-mercurial/
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 19
+    name: Mercurial Vapor 16
+    year: 2024
+    photo: UNVERIFIED
+    innovation: >-
+      A refinement of the 2022 Air Zoom boot rather than a reset: the same Zoom Air plate, tuned to
+      feel more efficient, paired with a new "Gripknit" upper that added a little texture and grip on
+      the ball without making the boot feel sticky or slow, over a lighter Flyknit build.
+    players: UNVERIFIED
+    sources:
+      - https://soccersourcecoaching.com/nike-mercurial-history/
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 20
+    name: Mercurial Vapor 17
+    year: 2026
+    photo: UNVERIFIED
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
