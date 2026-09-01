@@ -188,3 +188,29 @@ def test_a_source_url_must_not_cite_a_different_generation() -> None:
     assert not problems, (
         "sources appear to cite a different generation:\n" + "\n".join(problems)
     )
+
+
+# Reader-facing prose fields. `photo`/`sources` are not here: `photo` is an id or the bare
+# sentinel and never reaches the reader as prose, and `sources` are URLs.
+PROSE_FIELDS = ("name", "innovation", "why", "players")
+
+
+def test_reader_facing_prose_never_embeds_the_raw_sentinel() -> None:
+    """UNVERIFIED is a whole-field token, never a word in a sentence.
+
+    A field may be *exactly* ``UNVERIFIED`` — that renders as an honest gap. What it may
+    never do is carry the token inside a longer string ("match-day wearers are
+    UNVERIFIED"), because that reaches the reader as the raw word, which is the one thing
+    the sentinel exists to keep off the page. bRoom's own "never leaks the sentinel"
+    render guard fired on exactly this after a merge; caught upstream here it never ships.
+    """
+    leaks = [
+        f"{path.name}: {e.get('name', '?')} -> {field}: {e[field]!r}"
+        for path, e in _entries()
+        for field in PROSE_FIELDS
+        if isinstance(e.get(field), str) and e[field] != UNVERIFIED and UNVERIFIED in e[field]
+    ]
+    assert not leaks, (
+        "prose fields embed the raw UNVERIFIED sentinel — use the field value exactly "
+        "'UNVERIFIED' for an honest gap, or reword the sentence:\n" + "\n".join(leaks)
+    )
