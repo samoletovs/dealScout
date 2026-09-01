@@ -1,0 +1,305 @@
+# bRoom lineage — Nike Mercurial Vapor
+#
+# A *generation* in a silo's history. Not a buyable boot: see tests/test_broom_lineage.py
+# for why these are deliberately kept out of boots.yaml.
+#
+# `photo` is an id into data/broom/photos.yaml. The licence, author and source live there
+# and only there — an attribution that drifts is a licence breach, not a typo. The only
+# Vapor-tagged photo today is `mercurial-astroturf` (CC0), and it depicts a generic
+# lower-tier astro-turf Mercurial, NOT a datable generation — so it is attached to no
+# entry here. Every `photo` is honestly `UNVERIFIED` until the photos session adds a
+# licence-verified image of a specific generation.
+#
+# `innovation` is the heart of each record: what actually CHANGED, in language a
+# fourteen-year-old reads without a glossary. UNVERIFIED is an honest and acceptable
+# value; an invented one is not.
+#
+# SCOPE: the low-cut VAPOR silo only, plus the original 1998 Mercurial the line grew from.
+# The high-collar SUPERFLY silo is a separate file (mercurial-superfly.yaml). The
+# classifier keeps `mercurial vapor` and `mercurial superfly` as separate lines so the
+# engine prices them apart; the Archive tells one continuous Vapor story, so every entry
+# here carries `silo: mercurial vapor`, the line the classifier knows.
+#
+# SEEDED 2026-09-01. The five landmark generations that changed what the boot was — the
+# 1998 R9, the 2002 Vapor, the 2008 SL, the 2012 VIII and the 2018 360 — carry researched
+# `innovation` prose. The generations in between (II, III, IV, V, VI, VII, IX, X, XI) and
+# the modern numbered run (13, 14, 15, 16, 17) are seeded with their verified year and
+# name and an honest `innovation: UNVERIFIED` — the per-generation "what changed" is the
+# remaining research job, to be filled from a SAME-generation source.
+
+last_verified: "2026-09"
+category: broom_lineage
+brand: nike
+silo: mercurial vapor
+
+generations:
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 1
+    name: Nike Mercurial
+    year: 1998
+    photo: UNVERIFIED
+    innovation: >-
+      The one that started it. Nike built it for Ronaldo to wear at the 1998 World Cup and
+      threw out the heavy leather everyone else used, wrapping the foot in a thin synthetic
+      skin instead. The whole boot came out at roughly 200 grams when most rivals were well
+      over 300 — the idea was that you would barely feel it and so run faster in it. It was
+      finished in bright silver so nobody, defenders or television cameras, could miss it.
+    why: >-
+      Before it, a boot's upper was mostly there to protect and last. This was the first
+      mass-market boot designed around a single idea — be as light and as fast as possible —
+      and every Mercurial since has chased that same idea.
+    players: Ronaldo (Brazil)
+    sources:
+      - https://en.wikipedia.org/wiki/Nike_Mercurial
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 2
+    name: Mercurial Vapor
+    year: 2002
+    photo: UNVERIFIED
+    innovation: >-
+      The first boot to carry the "Vapor" name and the low-cut shape the line still has.
+      Nike called it a "track spike for the pitch": a paper-thin synthetic shell over a light
+      glass-fibre soleplate, stripped of everything that did not help you accelerate. Ronaldo
+      wore the gold pair through the 2002 World Cup as Brazil won it, which is why the boot is
+      remembered as much as the tournament.
+    why: >-
+      It turned the one-off 1998 idea into a permanent line. From here "Vapor" always meant
+      the lightest, fastest boot Nike made, with touch and speed put ahead of protection.
+    players: Ronaldo (Brazil)
+    sources:
+      - https://en.wikipedia.org/wiki/Nike_Mercurial
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+      - https://soccersourcecoaching.com/nike-mercurial-history/
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 3
+    name: Mercurial Vapor II
+    year: 2004
+    photo: UNVERIFIED
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Nike_Mercurial
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 4
+    name: Mercurial Vapor III
+    year: 2006
+    photo: UNVERIFIED
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Nike_Mercurial
+      - https://soccersourcecoaching.com/nike-mercurial-history/
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 5
+    name: Mercurial Vapor IV
+    year: 2008
+    photo: UNVERIFIED
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Nike_Mercurial
+      - http://thebootarchive.com/nike-mercurial/
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 6
+    name: Mercurial Vapor SL
+    year: 2008
+    photo: UNVERIFIED
+    innovation: >-
+      A limited "SL" (Superlight) edition that took the idea to its extreme: the upper AND the
+      soleplate were both moulded from carbon fibre, the same stiff, light material used in
+      racing bikes and Formula 1. It stripped the boot down to around 185 grams — about the
+      weight of a chocolate bar — and was sold as a numbered, top-price collector's boot
+      rather than a normal release.
+    why: >-
+      It was the line showing off how far "as light as possible" could actually go, and the
+      carbon-fibre ideas it tested fed back into the everyday Vapor soleplates that followed.
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Nike_Mercurial
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 7
+    name: Mercurial Vapor V
+    year: 2009
+    photo: UNVERIFIED
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Nike_Mercurial
+      - http://thebootarchive.com/nike-mercurial/
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 8
+    name: Mercurial Vapor VI
+    year: 2010
+    photo: UNVERIFIED
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Nike_Mercurial
+      - https://soccersourcecoaching.com/nike-mercurial-history/
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 9
+    name: Mercurial Vapor VII
+    year: 2011
+    photo: UNVERIFIED
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Nike_Mercurial
+      - http://thebootarchive.com/nike-mercurial/
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 10
+    name: Mercurial Vapor VIII
+    year: 2012
+    photo: UNVERIFIED
+    innovation: >-
+      The generation that added grip to the speed. Its upper was covered in a fine speckled
+      texture, and it was one of the first Nike boots with ACC — "All Conditions Control" — a
+      surface treatment meant to keep the same grip on the ball whether the pitch was dry or
+      soaking. A hugely popular boot of its era and, for many players who grew up in the
+      2010s, the definitive Mercurial.
+    why: >-
+      Up to here the Vapor sold itself purely on being light. This one answered the obvious
+      complaint about a thin, slick synthetic — that a wet ball slid off it — without adding
+      the weight back.
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Nike_Mercurial
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 11
+    name: Mercurial Vapor IX
+    year: 2013
+    photo: UNVERIFIED
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Nike_Mercurial
+      - https://soccersourcecoaching.com/nike-mercurial-history/
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 12
+    name: Mercurial Vapor X
+    year: 2014
+    photo: UNVERIFIED
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Nike_Mercurial
+      - http://thebootarchive.com/nike-mercurial/
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 13
+    name: Mercurial Vapor XI
+    year: 2016
+    photo: UNVERIFIED
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Nike_Mercurial
+      - https://soccersourcecoaching.com/nike-mercurial-history/
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 14
+    name: Mercurial Vapor 360
+    year: 2018
+    photo: UNVERIFIED
+    innovation: >-
+      The biggest change in the boot's shape since 2002. Nike rebuilt the Vapor as a single
+      knitted piece — Flyknit "360" — that wrapped the whole foot with no separate tongue, so
+      the upper felt like a sock pulled tight over the plate. The "360" name meant the knit
+      ran all the way around the foot, chasing a cleaner, seam-free surface on the ball.
+    why: >-
+      A woven upper let Nike put stretch exactly where the foot needed to bend and hold
+      everywhere else, something a flat synthetic sheet could not do — a genuinely different
+      way of making the boot, not just a new pattern on the old one.
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Nike_Mercurial
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 15
+    name: Mercurial Vapor 13
+    year: 2019
+    photo: UNVERIFIED
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Nike_Mercurial
+      - http://thebootarchive.com/nike-mercurial/
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 16
+    name: Mercurial Vapor 14
+    year: 2021
+    photo: UNVERIFIED
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Nike_Mercurial
+      - https://soccersourcecoaching.com/nike-mercurial-history/
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 17
+    name: Mercurial Vapor 15
+    year: 2022
+    photo: UNVERIFIED
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Nike_Mercurial
+      - http://thebootarchive.com/nike-mercurial/
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 18
+    name: Mercurial Vapor 16
+    year: 2024
+    photo: UNVERIFIED
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Nike_Mercurial
+      - https://soccersourcecoaching.com/nike-mercurial-history/
+
+  - brand: nike
+    silo: mercurial vapor
+    sequence: 19
+    name: Mercurial Vapor 17
+    year: 2026
+    photo: UNVERIFIED
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Nike_Mercurial
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
