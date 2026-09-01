@@ -1,5 +1,9 @@
 # bRoom lineage — Nike Mercurial Superfly
 #
+# BOUNDARY: Superfly = the high-cut, carbon-plate branch of the Mercurial. The 1998 Ronaldo
+# R9 original and the low-cut Vapor line live in mercurial-vapor.yaml; this file starts at
+# Superfly I (2009) by decision, not omission.
+#
 # A *generation* in a silo's history. Not a buyable boot: see tests/test_broom_lineage.py
 # for why these are deliberately kept out of boots.yaml.
 #
@@ -45,7 +49,9 @@ generations:
       Nike wanted lockdown without weight. Flywire made the support system visible: instead
       of padding the boot to hold your foot, thin cables held it and everything else was
       stripped away, so the fastest boot going could get even lighter.
-    players: UNVERIFIED
+    players: >-
+      Cristiano Ronaldo, whose United-era orange-and-silver launch pair fixed the first
+      Superfly's image.
     sources:
       - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
       - https://soccersourcecoaching.com/nike-mercurial-history/
@@ -61,7 +67,8 @@ generations:
       studs meant to react to the ground, extending for grip when you pushed and sitting back
       when you did not. It was the plate, not the upper, that carried the story this time.
     players: >-
-      Clint Dempsey was the first player to wear the Superfly II, debuting it in March 2010.
+      Clint Dempsey was the first player to wear the Superfly II, debuting it in March 2010;
+      Cristiano Ronaldo's CR7 "Safari" edition ran on this generation.
     sources:
       - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
       - https://soccersourcecoaching.com/nike-mercurial-history/
@@ -77,8 +84,11 @@ generations:
       bolder Swoosh, on essentially the same Flywire upper and plate as the Superfly II. An
       honest record says so: not every generation is a breakthrough, and this one was a
       refresh.
-    players: UNVERIFIED
+    players: >-
+      Cristiano Ronaldo, through the peak speed-boot rivalry — him in the Mercurial, Messi
+      in the adidas F50.
     sources:
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
       - https://soccersourcecoaching.com/nike-mercurial-history/
 
   - brand: nike
@@ -113,8 +123,11 @@ generations:
       redesigned the soleplate around chevron-shaped studs placed for straight-line traction
       and acceleration. The Vapor of the same year (Vapor XI) stayed low-cut on a more
       traditional plate; the Superfly V was the high-collar, aggressive-traction version.
-    players: UNVERIFIED
+    players: >-
+      Cristiano Ronaldo, by now inseparable from the Superfly — the boot had become part of
+      his image.
     sources:
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
       - https://soccersourcecoaching.com/nike-mercurial-history/
 
   - brand: nike
@@ -145,8 +158,10 @@ generations:
       A tuning pass rather than a reinvention: an upgraded chevron stud pattern on the outsole
       and a reworked Dynamic Fit collar for a more secure lock around the ankle, on the same
       360 Flyknit direction as the generation before it.
-    players: UNVERIFIED
+    players: >-
+      Kylian Mbappé, the modern Mercurial face of the Vapor 13 / Superfly 7 period.
     sources:
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
       - https://soccersourcecoaching.com/nike-mercurial-history/
 
   - brand: nike
@@ -176,7 +191,9 @@ generations:
       pressurised air-and-fibre cushion that springs back as you push off — the first time a
       Mercurial used Air. It paired that with a SpeedCage for stability and an upgraded
       Vaporposite+ upper.
-    players: UNVERIFIED
+    players: >-
+      Kylian Mbappé, whose repeated-acceleration game was the player story Nike told the
+      Air Zoom plate through.
     sources:
       - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
 
