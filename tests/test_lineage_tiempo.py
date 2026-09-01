@@ -36,6 +36,41 @@ def generations() -> list[dict]:
     return gens
 
 
+def test_named_players_are_not_blanket_unverified(generations: list[dict]) -> None:
+    """At least the generations whose cited source names a wearer must fill ``players``.
+
+    The whole line has documented signature editions — Ronaldinho's R10 (2005), the Totti
+    Legend V, the Pirlo Legend VI, the Premier's 1994 Brazil squad — and the first source on
+    those entries names them. A lineage that left every ``players`` blank would be hiding the
+    single most engaging fact about the boot behind an "UNVERIFIED" that isn't true. This
+    guards against silently regressing back to that.
+    """
+    filled = [e for e in generations if str(e.get("players", "")).strip() not in ("", "UNVERIFIED")]
+    assert len(filled) >= 4, (
+        f"only {len(filled)} generations name a player; the cited sources name at least four "
+        "(Premier, Legend 2005, Legend V, Legend VI) — a blank players field there is not honest"
+    )
+
+
+def test_no_player_is_carried_verbatim_across_generations(generations: list[dict]) -> None:
+    """The cross-generation trap in a different costume.
+
+    A signature name belongs to the generation its source ties it to. If the identical
+    ``players`` string appeared on two entries it would almost certainly mean a name was
+    copied forward without a source that puts it there.
+    """
+    seen: dict[str, str] = {}
+    clashes: list[str] = []
+    for e in generations:
+        val = str(e.get("players", "")).strip()
+        if val in ("", "UNVERIFIED"):
+            continue
+        if val in seen:
+            clashes.append(f"{e.get('name')} repeats the players line of {seen[val]}")
+        seen[val] = str(e.get("name"))
+    assert not clashes, "\n".join(clashes)
+
+
 def test_tiempo_lineage_is_a_timeline_not_a_stub(generations: list[dict]) -> None:
     # A one-row "lineage" is a stub. The Tiempo is one of football's oldest lines; a
     # timeline that teaches anything needs several rungs. Six is a deliberate floor.

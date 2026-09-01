@@ -14,10 +14,11 @@
 # value; an invented one is not.
 #
 # The Tiempo is Nike's leather / touch line — the control boot, the opposite of the speed
-# Mercurial. Nike put the "Tiempo" name on leather boots as far back as the 1980s, but the
-# earliest exact years are not confidently sourceable, so this timeline is traced from the
-# widely documented 1994 Premier and the 2005 rename to "Legend" rather than guessing a
-# 1980s date. A missing early rung is an honest gap, not a hole to fill with a number.
+# Mercurial. The name actually predates this timeline: Nike made a "Tiempo D" in 1984,
+# thirteen years after its first football boot. The cited history is explicit that the 1994
+# Premier "was the cleat that put the Tiempo name on the map", so this timeline opens at the
+# Premier rather than with the barely-documented D — a stated decision, not a silent
+# omission. The 1984 D is real and acknowledged here.
 #
 # CLASSIFIER NOTE — where "Maestro" lives. From 2026 Nike retired the "Legend" name after
 # ten generations and the flagship control boot became the Tiempo *Maestro*. In this repo's
@@ -27,10 +28,10 @@
 # generation of the same silo, tagged `silo: tiempo`, one continuous story from 1994.
 #
 # SEEDED 2026-09-01 with the Premier origin and the Legend arc through the 2026 Maestro.
-# Players are `UNVERIFIED` throughout: the line has famous wearers (Maldini, Totti, Pirlo,
-# Ramos, van Dijk are all associated with the Tiempo) but tying a named player to a *single*
-# generation needs a same-generation source, which the general overviews cited here do not
-# give. That research is a good next job.
+# `players` is filled where a cited source names a wearer for *that* generation, and left
+# `UNVERIFIED` otherwise. A name is never carried across generations without a source that
+# puts it there: Ronaldinho fronting the 2005 Legend does not place him in the Legend II,
+# which is the cross-generation trap wearing a different coat.
 
 last_verified: "2026-09"
 category: broom_lineage
@@ -54,7 +55,9 @@ generations:
       In the 1990s Nike was the newcomer in football and known for bright, aggressive boots.
       The Tiempo Premier was the quiet one — proof Nike could make a plain, classic leather
       boot as good as the European names, and it became the base the whole line grew from.
-    players: UNVERIFIED
+    players: >-
+      Romário, Eric Cantona and Ian Wright wore it, and almost half of Brazil's 1994 World
+      Cup squad played in the Tiempo — the association that first sold the boot.
     sources:
       - https://soccerpost.com/blogs/news/a-deeper-look-at-nike-tiempos
       - https://euniqueboots.com/blogs/news/nike-tiempo-classic-football-boots-history
@@ -70,7 +73,9 @@ generations:
       leather upper for touch but modernising underneath — a mesh tongue for breathability and
       Zoom Air cushioning in the heel to soak up impact. It kept the soft-leather feel and made
       the boot more comfortable to play ninety minutes in.
-    players: UNVERIFIED
+    players: >-
+      Ronaldinho was the face of the boot, and his input shaped the iconic R10 signature
+      versions that followed.
     sources:
       - https://soccerpost.com/blogs/news/a-deeper-look-at-nike-tiempos
       - https://www.worldsoccershop.com/guide/nike-tiempo-legend-soccer-cleat-guide
@@ -132,7 +137,8 @@ generations:
       from drinking up water. A leather boot's old weakness is that it soaks up rain and grows
       heavy; Hypershield kept the Legend V light and its leather soft in the wet, so the touch
       you get in training is the touch you get in a downpour.
-    players: UNVERIFIED
+    players: >-
+      Francesco Totti had a signature "Totti" Legend V Premium edition.
     sources:
       - https://www.footy-boots.com/nike-tiempo-legend-v/
       - https://soccerpost.com/blogs/news/a-deeper-look-at-nike-tiempos
@@ -149,9 +155,11 @@ generations:
       Nike's All Conditions Control (ACC) coating kept grip on the ball consistent whether it was
       dry or soaking. It looked far more modern than any Tiempo before it while keeping the
       leather feel.
-    players: UNVERIFIED
+    players: >-
+      Andrea Pirlo had a signature Legend VI "Pirlo Edition".
     sources:
       - https://www.kickscrew.com/blogs/sneakernews/the-ultimate-guide-to-nike-tiempos
+      - https://soccerpost.com/blogs/news/a-deeper-look-at-nike-tiempos
       - https://www.worldsoccershop.com/guide/nike-tiempo-legend-soccer-cleat-guide
 
   - brand: nike
