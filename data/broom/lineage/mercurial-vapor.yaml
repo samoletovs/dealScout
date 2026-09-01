@@ -21,13 +21,16 @@
 # here carries `silo: mercurial vapor`, the line the classifier knows.
 #
 # SEEDED 2026-09-01; `innovation` and `players` filled 2026-09-01 from year-free, whole-silo
-# histories (chiefly Pro:Direct's Nike Mercurial history) that document what changed per
-# generation. Most entries now carry a sourced, plain-language "what changed"; the honest
-# exceptions are the mid-numbered Vapor V, VI and VII — whose 2009–2011 slots the sources give
-# to the Superfly, not the Vapor — and the just-launched Vapor 17, which stay
-# `innovation: UNVERIFIED`. The 2017 Vapor Flyknit Ultra, a knitted low-cut Vapor, is counted
-# as its own generation here rather than left as a silent gap between the XI and the 360.
-# `players` names a wearer only where a cited source ties that person to THIS boot; Mbappé is
+# histories (Pro:Direct's and SoccerSourceCoaching's Nike Mercurial histories) plus, for the
+# 2026 Vapor 17, Nike's own launch page and House of Heat's launch report. EVERY generation now
+# carries a sourced, plain-language "what changed" — including the mid-numbered Vapor V, VI and
+# VII, whose entries say plainly what the source says: 2009 is where the Superfly branched off
+# and left the Vapor as the pure low boot (V), the VI was an evolution of upper and plate, and
+# the VII changed how it looked rather than what it did. The 2017 Vapor Flyknit Ultra, a knitted
+# low-cut Vapor, is counted as its own generation here rather than left as a silent gap between
+# the XI and the 360.
+# `players` names a wearer only where a cited source ties that person to THIS boot, and is
+# honestly `UNVERIFIED` where none does (V, VII and the shared-launch 17 among them). Mbappé is
 # deliberately absent, because across the modern Vapors his on-pitch boot was the high-collar
 # Superfly, not the low-cut Vapor.
 
@@ -151,10 +154,16 @@ generations:
     name: Mercurial Vapor V
     year: 2009
     photo: UNVERIFIED
-    innovation: UNVERIFIED
+    innovation: >-
+      2009 is the year the Mercurial split in two. Nike spun off a taller, more supported
+      sister boot — the Superfly, laced through with its new Flywire cabling — and left the
+      Vapor as the pure low-cut speed shoe. The Vapor V itself kept things simple: a
+      contoured chassis and a cushioned sock liner for a steadier ride, and a glass-fibre
+      heel counter to hold the heel in place without adding bulk.
     players: UNVERIFIED
     sources:
       - http://thebootarchive.com/nike-mercurial/
+      - https://soccersourcecoaching.com/nike-mercurial-history/
 
   - brand: nike
     silo: mercurial vapor
@@ -162,7 +171,11 @@ generations:
     name: Mercurial Vapor VI
     year: 2010
     photo: UNVERIFIED
-    innovation: UNVERIFIED
+    innovation: >-
+      An evolution rather than a reinvention. The Vapor VI upgraded the Teijin microfibre
+      upper carried over from the V, and reworked the traction plate to be lighter and more
+      responsive underfoot. It is best remembered in the bright pink-and-silver launch
+      colourway worn by a young Neymar.
     players: Neymar
     sources:
       - https://soccersourcecoaching.com/nike-mercurial-history/
@@ -174,10 +187,15 @@ generations:
     name: Mercurial Vapor VII
     year: 2011
     photo: UNVERIFIED
-    innovation: UNVERIFIED
+    innovation: >-
+      Unusually for the line, the Vapor VII changed how it looked rather than what it did.
+      Nike gave it brighter colourways and a bolder Swoosh but, by the maker's own account,
+      carried over the previous generation's materials and plate with no new speed
+      technology. It was the last Vapor before the ground-up 2012 redesign.
     players: UNVERIFIED
     sources:
       - http://thebootarchive.com/nike-mercurial/
+      - https://soccersourcecoaching.com/nike-mercurial-history/
 
   - brand: nike
     silo: mercurial vapor
@@ -346,7 +364,13 @@ generations:
     name: Mercurial Vapor 17
     year: 2026
     photo: UNVERIFIED
-    innovation: UNVERIFIED
+    innovation: >-
+      For the 2026 World Cup Nike split the Mercurial into two genuinely different boots for
+      the first time in years. Instead of a low-cut and a high-cut version of one shoe, the
+      Vapor 17 was recast as the specialist for sharp, quick movement in tight spaces — and
+      built as the lightest Mercurial package Nike had ever made — while the job of pure
+      top-end, straight-line speed passed to its sister, the low-cut Superfly 11.
     players: UNVERIFIED
     sources:
-      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+      - https://houseofheat.co/nike/nike-mercurial-vapor-17-superfly-11-world-cup-2026
+      - https://www.nike.com/a/mercurial-release-date

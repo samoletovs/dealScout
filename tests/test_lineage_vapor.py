@@ -12,6 +12,11 @@ What it pins:
   classifier knows, so a Superfly row can never leak into this file;
 - ``sequence`` 1 is the oldest generation — the 1998 original the whole line grew from —
   because the timeline is meant to read from the beginning.
+- every generation carries a substantive, non-``UNVERIFIED`` ``innovation`` — because the
+  bRoom site renders ``innovation: UNVERIFIED`` as the literal "Not documented yet." and
+  holds a silo out of the live lineage until not one row reads that way. This guard fails
+  on the pre-fill file, where the mid-numbered Vapor V/VI/VII and the 2026 Vapor 17 were
+  ``UNVERIFIED``.
 """
 
 from __future__ import annotations
@@ -24,6 +29,20 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 VAPOR = REPO_ROOT / "data" / "broom" / "lineage" / "mercurial-vapor.yaml"
 
 SILO = "mercurial vapor"
+
+# The four generations whose innovation was filled in the 2026-09 pass — the ones that
+# previously read "Not documented yet." on the site. Named explicitly so a regression on
+# any of them is reported by name, not just by count.
+FILLED_INNOVATION = (
+    "Mercurial Vapor V",
+    "Mercurial Vapor VI",
+    "Mercurial Vapor VII",
+    "Mercurial Vapor 17",
+)
+
+# The shortest real "what changed" sentence should comfortably clear this; it exists to
+# reject a one-word or placeholder value slipping past the != "UNVERIFIED" check.
+MIN_INNOVATION_LEN = 60
 
 
 def _doc() -> dict:
@@ -66,3 +85,39 @@ def test_sequence_one_is_the_oldest_generation() -> None:
         f"sequence 1 ({first.get('name')}, year {first.get('year')}) is not the oldest "
         f"generation (oldest year is {min(years)})"
     )
+
+
+def test_every_generation_documents_its_innovation() -> None:
+    """No row may publish as "Not documented yet." — the site's hard bar for going live."""
+    undocumented = [
+        g.get("name", "?")
+        for g in _generations()
+        if str(g.get("innovation", "")).strip().upper() == "UNVERIFIED"
+    ]
+    assert not undocumented, (
+        "these generations still read 'Not documented yet.' on the site: "
+        + ", ".join(undocumented)
+    )
+
+    too_thin = [
+        f"{g.get('name', '?')} ({len(str(g.get('innovation', '')).strip())} chars)"
+        for g in _generations()
+        if len(str(g.get("innovation", "")).strip()) < MIN_INNOVATION_LEN
+    ]
+    assert not too_thin, (
+        f"innovation must be a real sentence (>= {MIN_INNOVATION_LEN} chars): "
+        + ", ".join(too_thin)
+    )
+
+
+def test_the_filled_mid_and_2026_generations_are_documented() -> None:
+    """Pin the four generations filled in the 2026-09 pass so they cannot regress to UNVERIFIED."""
+    by_name = {g.get("name"): g for g in _generations()}
+    for name in FILLED_INNOVATION:
+        gen = by_name.get(name)
+        assert gen is not None, f"expected generation missing: {name}"
+        innovation = str(gen.get("innovation", "")).strip()
+        assert innovation.upper() != "UNVERIFIED", f"{name} innovation regressed to UNVERIFIED"
+        assert len(innovation) >= MIN_INNOVATION_LEN, (
+            f"{name} innovation is too thin ({len(innovation)} chars)"
+        )
