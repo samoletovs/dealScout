@@ -140,6 +140,53 @@ Four conditions, all mandatory:
 Search noise is real: a previous search for "F50" returned **a bus**. Confirm the object
 in the image is the boot you think it is.
 
+### The four-check gate, learned the hard way on 2026-09-01
+
+Every one of these was added because something got past the checks before it. Run all
+four on every candidate, in order.
+
+**1. Verify the licence at source, file by file.** Via the Commons API, never inferred
+from a search result and never from another file by the same uploader.
+
+**2. Confirm the object is the boot.** The bus was real.
+
+**3. Ask whether the photographed *thing* is itself someone else's copyright.**
+A CC-licensed photograph of an advertisement, poster, packaging, magazine spread, product
+render or museum display panel **does not clear the artwork inside it** — the photographer
+never held those rights to give away. Publishing it puts a brand's own creative on our
+pages under a licence the brand never granted. This is the same mistake that made this
+repo private, wearing a Creative Commons badge.
+
+**4. Look at the pixels.** Do not stop at the metadata. A Flickr file titled *"Adidas
+Adizero f50 football boot"*, CC BY 2.0, genuinely of the f50, passed checks 1 and 2 —
+and turned out to be a photograph of an **INTERSPORT bus-stop poster**, retailer logo and
+all. Only downloading it and looking revealed that.
+
+### Four more rules, same day
+
+- **Read the generation off the photo, not off its date.** A file shot in 2024 is not
+  evidence of a 2024 generation.
+- **A filename is not a source.** `legend v.jpg` whose own description says only "one of
+  the models from the 2015 range" does not identify a generation. The uploader's written
+  description outranks their file naming, always.
+- **Grep `photos.yaml` for the `commons_file` before proposing one.** Everyone searching
+  a silo lands on the same handful of images; two sessions proposed files we already had.
+- **Walk the category tree, not keywords.** This is the big one. Three sweeps concluded
+  the free pool was exhausted and that phantom and f50 would never have a photograph. All
+  three searched by **keyword**. Walking `Category:Association football boots` and the
+  Nike/adidas subcategories returns **169 football-specific files, 168 freely licensed**,
+  because Commons filenames do not contain the words anyone would search for. That is how
+  phantom and f50 went from zero to a 6000px photograph each.
+
+> A search that finds nothing has told you either that the archive is empty, or that your
+> method cannot see. Check which before you report the first.
+
+**And do not bend the spine to fit an image.** Two clean, well-licensed Tiempo photographs
+were rejected because they showed the *Mystic*, a mid-tier line, not a flagship
+generation. Adding a mid-tier boot to a flagship lineage because a photograph happens to
+exist would reproduce, in our own data, the exact tier confusion this site was built to
+correct.
+
 **Coverage today:** 13 photos. Predator is rich (1994, 1996, 1998, 2002, 2004, 2006,
 2012 ×2, 2018 — already verified and merged). Every other silo has **one**. Finding
 licensed photographs for the other six lineages is the single highest-value thing you
@@ -196,6 +243,24 @@ Everyone may **add** to `photos.yaml`; coordinate through the lead if you collid
 - **A branch that deletes lines you did not intend to delete is stale.** Rebase on
   `origin/main` before opening a PR. This trap has been hit repeatedly: the tell is a
   large *deletion* count on an add-only branch.
+
+  **But measure it with a three-dot diff, or you will chase ghosts.** `git diff main
+  branch` compares the two *tips* and shows every file main gained since you branched as
+  a "deletion" — a stale-but-harmless branch showed **1,346 deletions** this way,
+  including three whole silo files. `git diff main...branch` compares against the
+  merge-base and showed **24**. A merge keeps files that were added on main and untouched
+  on the branch; `git merge-tree` confirms it. **`gh pr view --json additions,deletions`
+  reports the three-dot number**, which is why the tell is reliable on real PRs and
+  misleading on raw tip comparisons.
+
+  The real risk from a stale branch is subtler than deletion: if your file changed on
+  **both** sides of the merge-base, a merge can auto-merge hunk-by-hunk and silently
+  reintroduce old values on lines main has since fixed. That is what nearly un-fixed a
+  release year here.
+- **"Merged", "live" and "correct" are three different states.** A pin can move forward,
+  list every file, pass every guard, and still publish a page full of gaps because the
+  *content* at that ref was not ready. That shipped here. Check what a new page renders,
+  not just that it renders.
 - **Add a test that fails without your change**, and say in the PR how you verified it.
 - **Do not open a `[WIP]` PR.** If blocked, comment on the issue and stop.
 - Run `python -m pytest tests/ -q` and `python -m dealscout.eval` before any PR.
