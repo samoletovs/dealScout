@@ -207,3 +207,74 @@ photos:
       en: "Nike Mercurial astro-turf boots — a lower-tier turf version of the Mercurial line."
       lv: "Nike Mercurial mākslīgā zālāja butes — zemāka līmeņa Mercurial līnijas versija mākslīgajam segumam."
       ru: "Бутсы Nike Mercurial для искусственного покрытия — версия линейки Mercurial для синтетических полей."
+
+  # ===================== CURRENT-ERA, SINGAPORE 2024 =====================
+  # Also Pangalau, photographed 5 April 2024 at adidas Orchard Road and at
+  # Official Liverpool FC Retail, Victoria Street. Found by walking the
+  # Commons category tree — a keyword search never surfaced them, because
+  # the filenames do not contain the words anyone would search for.
+  #
+  # These two silos had NO photograph at all before this.
+
+  - id: phantom-gx-2023
+    silo: phantom
+    commons_file: "Nike Phantom GX Elite Firm Ground (Andrew Robertson).jpg"
+    author: Pangalau
+    licence: CC BY-SA 4.0
+    licence_url: "https://creativecommons.org/licenses/by-sa/4.0"
+    source_url: "https://commons.wikimedia.org/wiki/File:Nike_Phantom_GX_Elite_Firm_Ground_(Andrew_Robertson).jpg"
+    width: 6306
+    height: 4204
+    caption:
+      en: "Nike Phantom GX Elite FG — Andrew Robertson's pair, photographed at Liverpool's Singapore store in 2024."
+      lv: "Nike Phantom GX Elite FG — Endrū Robertsona pāris, fotografēts Liverpool veikalā Singapūrā 2024. gadā."
+      ru: "Nike Phantom GX Elite FG — пара Эндрю Робертсона, снята в сингапурском магазине «Ливерпуля» в 2024 году."
+
+  - id: f50-crazyfast-2023
+    silo: f50
+    commons_file: "Adidas x CrazyFast Elite Firm Ground 02.jpg"
+    author: Pangalau
+    licence: CC BY-SA 4.0
+    licence_url: "https://creativecommons.org/licenses/by-sa/4.0"
+    source_url: "https://commons.wikimedia.org/wiki/File:Adidas_x_CrazyFast_Elite_Firm_Ground_02.jpg"
+    width: 6500
+    height: 3607
+    caption:
+      en: "Adidas X Crazyfast Elite FG (2023) — the speed line under its X name, before the F50 name returned in 2024."
+      lv: "Adidas X Crazyfast Elite FG (2023) — ātruma līnija ar X nosaukumu, pirms 2024. gadā atgriezās F50 vārds."
+      ru: "Adidas X Crazyfast Elite FG (2023) — скоростная линейка под именем X, до возвращения имени F50 в 2024 году."
+
+  # The next two name no generation in their Commons descriptions, so their
+  # captions do not claim one. Both were shot on the same 2024 store visit.
+
+  - id: predator-elite-fg
+    silo: predator
+    commons_file: "Predator Elite Firm Ground.jpg"
+    author: Pangalau
+    licence: CC BY-SA 4.0
+    licence_url: "https://creativecommons.org/licenses/by-sa/4.0"
+    source_url: "https://commons.wikimedia.org/wiki/File:Predator_Elite_Firm_Ground.jpg"
+    width: 6604
+    height: 3494
+    caption:
+      en: "Adidas Predator Elite FG, photographed in an adidas store in April 2024. The source does not name the generation, so neither do we."
+      lv: "Adidas Predator Elite FG, fotografēts adidas veikalā 2024. gada aprīlī. Avots nenosauc paaudzi, tāpēc arī mēs to nedarām."
+      ru: "Adidas Predator Elite FG, снят в магазине adidas в апреле 2024 года. Источник не называет поколение — не называем и мы."
+
+  # Deliberately kept, and deliberately captioned as PRO. The whole site
+  # exists because "Elite" on a listing rarely means the flagship; showing a
+  # takedown and calling it Elite would reproduce that error in pictures.
+
+  - id: predator-24-pro
+    silo: predator
+    commons_file: "Predator 24 Pro Firm Ground.jpg"
+    author: Pangalau
+    licence: CC BY-SA 4.0
+    licence_url: "https://creativecommons.org/licenses/by-sa/4.0"
+    source_url: "https://commons.wikimedia.org/wiki/File:Predator_24_Pro_Firm_Ground.jpg"
+    width: 6538
+    height: 3225
+    caption:
+      en: "Adidas Predator 24 Pro FG (2024) — the Pro tier, NOT the Elite flagship. Same name, different boot."
+      lv: "Adidas Predator 24 Pro FG (2024) — Pro līmenis, NEVIS Elite flagmanis. Tas pats nosaukums, cita bute."
+      ru: "Adidas Predator 24 Pro FG (2024) — уровень Pro, а НЕ флагман Elite. То же имя, другая бутса."
