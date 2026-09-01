@@ -1,0 +1,130 @@
+# bRoom lineage — adidas Predator
+#
+# A *generation* in a silo's history. Not a buyable boot: see tests/test_broom_lineage.py
+# for why these are deliberately kept out of boots.yaml.
+#
+# `photo` is an id into data/broom/photos.yaml. The licence, author and source live there
+# and only there — an attribution that drifts is a licence breach, not a typo.
+#
+# `innovation` is the heart of each record: what actually CHANGED, in language a
+# fourteen-year-old reads without a glossary. UNVERIFIED is an honest and acceptable
+# value; an invented one is not.
+#
+# SEEDED 2026-09-01 with the nine generations that already have a licence-verified
+# photograph. The remaining Predators (Precision 2000, PowerSwerve 2007, X 2009,
+# LZ II 2013, Instinct 2015, Mania relaunch 2017, 19+, 20+, Freak, Edge, Accuracy,
+# 24, 25, 26) are the research job — add them here with sources.
+
+last_verified: "2026-09"
+category: broom_lineage
+brand: adidas
+silo: predator
+
+generations:
+  - brand: adidas
+    silo: predator
+    sequence: 1
+    name: Predator
+    year: 1994
+    photo: predator-og-1994
+    innovation: >-
+      The original. Craig Johnston, a former Liverpool forward, glued rubber strips to a
+      boot's upper after noticing how a table-tennis bat gripped a ball, so that the same
+      grip could put swerve and power on a football. adidas rejected the idea before a
+      prototype demonstration won them over. Every Predator since has carried some
+      descendant of those rubber elements.
+    why: >-
+      Before it, a boot's upper was there to protect the foot. This was the first
+      mass-market boot that tried to change what the foot could DO to the ball.
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Adidas_Predator
+      - https://www.footy.com/blog/boots/adidas-predator-history/
+
+  - brand: adidas
+    silo: predator
+    sequence: 2
+    name: Predator Touch
+    year: 1996
+    photo: predator-touch-1996
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Adidas_Predator
+
+  - brand: adidas
+    silo: predator
+    sequence: 3
+    name: Predator Accelerator
+    year: 1998
+    photo: predator-accelerator-1998
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Adidas_Predator
+
+  - brand: adidas
+    silo: predator
+    sequence: 4
+    name: Predator Mania
+    year: 2002
+    photo: predator-mania-2002
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Adidas_Predator
+
+  - brand: adidas
+    silo: predator
+    sequence: 5
+    name: Predator Pulse
+    year: 2004
+    photo: predator-pulse-2004
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Adidas_Predator
+
+  - brand: adidas
+    silo: predator
+    sequence: 6
+    name: Predator Absolute
+    year: 2006
+    photo: predator-absolute-2006
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Adidas_Predator
+
+  - brand: adidas
+    silo: predator
+    sequence: 7
+    name: Predator adiPower
+    year: 2012
+    photo: predator-adipower-2012
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Adidas_Predator
+
+  - brand: adidas
+    silo: predator
+    sequence: 8
+    name: Predator LZ
+    year: 2012
+    photo: predator-lz-2012
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Adidas_Predator
+
+  - brand: adidas
+    silo: predator
+    sequence: 9
+    name: Predator 18+
+    year: 2018
+    photo: predator-18-2018
+    innovation: UNVERIFIED
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Adidas_Predator
