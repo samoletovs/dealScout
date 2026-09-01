@@ -1,0 +1,212 @@
+# bRoom lineage — Nike Mercurial Superfly
+#
+# A *generation* in a silo's history. Not a buyable boot: see tests/test_broom_lineage.py
+# for why these are deliberately kept out of boots.yaml.
+#
+# The Mercurial splits into two silos: the low-cut VAPOR and the high-cut SUPERFLY, the
+# one with the sock-like collar rising over the ankle. This file is the SUPERFLY branch
+# only — the high-cut Mercurial. The 1998 Ronaldo R9 original and the 2002 low-cut Vapor I
+# pre-date the Superfly and belong to the mercurial-vapor lineage, so this story STARTS at
+# the first Superfly in 2009.
+#
+# `photo` is an id into data/broom/photos.yaml. The licence, author and source live there
+# and only there — an attribution that drifts is a licence breach, not a typo. Only the
+# 2009 Superfly I has a licence-verified photograph today (`mercurial-superfly-i-2009`);
+# every other generation is honestly `UNVERIFIED` until the photos session adds one.
+#
+# `innovation` is the heart of each record: what actually CHANGED, in language a
+# fourteen-year-old reads without a glossary. UNVERIFIED is an honest and acceptable
+# value; an invented one is not.
+#
+# Sources are whole-silo histories (year-free URLs, so they cover every generation without
+# tripping the different-generation guard) plus a same-year launch article where one adds
+# something specific. Every source URL was hand-checked so it never names a different
+# generation's year than the entry it sits on.
+
+last_verified: "2026-09"
+category: broom_lineage
+brand: nike
+silo: mercurial superfly
+
+generations:
+  - brand: nike
+    silo: mercurial superfly
+    sequence: 1
+    name: Mercurial Superfly I
+    year: 2009
+    photo: mercurial-superfly-i-2009
+    innovation: >-
+      The first Superfly, and the moment the Mercurial split in two: the Vapor stayed the
+      standard speed boot and the Superfly became the halo model above it. It weighed about
+      185g and introduced Flywire — ultra-thin cables laid across the upper in a criss-cross
+      you could actually see, doing the job of a thick, heavy upper with almost no material.
+      Under it sat a carbon-fibre chassis for a stiff, springy, lightweight base.
+    why: >-
+      Nike wanted lockdown without weight. Flywire made the support system visible: instead
+      of padding the boot to hold your foot, thin cables held it and everything else was
+      stripped away, so the fastest boot going could get even lighter.
+    players: UNVERIFIED
+    sources:
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+      - https://soccersourcecoaching.com/nike-mercurial-history/
+
+  - brand: nike
+    silo: mercurial superfly
+    sequence: 2
+    name: Mercurial Superfly II
+    year: 2010
+    photo: UNVERIFIED
+    innovation: >-
+      Kept the Flywire upper and added NikeSENSE to the traction plate — pressure-sensitive
+      studs meant to react to the ground, extending for grip when you pushed and sitting back
+      when you did not. It was the plate, not the upper, that carried the story this time.
+    players: >-
+      Clint Dempsey was the first player to wear the Superfly II, debuting it in March 2010.
+    sources:
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+      - https://soccersourcecoaching.com/nike-mercurial-history/
+
+  - brand: nike
+    silo: mercurial superfly
+    sequence: 3
+    name: Mercurial Superfly III
+    year: 2011
+    photo: UNVERIFIED
+    innovation: >-
+      Mostly a visual generation rather than a technical one — brighter colourways and a
+      bolder Swoosh, on essentially the same Flywire upper and plate as the Superfly II. An
+      honest record says so: not every generation is a breakthrough, and this one was a
+      refresh.
+    players: UNVERIFIED
+    sources:
+      - https://soccersourcecoaching.com/nike-mercurial-history/
+
+  - brand: nike
+    silo: mercurial superfly
+    sequence: 4
+    name: Mercurial Superfly IV
+    year: 2014
+    photo: UNVERIFIED
+    innovation: >-
+      The turning point. The Superfly IV was the first Mercurial built on a one-piece Flyknit
+      upper — knitted in a single wrap instead of cut and stitched from panels — with Brio
+      cables woven through it for lockdown, over a carbon-fibre plate. It also introduced the
+      Dynamic Fit collar: a knitted cuff that rose over the ankle like a sock, and became the
+      thing that told a Superfly apart from a Vapor for the next decade.
+    why: >-
+      Knitting the upper let Nike shape support and stretch into different zones of one seamless
+      piece, and the collar was a bet that a boot could feel like an extension of the leg. Both
+      ideas defined the high-cut Superfly identity from here on.
+    players: UNVERIFIED
+    sources:
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+      - https://soccersourcecoaching.com/nike-mercurial-history/
+
+  - brand: nike
+    silo: mercurial superfly
+    sequence: 5
+    name: Mercurial Superfly V
+    year: 2016
+    photo: UNVERIFIED
+    innovation: >-
+      Refined the Flyknit idea into a fuller sock-like fit and kept the high collar, and
+      redesigned the soleplate around chevron-shaped studs placed for straight-line traction
+      and acceleration. The Vapor of the same year (Vapor XI) stayed low-cut on a more
+      traditional plate; the Superfly V was the high-collar, aggressive-traction version.
+    players: UNVERIFIED
+    sources:
+      - https://soccersourcecoaching.com/nike-mercurial-history/
+
+  - brand: nike
+    silo: mercurial superfly
+    sequence: 6
+    name: Mercurial Superfly 360 (VI)
+    year: 2018
+    photo: UNVERIFIED
+    innovation: >-
+      Named "360" for the upper: a Flyknit wrap that went all the way around the foot with no
+      separate soleplate seam on the sides, so the knitted upper and the chassis met as one
+      continuous piece. Underneath sat a split soleplate — a chevron pattern up front for
+      acceleration and a bladed pattern at the back for stopping and changing direction — with
+      a NikeSkin coating over the knit to shrug off water.
+    players: UNVERIFIED
+    sources:
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+      - https://soccersourcecoaching.com/nike-mercurial-history/
+      - https://www.soccerbible.com/performance/football-boots/2018/02/laced-up-nike-mercurial-superfly-360-review/
+
+  - brand: nike
+    silo: mercurial superfly
+    sequence: 7
+    name: Mercurial Superfly VII
+    year: 2019
+    photo: UNVERIFIED
+    innovation: >-
+      A tuning pass rather than a reinvention: an upgraded chevron stud pattern on the outsole
+      and a reworked Dynamic Fit collar for a more secure lock around the ankle, on the same
+      360 Flyknit direction as the generation before it.
+    players: UNVERIFIED
+    sources:
+      - https://soccersourcecoaching.com/nike-mercurial-history/
+
+  - brand: nike
+    silo: mercurial superfly
+    sequence: 8
+    name: Mercurial Superfly 8
+    year: 2021
+    photo: UNVERIFIED
+    innovation: >-
+      Launched in February 2021 with the "Dragonfly" colourway and a new Vaporposite upper —
+      a layered knit-and-mesh construction meant to keep a thin, direct touch while holding the
+      foot in place in wet or dry conditions. The knit was stripped back to the minimum needed,
+      shedding weight in the process.
+    players: UNVERIFIED
+    sources:
+      - https://soccersourcecoaching.com/nike-mercurial-history/
+      - https://www.soccerbible.com/performance/football-boots/2021/01/nike-unveil-the-mercurial-vapor-and-superfly-dragonfly/
+
+  - brand: nike
+    silo: mercurial superfly
+    sequence: 9
+    name: Mercurial Superfly 9
+    year: 2022
+    photo: UNVERIFIED
+    innovation: >-
+      Moved the speed story underfoot. The Superfly 9 put a Zoom Air unit into the plate — a
+      pressurised air-and-fibre cushion that springs back as you push off — the first time a
+      Mercurial used Air. It paired that with a SpeedCage for stability and an upgraded
+      Vaporposite+ upper.
+    players: UNVERIFIED
+    sources:
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+
+  - brand: nike
+    silo: mercurial superfly
+    sequence: 10
+    name: Mercurial Superfly 10
+    year: 2024
+    photo: UNVERIFIED
+    innovation: >-
+      Refined the Air Zoom platform introduced on the 9 and lightened the build, with a new
+      Gripknit upper — a coated knit engineered for grip on the ball in all conditions — over a
+      lighter Flyknit construction.
+    players: UNVERIFIED
+    sources:
+      - https://www.prodirectsport.com/blogs/football/nike-mercurial-history
+
+  - brand: nike
+    silo: mercurial superfly
+    sequence: 11
+    name: Mercurial Superfly 11
+    year: 2026
+    photo: UNVERIFIED
+    innovation: >-
+      The biggest break in a decade: the Superfly 11 drops the Dynamic Fit collar and returns
+      to a low-cut collar for the first time since 2014, so the Vapor and Superfly finally
+      differ in more than collar height. It uses a new FlyWeave Ultra upper for a thin,
+      contained touch, a forefoot Air Zoom unit with three extra studs on the chamber for
+      long-sprint traction, and a ZoomX foam sockliner for extra energy return. Announced for a
+      1 June 2026 release.
+    players: UNVERIFIED
+    sources:
+      - https://www.footyheadlines.com/2025/12/all-new-next-gen-nike-mercurial-superfly-11-2026-boots.html
