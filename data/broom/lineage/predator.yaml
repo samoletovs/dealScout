@@ -10,12 +10,13 @@
 # fourteen-year-old reads without a glossary. UNVERIFIED is an honest and acceptable
 # value; an invented one is not.
 #
-# The nine photo-backed generations (1994, 1996, 1998, 2002, 2004, 2006, adiPower 2012,
+# The nine photo-backed generations (1994, 1996, 1998, 2002, 2004, 2006, adiPower 2011,
 # LZ 2012, 18+ 2018) keep their seeded years and photo ids — the photo captions live in
-# photos.yaml and this file must agree with them. The remaining fourteen generations were
-# researched and added 2026-09; where a boot's launch date straddles two seasons (e.g. the
-# adiPower reached shops in 2011, the 18+ in November 2017) the prose says so while the
-# `year` follows the model's own naming, as the seed did. `players` names only wearers a
+# photos.yaml and this file must agree with them. The remaining fifteen generations were
+# researched and added 2026-09; the Rapier (1995) and the adiPower year (2011) were resolved
+# from the cited Wikipedia list. Where a boot's launch straddles two seasons (e.g. the 18+
+# reached shops in November 2017) the prose says so while the `year` follows the model's
+# own naming, as the seed did. `players` names only wearers a
 # same-generation source confirms; UNVERIFIED where it cannot.
 
 last_verified: "2026-09"
@@ -50,6 +51,26 @@ generations:
   - brand: adidas
     silo: predator
     sequence: 2
+    name: Predator Rapier
+    year: 1995
+    photo: UNVERIFIED
+    innovation: >-
+      The Rapier was the first adidas football boot you could buy in a colour other than
+      black. Until then every adidas boot was black leather, full stop; the Rapier arrived
+      as a limited series in white and red as well, breaking a rule the company had kept for
+      decades. Under the colour it stayed close to the 1994 original, keeping the same
+      fold-over tongue and forefoot rubber.
+    why: >-
+      It sounds small, but a white-and-red boot in 1995 was a genuine shock — it planted the
+      idea that a boot could be a bright, personal thing rather than just black kit.
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Adidas_Predator
+      - https://www.footy.com/blog/boots/adidas-predator-history/
+
+  - brand: adidas
+    silo: predator
+    sequence: 3
     name: Predator Touch
     year: 1996
     photo: predator-touch-1996
@@ -71,7 +92,7 @@ generations:
 
   - brand: adidas
     silo: predator
-    sequence: 3
+    sequence: 4
     name: Predator Accelerator
     year: 1998
     photo: predator-accelerator-1998
@@ -93,7 +114,7 @@ generations:
 
   - brand: adidas
     silo: predator
-    sequence: 4
+    sequence: 5
     name: Predator Precision
     year: 2000
     photo: UNVERIFIED
@@ -110,7 +131,7 @@ generations:
 
   - brand: adidas
     silo: predator
-    sequence: 5
+    sequence: 6
     name: Predator Mania
     year: 2002
     photo: predator-mania-2002
@@ -133,7 +154,7 @@ generations:
 
   - brand: adidas
     silo: predator
-    sequence: 6
+    sequence: 7
     name: Predator Pulse
     year: 2004
     photo: predator-pulse-2004
@@ -153,7 +174,7 @@ generations:
 
   - brand: adidas
     silo: predator
-    sequence: 7
+    sequence: 8
     name: Predator Absolute
     year: 2006
     photo: predator-absolute-2006
@@ -173,7 +194,7 @@ generations:
 
   - brand: adidas
     silo: predator
-    sequence: 8
+    sequence: 9
     name: Predator PowerSwerve
     year: 2007
     photo: UNVERIFIED
@@ -192,7 +213,7 @@ generations:
 
   - brand: adidas
     silo: predator
-    sequence: 9
+    sequence: 10
     name: Predator X
     year: 2009
     photo: UNVERIFIED
@@ -215,9 +236,9 @@ generations:
 
   - brand: adidas
     silo: predator
-    sequence: 10
+    sequence: 11
     name: Predator adiPower
-    year: 2012
+    year: 2011
     photo: predator-adipower-2012
     innovation: >-
       The adiPower was the Predator that went on a diet. For the first time the line
@@ -238,7 +259,7 @@ generations:
 
   - brand: adidas
     silo: predator
-    sequence: 11
+    sequence: 12
     name: Predator LZ
     year: 2012
     photo: predator-lz-2012
@@ -257,7 +278,7 @@ generations:
 
   - brand: adidas
     silo: predator
-    sequence: 12
+    sequence: 13
     name: Predator LZ II
     year: 2013
     photo: UNVERIFIED
@@ -275,7 +296,7 @@ generations:
 
   - brand: adidas
     silo: predator
-    sequence: 13
+    sequence: 14
     name: Predator Instinct
     year: 2014
     photo: UNVERIFIED
@@ -294,7 +315,7 @@ generations:
 
   - brand: adidas
     silo: predator
-    sequence: 14
+    sequence: 15
     name: Predator Mania (Champagne re-release)
     year: 2017
     photo: UNVERIFIED
@@ -316,7 +337,7 @@ generations:
 
   - brand: adidas
     silo: predator
-    sequence: 15
+    sequence: 16
     name: Predator 18+
     year: 2018
     photo: predator-18-2018
@@ -338,7 +359,7 @@ generations:
 
   - brand: adidas
     silo: predator
-    sequence: 16
+    sequence: 17
     name: Predator 19+
     year: 2019
     photo: UNVERIFIED
@@ -354,7 +375,7 @@ generations:
 
   - brand: adidas
     silo: predator
-    sequence: 17
+    sequence: 18
     name: Predator 20+ Mutator
     year: 2020
     photo: UNVERIFIED
@@ -366,14 +387,17 @@ generations:
     why: >-
       After years of smoother uppers, adidas wanted the Predator's ball-grabbing identity
       back — and made it the loudest feature on the boot.
-    players: UNVERIFIED
+    players: >-
+      Paul Pogba wore the Predator Mutator 20+, including his own gold-on-black "Season 7"
+      signature edition, which he debuted for Manchester United in September 2020.
     sources:
       - https://news.adidas.com/football/predator-20-mutator---introducing-new-demonskin-technology/s/e2d10d26-f7ce-4fd7-8bf5-451ca2c935e6
       - https://en.wikipedia.org/wiki/Adidas_Predator
+      - https://www.soccerbible.com/performance/football-boots/2020/09/adidas-launch-the-paul-pogba-season-7-predator-mutator-20plus/
 
   - brand: adidas
     silo: predator
-    sequence: 18
+    sequence: 19
     name: Predator Freak
     year: 2021
     photo: UNVERIFIED
@@ -390,7 +414,7 @@ generations:
 
   - brand: adidas
     silo: predator
-    sequence: 19
+    sequence: 20
     name: Predator Edge
     year: 2022
     photo: UNVERIFIED
@@ -407,7 +431,7 @@ generations:
 
   - brand: adidas
     silo: predator
-    sequence: 20
+    sequence: 21
     name: Predator Accuracy
     year: 2023
     photo: UNVERIFIED
@@ -416,14 +440,17 @@ generations:
       only in the main kicking zones, adidas's "high-definition grip", so the boot could
       grab the ball where it mattered without stiffening all over. The upper was a soft
       microfibre HybridTouch that moulds to the foot, over the carried-over Facet Frame sole.
-    players: UNVERIFIED
+    players: >-
+      Jude Bellingham wore the Predator Accuracy, including a bespoke pair adidas made for
+      his first competitive Real Madrid appearance in August 2023.
     sources:
       - https://news.adidas.com/football/adidas-takes-on-pitch-accuracy-to-the-next-level--with-the-all-new-predator-accuracy---the-latest-me/s/1b1470bd-7f55-450c-9469-28dc84a88c8b
       - https://www.soccerbible.com/performance/football-boots/2023/11/every-version-of-the-adidas-predator/
+      - https://www.soccerbible.com/performance/football-boots/2023/08/adidas-provide-bellingham-with-specially-customised-predators/
 
   - brand: adidas
     silo: predator
-    sequence: 21
+    sequence: 22
     name: Predator 24
     year: 2024
     photo: UNVERIFIED
@@ -436,14 +463,17 @@ generations:
     why: >-
       A 30-year anniversary boot that deliberately reached back to the line's most-loved era,
       tongue and all.
-    players: UNVERIFIED
+    players: >-
+      Jude Bellingham, Pedri, Alessia Russo, Kadidiatou Diani and Gabriel Jesus were named
+      as Predator 24 wearers at its launch; Bellingham later got a gold signature edition.
     sources:
       - https://news.adidas.com/football/adidas-recodes-a-30-year-icon-with-new-predator-pack-crafted-for-goals/s/d26bb432-a2c2-4f28-aa64-890574b1f26f
       - https://www.soccerbible.com/interviews/2024/01/adidas-global-category-director-talks-predator-24/
+      - https://prosoccerwire.usatoday.com/story/sports/mls/2024/01/16/adidas-releases-predator-24-shoes/77416969007/
 
   - brand: adidas
     silo: predator
-    sequence: 22
+    sequence: 23
     name: Predator 25
     year: 2025
     photo: UNVERIFIED
@@ -460,7 +490,7 @@ generations:
 
   - brand: adidas
     silo: predator
-    sequence: 23
+    sequence: 24
     name: Predator 26
     year: 2026
     photo: UNVERIFIED
