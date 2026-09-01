@@ -161,6 +161,48 @@ def test_a_photo_reference_resolves_to_a_licensed_photo() -> None:
     )
 
 
+def test_a_photo_caption_year_agrees_with_its_generation() -> None:
+    """A photo caption that names a year must name the *generation's* year.
+
+    ``photos.yaml`` is the single home of a caption, and a lineage entry points at it by
+    id. If the caption says ``AdiPower (2012)`` while the entry that shows it is dated
+    2011, the page teaches the reader a false date — the exact "photo beside the wrong
+    generation" failure, in slow motion, via a stale year rather than a wrong file. The
+    header of ``predator.yaml`` already promises "this file must agree with them"; this
+    turns that promise into a check.
+
+    Only parenthetical four-digit years are read, because that is how the seeded captions
+    date a boot (``AdiPower (2011)``); a caption that names no year is left alone.
+    """
+    photos_path = DATA / "broom" / "photos.yaml"
+    with photos_path.open(encoding="utf-8") as fh:
+        doc = yaml.safe_load(fh) or {}
+    caption_years: dict[str, set[str]] = {}
+    for p in doc.get("photos") or []:
+        cap = p.get("caption") or {}
+        texts = cap.values() if isinstance(cap, dict) else [cap]
+        years: set[str] = set()
+        for t in texts:
+            years.update(re.findall(r"\(((?:19|20)\d{2})\)", str(t)))
+        caption_years[p.get("id")] = years
+
+    problems: list[str] = []
+    for path, e in _entries():
+        pid = e.get("photo")
+        if not pid or pid == UNVERIFIED:
+            continue
+        years = caption_years.get(pid)
+        if years and str(e.get("year")) not in years:
+            problems.append(
+                f"{path.name}: {e.get('name')} (year {e.get('year')}) shows photo "
+                f"'{pid}' whose caption is dated {sorted(years)}"
+            )
+    assert not problems, (
+        "a photo caption dates a generation differently from its lineage entry:\n"
+        + "\n".join(problems)
+    )
+
+
 def test_a_source_url_must_not_cite_a_different_generation() -> None:
     """The mistake this lineage is most likely to make, ported from the dataset guards.
 
