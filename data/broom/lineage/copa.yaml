@@ -1,0 +1,145 @@
+# bRoom lineage — adidas Copa
+#
+# A *generation* in a silo's history. Not a buyable boot: see tests/test_broom_lineage.py
+# for why these are deliberately kept out of boots.yaml.
+#
+# `photo` is an id into data/broom/photos.yaml. The licence, author and source live there
+# and only there — an attribution that drifts is a licence breach, not a typo. Only the
+# 1979 Copa Mundial has a licence-verified photograph today (`copa-mundial`); every other
+# generation is honestly `UNVERIFIED` until the photos session adds one.
+#
+# `innovation` is the heart of each record: what actually CHANGED, in language a
+# fourteen-year-old reads without a glossary. UNVERIFIED is an honest and acceptable
+# value; an invented one is not.
+#
+# The silo splits in the classifier — `copa mundial` (the evergreen 1979 leather boot)
+# and `copa` (the modern control line revived in 2016) are separate lines there so the
+# engine prices them apart. The Archive tells one continuous story, so every entry here
+# carries `silo: copa`, the same tag data/broom/photos.yaml and data/broom/heritage.yaml
+# already use for the Copa Mundial. `copa` is a line the classifier knows.
+#
+# SEEDED 2026-09-01 with the origin and the full modern reboot arc (1979 Mundial, then
+# Copa 17.1 -> Copa Pure 2023). The remaining Copas are the research job — add them here
+# with same-generation sources: Copa Pure 2 (2023/24), Copa Pure 3, Copa Pure 4 (2026,
+# the current "Born For Goals" generation and reported to be the last Pure before adidas
+# revives the Adipure name in 2027), and any pre-2016 Copa Mundial special editions.
+
+last_verified: "2026-09"
+category: broom_lineage
+brand: adidas
+silo: copa
+
+generations:
+  - brand: adidas
+    silo: copa
+    sequence: 1
+    name: Copa Mundial
+    year: 1979
+    photo: copa-mundial
+    innovation: >-
+      The boot that made kangaroo leather the standard for a control boot. adidas built it
+      in 1979, ahead of the 1982 World Cup in Spain: a soft k-leather upper over a moulded
+      rubber outsole, with a fold-over tongue and extra leather bracing at the heel. The
+      leather broke in to the shape of the foot and then stayed comfortable, which is why it
+      kept selling for decades after the boots around it turned to plastic. Made in Germany,
+      hand-stitched, and since the early 2000s the best-selling football boot in the world.
+    why: >-
+      Before it, a leather boot was something you endured until it softened. The Copa Mundial
+      was built to feel broken-in from the start and to last — comfort and touch as the whole
+      point, not speed or gimmicks. That idea, "a boot you barely notice on your foot," is
+      what the whole modern Copa line still chases.
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Adidas_Copa_Mundial
+
+  - brand: adidas
+    silo: copa
+    sequence: 2
+    name: Copa 17.1
+    year: 2017
+    photo: UNVERIFIED
+    innovation: >-
+      The reboot. adidas brought the Copa name back as a modern performance boot, keeping a
+      kangaroo-leather forefoot for touch but adding a stretchy compression tongue and its
+      lightweight SprintFrame outsole — so the classic leather feel arrived on a boot quick
+      enough for the modern game.
+    players: UNVERIFIED
+    sources:
+      - https://soccerpost.com/blogs/news/adidas-copa-deep-dive
+      - https://www.worldsoccershop.com/guide/adidas-copa-soccer-cleat
+
+  - brand: adidas
+    silo: copa
+    sequence: 3
+    name: Copa 18.1
+    year: 2017
+    photo: UNVERIFIED
+    innovation: >-
+      A fit-focused refinement of the reboot: an internal support cage and foam padding under
+      the leather locked the foot down without hiding the barefoot feel the Copa is meant to
+      have.
+    players: UNVERIFIED
+    sources:
+      - https://soccerpost.com/blogs/news/adidas-copa-deep-dive
+
+  - brand: adidas
+    silo: copa
+    sequence: 4
+    name: Copa 19.1
+    year: 2019
+    photo: UNVERIFIED
+    innovation: >-
+      The big leather leap. It introduced Fusionskin, a seamless leather-and-synthetic upper
+      with the stitching taken out, so the whole front of the boot flexed as one soft piece.
+      It also brought the first laceless Copa (the 19+), proving a control boot could go
+      laceless without giving up its touch.
+    players: UNVERIFIED
+    sources:
+      - https://soccerpost.com/blogs/news/adidas-copa-deep-dive
+      - https://www.worldsoccershop.com/guide/adidas-copa-soccer-cleat
+
+  - brand: adidas
+    silo: copa
+    sequence: 5
+    name: Copa 20.1
+    year: 2019
+    photo: UNVERIFIED
+    innovation: >-
+      A refinement of the 19: the Fusionskin upper was reworked to soak up less water and
+      drop weight, so the soft-leather feel survived a wet pitch. Sold alongside the laceless
+      20+.
+    players: UNVERIFIED
+    sources:
+      - https://soccerpost.com/blogs/news/adidas-copa-deep-dive
+
+  - brand: adidas
+    silo: copa
+    sequence: 6
+    name: Copa Sense
+    year: 2021
+    photo: UNVERIFIED
+    innovation: >-
+      Comfort engineered into the boot, not just the leather. Soft inserts around the collar
+      and heel ("SensePods") cushioned the foot into place, and the whole boot was shaped
+      anatomically so it felt moulded to the wearer.
+    players: UNVERIFIED
+    sources:
+      - https://soccerpost.com/blogs/news/adidas-copa-deep-dive
+      - https://www.worldsoccershop.com/guide/adidas-copa-soccer-cleat
+
+  - brand: adidas
+    silo: copa
+    sequence: 7
+    name: Copa Pure
+    year: 2023
+    photo: UNVERIFIED
+    innovation: >-
+      The fold-over tongue came back. adidas leaned into the Copa's heritage look, wrapping
+      the laces under a folded tongue like the original Mundial, on a modern soft upper with
+      a Primeknit collar. With kangaroo leather being phased out across the range, this
+      generation moved the line toward calf leather and synthetics while keeping the
+      soft-touch identity.
+    players: UNVERIFIED
+    sources:
+      - https://soccerpost.com/blogs/news/adidas-copa-deep-dive
+      - https://www.worldsoccershop.com/guide/adidas-copa-soccer-cleat
