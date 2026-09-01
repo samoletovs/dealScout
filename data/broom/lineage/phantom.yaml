@@ -129,7 +129,7 @@ generations:
     sequence: 5
     name: Phantom GX
     year: 2023
-    photo: UNVERIFIED
+    photo: phantom-gx-2023
     innovation: >-
       A new upper material. Nike replaced the printed texture with Gripknit — an exclusive
       yarn coated in TPU that, melted to the right temperature, comes out grippy, flexible and
@@ -140,10 +140,13 @@ generations:
     why: >-
       The Phantom's whole promise is a clean, predictable touch. Gripknit chased that through
       the material of the upper rather than a texture printed onto it.
-    players: UNVERIFIED
+    players: >-
+      Andrew Robertson wore the Phantom GX Elite — the archive's photographed pair is his,
+      from Liverpool's own Singapore store.
     sources:
       - https://about.nike.com/en/newsroom/releases/phantom-gx-official-images
       - https://www.footballboots.co.uk/vsgxluna.html
+      - https://commons.wikimedia.org/wiki/File:Nike_Phantom_GX_Elite_Firm_Ground_(Andrew_Robertson).jpg
 
   - brand: nike
     silo: phantom
