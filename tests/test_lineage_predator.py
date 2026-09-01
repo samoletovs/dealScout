@@ -23,14 +23,16 @@ UNVERIFIED = "UNVERIFIED"
 
 # The eight seeded generations that shipped with ``innovation: UNVERIFIED``. Each is
 # identified by a substring of its name plus its year, because 2012 carries two
-# distinct generations (adiPower and Lethal Zones) and a year alone is ambiguous.
+# distinct generations (adiPower and Lethal Zones) and a year alone is ambiguous. The
+# adiPower is dated 2011 here: it launched in May 2011 and the seed's 2012 was corrected
+# from the cited Wikipedia list ("AdiPower Predator (2011)").
 FORMERLY_UNVERIFIED = [
     ("touch", 1996),
     ("accelerator", 1998),
     ("mania", 2002),
     ("pulse", 2004),
     ("absolute", 2006),
-    ("adipower", 2012),
+    ("adipower", 2011),
     ("lz", 2012),
     ("18", 2018),
 ]
@@ -99,3 +101,34 @@ def test_sequence_still_agrees_with_year_order_after_renumbering() -> None:
     ordered = sorted(gens, key=lambda e: e.get("sequence") or 0)
     years = [e.get("year") for e in ordered if isinstance(e.get("year"), int)]
     assert years == sorted(years), f"sequence disagrees with year order: {years}"
+
+
+def test_predator_rapier_1995_was_added() -> None:
+    """The 1995 Rapier — the first adidas boot sold in a colour other than black — sits
+    between the 1994 original and the 1996 Touch and was missing from the spine.
+
+    Fails against any file that jumps straight from 1994 to 1996 (the merged seed did).
+    """
+    e = _find("rapier", 1995)
+    assert e is not None, "Predator Rapier (1995) generation is missing"
+    innovation = str(e.get("innovation") or "").strip()
+    assert innovation and innovation != UNVERIFIED and len(innovation) >= 60, (
+        f"Rapier innovation not documented ({innovation[:30]!r}...)"
+    )
+
+
+def test_adipower_year_resolved_to_2011() -> None:
+    """adiPower launched in May 2011; the seed mislabelled it 2012.
+
+    Fails against the pre-fix file, which carried ``year: 2012`` for the adiPower.
+    """
+    assert _find("adipower", 2011) is not None, "adiPower is not dated 2011"
+    assert _find("adipower", 2012) is None, "a stale adiPower dated 2012 still exists"
+
+
+def test_lineage_reached_twenty_four_generations() -> None:
+    """Adding the Rapier takes the spine to 24 generations; the prior merged file had 23."""
+    count = len(_generations())
+    assert count >= 24, (
+        f"lineage has {count} generations; expected 24 after adding the Rapier"
+    )
