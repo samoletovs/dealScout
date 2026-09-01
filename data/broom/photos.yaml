@@ -1,6 +1,7 @@
 # Wikimedia Commons photographs licensed for commercial use.
 #
-# Every entry was verified against the Commons imageinfo API on 2026-08-31.
+# Every entry was verified against the Commons imageinfo API on 2026-08-31
+# (the two 2023 Pangalau boots re-verified file-by-file on 2026-09-01).
 # Attribution is a licence condition (CC BY / BY-SA), not a courtesy.
 # CC0 needs no attribution but we credit anyway.
 #
@@ -13,7 +14,7 @@
 # current would reproduce, in pictures, the exact confusion the site exists
 # to remove.
 
-last_verified: "2026-08"
+last_verified: "2026-09"
 
 photos:
   # ========================= PREDATOR HERITAGE =========================
@@ -207,3 +208,31 @@ photos:
       en: "Nike Mercurial astro-turf boots — a lower-tier turf version of the Mercurial line."
       lv: "Nike Mercurial mākslīgā zālāja butes — zemāka līmeņa Mercurial līnijas versija mākslīgajam segumam."
       ru: "Бутсы Nike Mercurial для искусственного покрытия — версия линейки Mercurial для синтетических полей."
+
+  - id: phantom-gx-2023
+    silo: phantom
+    commons_file: "Nike Phantom GX Elite Firm Ground (Andrew Robertson).jpg"
+    author: Pangalau
+    licence: CC BY-SA 4.0
+    licence_url: "https://creativecommons.org/licenses/by-sa/4.0"
+    source_url: "https://commons.wikimedia.org/wiki/File:Nike_Phantom_GX_Elite_Firm_Ground_(Andrew_Robertson).jpg"
+    width: 6306
+    height: 4204
+    caption:
+      en: "Nike Phantom GX Elite (2023) — the boot Andrew Robertson wore for Liverpool; this pair signed by him, on display at the official Liverpool FC store, Singapore."
+      lv: "Nike Phantom GX Elite (2023) — bute, ko Endrjū Robertsons vilka Liverpūlē; šis pāris ar viņa parakstu, izstādīts oficiālajā Liverpool FC veikalā Singapūrā."
+      ru: "Nike Phantom GX Elite (2023) — бутсы, в которых Эндрю Робертсон играл за «Ливерпуль»; эта пара с его автографом, выставлена в официальном магазине «Ливерпуля» в Сингапуре."
+
+  - id: f50-x-crazyfast-2023
+    silo: f50
+    commons_file: "Adidas x CrazyFast Elite Firm Ground 02.jpg"
+    author: Pangalau
+    licence: CC BY-SA 4.0
+    licence_url: "https://creativecommons.org/licenses/by-sa/4.0"
+    source_url: "https://commons.wikimedia.org/wiki/File:Adidas_x_CrazyFast_Elite_Firm_Ground_02.jpg"
+    width: 6500
+    height: 3607
+    caption:
+      en: "adidas X Crazyfast Elite (2023) — the last boot to carry the X name, on display at adidas Orchard Road, Singapore."
+      lv: "adidas X Crazyfast Elite (2023) — pēdējā bute ar nosaukumu X, izstādīta adidas veikalā Orchard Road, Singapūrā."
+      ru: "adidas X Crazyfast Elite (2023) — последняя бутса под именем X, выставлена в магазине adidas на Орчард-роуд, Сингапур."
