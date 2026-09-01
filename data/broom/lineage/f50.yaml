@@ -1,0 +1,266 @@
+# bRoom lineage — adidas F50 (the speed silo)
+#
+# A *generation* in a silo's history. Not a buyable boot: see tests/test_broom_lineage.py
+# for why these are deliberately kept out of boots.yaml.
+#
+# `photo` is an id into data/broom/photos.yaml. The licence, author and source live there
+# and only there — an attribution that drifts is a licence breach, not a typo. There is NO
+# licence-verified F50 photograph today, so every generation here is honestly `UNVERIFIED`
+# until the photos session adds one. Finding a freely-licensed F50 photo is the single
+# highest-value thing this silo still needs.
+#
+# `innovation` is the heart of each record: what actually CHANGED, in language a
+# fourteen-year-old reads without a glossary. UNVERIFIED is an honest and acceptable
+# value; an invented one is not.
+#
+# THE NAMING PROBLEM — read this before you question the sequence.
+# This is one continuous speed line that changed its name twice, and the Archive's job is
+# to tell that story clearly rather than hide it:
+#
+#     F50 (2004) -> F50 TUNIT -> adizero F50 (2010, Messi, ~165g) ... F50 adizero (2015)
+#       -> RENAMED "X": X15, X16, X17, X18, X19, X Ghosted, X Speedflow, X Speedportal,
+#          X Crazyfast (2015-2023)
+#       -> RENAMED BACK "F50" (2024 revival, the Advancement Pack)
+#
+# The classifier in data/football_boots.yaml models the SAME truth from the pricing side:
+# its `f50` line folds `x speedportal` and `x crazyfast` into the F50 silo
+# (patterns: [f50, x crazyfast, x speedportal]) and dates the relaunch to 2024. So `f50`
+# is the one line the classifier knows for this whole speed family, and every entry below
+# carries `silo: f50` — the X-era boots included — because the reader needs to understand
+# that X and F50 are the same line under two names. The classifier only had to name the
+# two X generations still on shelves; the Archive tells the whole arc.
+#
+# SEEDED 2026-09-01. Remaining research: the intermediate X generations (X16, X17, X19,
+# X Ghosted), sourced same-generation player lists for the X era, and — above all — a
+# licence-verified photograph for any generation.
+
+last_verified: "2026-09"
+category: broom_lineage
+brand: adidas
+silo: f50
+
+generations:
+  - brand: adidas
+    silo: f50
+    sequence: 1
+    name: adidas F50
+    year: 2004
+    photo: UNVERIFIED
+    innovation: >-
+      Where the speed line begins. adidas launched the F50 around Euro 2004 as a
+      deliberately light, stripped-down boot for quick attacking players, at a time when
+      most top boots were still built heavy for power and protection. Even the name is a
+      countdown: the "F" is for football and the "50" for the fifty days left until Euro
+      2004 when it launched. It set the whole idea the silo would chase for the next twenty
+      years: take weight off the foot so the player can get to the ball first.
+    why: >-
+      The Predator was adidas's power boot. The F50 was the opposite bet — that the next
+      advantage was not a boot that did more to the ball, but a boot you barely noticed
+      while you ran. Wingers made it their weapon of choice.
+    players: Arjen Robben
+    sources:
+      - https://euniqueboots.com/en-us/blogs/news/adidas-f50-history-classic-football-boots
+
+  - brand: adidas
+    silo: f50
+    sequence: 2
+    name: F50 TUNIT
+    year: 2006
+    photo: UNVERIFIED
+    innovation: >-
+      The modular boot, and still the boldest thing the line ever tried. Made widely
+      available ahead of the 2006 World Cup, the TUNIT split the boot into three parts the
+      player assembled themselves — the upper, the chassis (soleplate) and the studs — each
+      sold separately, so you could mix a lightweight upper onto a firm-ground chassis or
+      swap studs for a soft pitch without buying a whole new pair. No mainstream boot had
+      offered that much customisation before.
+    why: >-
+      One boot could not be perfect for every pitch or every player. Instead of guessing,
+      adidas let the player build the exact combination they wanted — a genuinely different
+      answer that no rival matched.
+    players: Lionel Messi
+    sources:
+      - https://euniqueboots.com/en-us/blogs/news/adidas-f50-history-classic-football-boots
+
+  - brand: adidas
+    silo: f50
+    sequence: 3
+    name: adizero F50
+    year: 2010
+    photo: UNVERIFIED
+    innovation: >-
+      The one everyone remembers. adidas stripped the boot down to a single-layer synthetic
+      upper on its SprintFrame soleplate and got the weight to about 165 grams — the
+      lightest football boot in the world at the time. Messi wore them at the 2010 World Cup
+      and said he could barely feel them on his feet. It reset what "light" meant, and every
+      speed boot after it — from adidas and its rivals — was chasing this number.
+    why: >-
+      A boot that weighs less is a boot you can accelerate and change direction in faster.
+      The adizero pushed that trade-off further than anyone had, betting that a player would
+      give up some padding for that quickness. Messi's game made the case for them.
+    players: Lionel Messi
+    sources:
+      - https://euniqueboots.com/en-us/blogs/news/adidas-f50-history-classic-football-boots
+      - https://techcrunch.com/2010/05/11/adidas-f50-adizero-messi-and-others-will-wear-the-lightest-soccer-boot-in-human-history-at-the-world-cup/
+
+  - brand: adidas
+    silo: f50
+    sequence: 4
+    name: adizero F50 miCoach
+    year: 2011
+    photo: UNVERIFIED
+    innovation: >-
+      The first football boot with a brain. adidas cut a small cavity into the sole to hold
+      the miCoach SPEED_CELL, a sensor that recorded how far and how fast you ran — top
+      speed, number of sprints, distance at high intensity — and beamed it to a computer
+      afterwards so you could compare your numbers to a professional's. The performance data
+      that only elite clubs used to measure was suddenly sitting under an amateur's foot.
+    why: >-
+      adidas was already selling the lightest boot; the next thing to add was not lighter
+      but smarter — turning the boot itself into a training tool, years before fitness
+      trackers were on every wrist.
+    players: Lionel Messi
+    sources:
+      - https://newatlas.com/adidas-adizero-f50-football-boot/20030/
+      - https://www.soccercleats101.com/2011/09/29/adidas-f50-adizero-micoach-released/
+
+  - brand: adidas
+    silo: f50
+    sequence: 5
+    name: adizero F50 (final generation)
+    year: 2015
+    photo: UNVERIFIED
+    innovation: >-
+      The last boot to carry the F50 name for almost a decade. By 2015 the adizero F50 was a
+      mature, refined speed boot — but adidas was about to reorganise its whole range, and
+      in the middle of that year it discontinued the F50 outright, closing an eleven-year
+      run before the name went into storage.
+    why: >-
+      Not a technical leap but a turning point: adidas had decided the speed silo needed a
+      clean restart under a new identity, so it retired a name football had known since 2004.
+    players: UNVERIFIED
+    sources:
+      - https://euniqueboots.com/en-us/blogs/news/adidas-f50-history-classic-football-boots
+      - https://www.footyheadlines.com/2015/05/say-goodbye-adidas-discontinues-f50-adizero.html
+
+  - brand: adidas
+    silo: f50
+    sequence: 6
+    name: adidas X15
+    year: 2015
+    photo: UNVERIFIED
+    innovation: >-
+      The rename. adidas retired the F50 and rebuilt its speed boot as the X, the first in a
+      new family aimed at fast, direct attackers. Same job as the F50 — get the quick player
+      to the ball first — but under a new name and a more structured, aggressive design. From
+      here the speed line ran as "X" for nine years, which is why the boots below say X on the
+      side but belong to the very same lineage.
+    why: >-
+      adidas split its old ranges into clearer roles — X for speed, ACE for control — so a
+      buyer could pick a boot by the way they played. The F50's job did not disappear; it
+      just put on a new badge.
+    players: UNVERIFIED
+    sources:
+      - https://www.futbolemotion.com/en/blogs/the-diary-of-futbol-emotion/the-history-of-adidas-x
+
+  - brand: adidas
+    silo: f50
+    sequence: 7
+    name: adidas X18
+    year: 2018
+    photo: UNVERIFIED
+    innovation: >-
+      The X went laceless. The X18+ dropped the laces entirely, wrapping the foot in a
+      stretchy SpeedMesh upper so the front of the boot was one clean, seamless striking
+      surface with nothing to knock the ball off line. Taking the laces off a speed boot —
+      and trusting the fit to hold without them — was the boldest change of the X era.
+    why: >-
+      Laces are a bump on the exact part of the boot you hit the ball with. Removing them
+      gave a cleaner contact and a sleeker, faster-looking boot — if adidas could make it
+      grip the foot securely without them, which is what this generation set out to prove.
+    players: UNVERIFIED
+    sources:
+      - https://www.futbolemotion.com/en/blogs/the-diary-of-futbol-emotion/the-history-of-adidas-x
+
+  - brand: adidas
+    silo: f50
+    sequence: 8
+    name: X Speedflow
+    year: 2021
+    photo: UNVERIFIED
+    innovation: >-
+      adidas rebuilt the X around a bendy carbon plate. The Speedflow used a Carbitex
+      soleplate that stayed stiff for push-off but flexed where the foot needed it, on top
+      of a thin Primeknit upper — tuned so the boot snapped the player forward out of a
+      sprint rather than just being light.
+    why: >-
+      By 2021 every speed boot was already feather-light, so lightness alone no longer won.
+      The new battleground was energy return: making the sole actively help the player
+      accelerate, not just weigh less.
+    players: Mohamed Salah
+    sources:
+      - https://www.soccerbible.com/performance/football-boots/2021/07/adidas-launch-the-x-speedflow/
+      - https://news.adidas.com/football/redefining-fast-in-football-with-x-speedflow/s/ec6b81a2-22e0-4455-9c62-213e955f9e39
+      - https://stockx.com/adidas-speedflow-mo-salah1-fg-gold-white-scarlet
+
+  - brand: adidas
+    silo: f50
+    sequence: 9
+    name: X Speedportal
+    year: 2022
+    photo: UNVERIFIED
+    innovation: >-
+      A sharper, more aggressive take on the Speedflow idea. The Speedportal paired a
+      Speedskin upper with a redesigned soleplate aimed at both straight-line speed and
+      quick changes of direction, with a spiky, angular look meant to signal pure pace. It
+      is one of the two X generations the pricing engine still tracks under the F50 silo.
+    why: >-
+      Real speed on a pitch is not only running fast in a line; it is stopping, turning and
+      going again. This generation tried to serve both at once rather than optimising for
+      the straight sprint alone.
+    players: Mohamed Salah
+    sources:
+      - https://www.soccerbible.com/performance/football-boots/2022/07/adidas-officially-launch-the-next-generation-x-speedportal/
+      - https://www.arabnews.com/node/2126316/offbeat
+
+  - brand: adidas
+    silo: f50
+    sequence: 10
+    name: X Crazyfast
+    year: 2023
+    photo: UNVERIFIED
+    innovation: >-
+      The last boot to wear the X name. The Crazyfast pushed the speed formula to its
+      minimalist extreme — a thin, semi-translucent Aeropacity Speedskin upper over a new
+      Aeroplate soleplate that dropped even the carbon insert to shave off a few more grams
+      — and it turned out to be the end of the road for X: the following year adidas brought
+      the F50 name back and the X was gone.
+    why: >-
+      After nine years the X had taken the "lighter, snappier, more minimal" idea about as
+      far as a name could carry it. adidas judged that the story needed a reset — and that
+      the reset should be a return to where the speed line started.
+    players: Mohamed Salah
+    sources:
+      - https://www.soccerbible.com/performance/football-boots/2023/09/adidas-release-mo-salah-signature-x-crazyfast/
+      - https://www.soccercleats101.com/2023/09/03/desert-majesty-adidas-unveils-the-x-crazyfast-ms-for-mo-salah/
+
+  - brand: adidas
+    silo: f50
+    sequence: 11
+    name: F50 (revival)
+    year: 2024
+    photo: UNVERIFIED
+    innovation: >-
+      The name came home. After nine years as the X, adidas revived the F50 in 2024 as part
+      of its Advancement Pack, built on a new Sprintframe 360 soleplate for speed in every
+      direction and a light Fibertouch upper, with a top-tier F50+ using Lightstrike Pro
+      foam — the same springy material from adidas running spikes — for extra push. It
+      arrived for Euro 2024 and the Copa America and put the F50 back on the biggest stages.
+    why: >-
+      A name like F50 carries twenty years of meaning — Messi, the 165-gram boot, the smart
+      boot. Bringing it back tied the newest speed technology to that history in a way the
+      "X" badge never could, telling players this was the real heir to the original.
+    players: Lionel Messi, Lamine Yamal, Son Heung-min, Florian Wirtz, Rafael Leão
+    sources:
+      - https://soccerpost.com/blogs/news/f50-makes-its-return
+      - https://www.versus.uk.com/articles/adidas-relaunches-the-f50-boot-with-new-advancement-pack/
