@@ -10,10 +10,13 @@
 # fourteen-year-old reads without a glossary. UNVERIFIED is an honest and acceptable
 # value; an invented one is not.
 #
-# SEEDED 2026-09-01 with the nine generations that already have a licence-verified
-# photograph. The remaining Predators (Precision 2000, PowerSwerve 2007, X 2009,
-# LZ II 2013, Instinct 2015, Mania relaunch 2017, 19+, 20+, Freak, Edge, Accuracy,
-# 24, 25, 26) are the research job — add them here with sources.
+# The nine photo-backed generations (1994, 1996, 1998, 2002, 2004, 2006, adiPower 2012,
+# LZ 2012, 18+ 2018) keep their seeded years and photo ids — the photo captions live in
+# photos.yaml and this file must agree with them. The remaining fourteen generations were
+# researched and added 2026-09; where a boot's launch date straddles two seasons (e.g. the
+# adiPower reached shops in 2011, the 18+ in November 2017) the prose says so while the
+# `year` follows the model's own naming, as the seed did. `players` names only wearers a
+# same-generation source confirms; UNVERIFIED where it cannot.
 
 last_verified: "2026-09"
 category: broom_lineage
@@ -36,7 +39,10 @@ generations:
     why: >-
       Before it, a boot's upper was there to protect the foot. This was the first
       mass-market boot that tried to change what the foot could DO to the ball.
-    players: UNVERIFIED
+    players: >-
+      John Collins scored the first competitive goal in Predator boots — a free kick for
+      Celtic away to Rangers at Ibrox in April 1994. The archive's photographed pair is his
+      own player-issue Predator.
     sources:
       - https://en.wikipedia.org/wiki/Adidas_Predator
       - https://www.footy.com/blog/boots/adidas-predator-history/
@@ -47,10 +53,21 @@ generations:
     name: Predator Touch
     year: 1996
     photo: predator-touch-1996
-    innovation: UNVERIFIED
-    players: UNVERIFIED
+    innovation: >-
+      adidas broke the forefoot rubber into separate angled panels instead of one big
+      slab, each panel aimed to grip the ball better, and stretched the fold-over tongue
+      into the long red flap that became the Predator's signature look. Concentrating the
+      rubber freed up room for more kangaroo leather, so the boot felt softer on the foot.
+      The firm-ground sole also gained adidas's Traxion studs, re-shaped to drag less when
+      you sprint but bite when you turn.
+    why: >-
+      The first Predator you would recognise at a glance — the long tongue and the panelled
+      fins are the look the whole line kept coming back to.
+    players: >-
+      David Beckham wore the Predator Touch — the archive's photographed pair is his.
     sources:
       - https://en.wikipedia.org/wiki/Adidas_Predator
+      - https://euniqueboots.com/en-uk/blogs/news/adidas-predator-history-classic-football-boots
 
   - brand: adidas
     silo: predator
@@ -58,73 +75,401 @@ generations:
     name: Predator Accelerator
     year: 1998
     photo: predator-accelerator-1998
-    innovation: UNVERIFIED
-    players: UNVERIFIED
+    innovation: >-
+      Made for the 1998 World Cup in France, the Accelerator moved the laces off-centre to
+      the side of the boot — the first Predator with asymmetric lacing — so a bigger,
+      cleaner leather surface sat across the top of the foot to strike through. The rubber
+      ribs were flattened compared with the Touch so more of the boot actually met the
+      ball, and the sole was re-shaped to hold the foot more firmly.
+    why: >-
+      Moving the laces out of the way was a small change that gave you a much larger clean
+      striking area — an idea nearly every Predator after it kept.
+    players: >-
+      Zinedine Zidane wore them scoring two headers in the 1998 World Cup final; David
+      Beckham, Alessandro Del Piero and Steven Gerrard also wore the Accelerator.
     sources:
       - https://en.wikipedia.org/wiki/Adidas_Predator
+      - https://euniqueboots.com/en-uk/blogs/news/adidas-predator-history-classic-football-boots
 
   - brand: adidas
     silo: predator
     sequence: 4
-    name: Predator Mania
-    year: 2002
-    photo: predator-mania-2002
-    innovation: UNVERIFIED
+    name: Predator Precision
+    year: 2000
+    photo: UNVERIFIED
+    innovation: >-
+      The Precision let you unscrew and change the studs yourself for the first time on a
+      Predator, so one boot could handle a soft or a firm pitch — though early pairs became
+      known for studs working loose. The rubber ribs were made thinner and more numerous
+      for topspin and swerve, and the fold-over Velcro tongue that David Beckham made famous
+      was tidied up for a cleaner dead-ball striking face.
     players: UNVERIFIED
     sources:
       - https://en.wikipedia.org/wiki/Adidas_Predator
+      - https://thesoccerfactory.com/blogs/news/the-complete-history-of-the-adidas-predator
 
   - brand: adidas
     silo: predator
     sequence: 5
-    name: Predator Pulse
-    year: 2004
-    photo: predator-pulse-2004
-    innovation: UNVERIFIED
-    players: UNVERIFIED
+    name: Predator Mania
+    year: 2002
+    photo: predator-mania-2002
+    innovation: >-
+      Built for the 2002 World Cup, the Mania kept a premium kangaroo-leather upper and
+      slimmed the rubber elements down from the Accelerator's slabs into finer strips —
+      enough swerve, far less bulk. Its trick was the fold-over tongue held flat by an
+      elastic strap that looped under the sole, keeping the striking surface smooth. It
+      became the most-loved Predator ever: adidas re-released it in 2017 and it sold out
+      almost instantly.
+    why: >-
+      Players and collectors still call it the best Predator ever made, which is why adidas
+      keeps bringing it back.
+    players: >-
+      David Beckham (the champagne colourway is tied to him), Alessandro Del Piero and Raúl
+      wore the Mania. The archive's photographed pair is Zinedine Zidane's.
     sources:
       - https://en.wikipedia.org/wiki/Adidas_Predator
+      - https://euniqueboots.com/en-uk/blogs/news/adidas-predator-history-classic-football-boots
 
   - brand: adidas
     silo: predator
     sequence: 6
-    name: Predator Absolute
-    year: 2006
-    photo: predator-absolute-2006
-    innovation: UNVERIFIED
-    players: UNVERIFIED
+    name: Predator Pulse
+    year: 2004
+    photo: predator-pulse-2004
+    innovation: >-
+      The Pulse introduced the Power Pulse system: a weighted insert — about 40 grams of
+      dense tungsten-alloy material — sat under the forefoot to shift the boot's balance
+      toward where you hit the ball, which adidas said added power to a shot, the same idea
+      as weighting a golf club. On the Pulse this insert was built in and could not be
+      swapped out; that choice came later. It kept the kangaroo leather and elastic-strap
+      tongue from the Mania.
+    players: >-
+      Zinedine Zidane wore the Pulse — the archive's photographed pair is his, from the
+      2004–05 season.
     sources:
       - https://en.wikipedia.org/wiki/Adidas_Predator
+      - https://euniqueboots.com/en-uk/blogs/news/adidas-predator-history-classic-football-boots
 
   - brand: adidas
     silo: predator
     sequence: 7
-    name: Predator adiPower
-    year: 2012
-    photo: predator-adipower-2012
-    innovation: UNVERIFIED
-    players: UNVERIFIED
+    name: Predator Absolute
+    year: 2006
+    photo: predator-absolute-2006
+    innovation: >-
+      For the 2006 World Cup the Absolute took the Pulse's weighted insert and finally made
+      it removable — you could play with the 40-gram Power Pulse insert for extra shot
+      weight, or swap to a plain one. The forefoot rubber was re-done as smoother "liquid
+      rubber" elements sitting in a marked-out Power Zone for grip on the ball. adidas made
+      a gold-and-white Absolute for Zinedine Zidane's last international tournament, and a
+      separate limited box set of 723 pairs tied to David Beckham.
+    players: >-
+      David Beckham (the 723-pair box set) and Zinedine Zidane (the gold-and-white pair for
+      his final tournament) wore the Absolute; the archive's photographed pair is Kaká's.
     sources:
       - https://en.wikipedia.org/wiki/Adidas_Predator
+      - https://euniqueboots.com/en-uk/blogs/news/adidas-predator-history-classic-football-boots
 
   - brand: adidas
     silo: predator
     sequence: 8
-    name: Predator LZ
-    year: 2012
-    photo: predator-lz-2012
-    innovation: UNVERIFIED
-    players: UNVERIFIED
+    name: Predator PowerSwerve
+    year: 2007
+    photo: UNVERIFIED
+    innovation: >-
+      The PowerSwerve injected a springy foam adidas called SmartFoam into the forefoot
+      rubber, meant to rebound off the ball and add swerve with a little extra power. It
+      kept a weighted pod in the sole, a descendant of the Pulse's tungsten insert, to throw
+      mass toward the point of contact. Unusually, Zinedine Zidane helped adidas develop this
+      boot after he had retired — so he shaped it rather than wore it in matches.
+    players: >-
+      Zinedine Zidane helped develop the PowerSwerve after retiring from playing. Specific
+      match-day wearers are UNVERIFIED.
     sources:
       - https://en.wikipedia.org/wiki/Adidas_Predator
+      - https://thesoccerfactory.com/blogs/news/the-complete-history-of-the-adidas-predator
 
   - brand: adidas
     silo: predator
     sequence: 9
-    name: Predator 18+
-    year: 2018
-    photo: predator-18-2018
-    innovation: UNVERIFIED
+    name: Predator X
+    year: 2009
+    photo: UNVERIFIED
+    innovation: >-
+      The Predator X was a bold reset. It added a rigid PowerSpine through the sole to stop
+      energy leaking away when you strike, swapped the classic kangaroo leather for a
+      tougher, tear-resistant calf leather called Taurus, and — most shocking to fans —
+      removed the fold-over tongue for the first time since 1994, using a low wrap-around
+      collar for a closer ball feel.
+    why: >-
+      Dropping the tongue split opinion completely, which is why the next big Predators kept
+      circling back to whether the tongue should stay or go.
+    players: >-
+      David Beckham had a custom white-and-red Predator X, and Raúl was spotted in Predator X
+      prototypes during pre-season — the two players the boot's own launch coverage names as
+      wearing the X specifically.
+    sources:
+      - https://en.wikipedia.org/wiki/Adidas_Predator
+      - https://www.soccerbible.com/performance/football-boots/2009/04/adidas-predator-x-trustrike-football-boots/
+
+  - brand: adidas
+    silo: predator
+    sequence: 10
+    name: Predator adiPower
+    year: 2012
+    photo: predator-adipower-2012
+    innovation: >-
+      The adiPower was the Predator that went on a diet. For the first time the line
+      borrowed the lightweight Sprint Frame sole from adidas's speed boot, the F50 adiZero,
+      making it around 25% lighter than the previous Predator X — roughly 220 grams. The old
+      weighted insert was dropped; instead a stiff Power Spine in the sole helped push energy
+      into a shot, and the rubber was split into two jobs: fins on the instep for power, a
+      grippier patch on the strike area for swerve. It reached shops in 2011 and ran through
+      the 2011–12 season.
+    why: >-
+      Fast, minimal speed boots were taking over, so adidas had to prove a Predator could be
+      light without losing its punch.
+    players: >-
+      Robin van Persie, Kaká and Nani wore the adiPower.
+    sources:
+      - https://en.wikipedia.org/wiki/Adidas_Predator
+      - https://euniqueboots.com/en-uk/blogs/news/adidas-predator-history-classic-football-boots
+
+  - brand: adidas
+    silo: predator
+    sequence: 11
+    name: Predator LZ
+    year: 2012
+    photo: predator-lz-2012
+    innovation: >-
+      The Lethal Zones threw out the single rubber patch and split the whole upper into five
+      named areas, each tuned for one job: First Touch at the front, Dribble on the inside
+      instep, Drive on the classic strike zone, Pass on the inner foot, and Sweet Spot by
+      the big toe for spin and chips. It was also the first Predator with a fully synthetic
+      upper instead of leather, and the first that could hold adidas's miCoach performance
+      chip.
+    players: >-
+      Edin Džeko wore the Lethal Zones — the archive's photographed pair is his.
+    sources:
+      - https://en.wikipedia.org/wiki/Adidas_Predator
+      - https://euniqueboots.com/en-uk/blogs/news/adidas-predator-history-classic-football-boots
+
+  - brand: adidas
+    silo: predator
+    sequence: 12
+    name: Predator LZ II
+    year: 2013
+    photo: UNVERIFIED
+    innovation: >-
+      The Lethal Zones II sharpened the five-zone idea from the first LZ: the rubber areas
+      were raised higher to bite the ball harder in each zone, the upper switched to a
+      wet-and-dry HybridTouch synthetic, and the studs were updated to Traxion 2.0 — all
+      while shaving a little weight off the original.
+    players: >-
+      Pepe Reina, Fernando Torres, Oscar, Petr Čech, Aaron Ramsey, Mesut Özil, Per
+      Mertesacker, Ángel Di María, Xabi Alonso and Juan Mata wore the Lethal Zones II.
+    sources:
+      - https://en.wikipedia.org/wiki/Adidas_Predator
+      - https://thesoccerfactory.com/blogs/news/the-complete-history-of-the-adidas-predator
+
+  - brand: adidas
+    silo: predator
+    sequence: 13
+    name: Predator Instinct
+    year: 2014
+    photo: UNVERIFIED
+    innovation: >-
+      Released to mark 20 years of the Predator, the Instinct brought back a softer,
+      leather-like feel and fitted a new Control Frame sole built for flexibility and quick,
+      responsive traction rather than out-and-out speed. It turned out to be the last
+      classic Predator: adidas retired the name in 2015 and replaced it with the ACE line.
+    why: >-
+      It was a control boot for midfielders — and, without anyone planning it that way, a
+      send-off before adidas paused the Predator name for two years.
     players: UNVERIFIED
     sources:
       - https://en.wikipedia.org/wiki/Adidas_Predator
+      - https://www.soccerbible.com/performance/football-boots/2014/07/adidas-predator-instinct-blackrunning-whiteinfrared/
+
+  - brand: adidas
+    silo: predator
+    sequence: 14
+    name: Predator Mania (Champagne re-release)
+    year: 2017
+    photo: UNVERIFIED
+    innovation: >-
+      This was not a new performance boot but a faithful retro re-release of the beloved
+      2002 Mania in its champagne colourway. adidas kept the look — fold-over tongue, side
+      lacing, the forefoot fins — but used synthetic leather instead of kangaroo and slipped
+      a modern Sprint Frame sole underneath. It sold out so fast that pairs were flipped
+      online for large sums, which is exactly why adidas kept re-running it.
+    why: >-
+      Fans had begged for the Mania for years; selling it out in minutes proved the demand
+      was real and set up the Predator's full comeback later the same year.
+    players: >-
+      A collector's re-release rather than a match boot; the original Mania stars — Beckham,
+      Del Piero and Raúl — were referenced in the marketing.
+    sources:
+      - https://en.wikipedia.org/wiki/Adidas_Predator
+      - https://www.unisportstore.com/stories/7677-adidas-release-predator-mania-champagne-pack-remake/
+
+  - brand: adidas
+    silo: predator
+    sequence: 15
+    name: Predator 18+
+    year: 2018
+    photo: predator-18-2018
+    innovation: >-
+      The Predator 18+ tore up the rulebook: no laces, no leather, no separate tongue.
+      Instead it used a one-piece knitted Primeknit upper with a built-in sock collar you
+      pull on like a boot-shaped sock, all coated in a grippy textured layer adidas called
+      Controlskin so the whole upper — not just a rubber patch — could grab the ball. It
+      launched for the 2017–18 season and brought the Predator name back after adidas had
+      retired it.
+    why: >-
+      It answered the Predator X argument in the boldest way possible: not just no tongue,
+      but no laces at all.
+    players: >-
+      Paul Pogba, Mesut Özil, Dele Alli and Ivan Rakitić wore the Predator 18+.
+    sources:
+      - https://en.wikipedia.org/wiki/Adidas_Predator
+      - https://euniqueboots.com/en-uk/blogs/news/adidas-predator-history-classic-football-boots
+
+  - brand: adidas
+    silo: predator
+    sequence: 16
+    name: Predator 19+
+    year: 2019
+    photo: UNVERIFIED
+    innovation: >-
+      The Predator 19 tuned the laceless 18 rather than reinventing it: the Controlskin grip
+      layer over the Primeknit was reworked to feel softer, and the top versions added
+      adidas's springy Boost foam in the sole for comfort and a little energy return, with a
+      reshaped heel for a tighter lock-in.
+    players: UNVERIFIED
+    sources:
+      - https://en.wikipedia.org/wiki/Adidas_Predator
+      - https://thesoccerfactory.com/blogs/news/the-complete-history-of-the-adidas-predator
+
+  - brand: adidas
+    silo: predator
+    sequence: 17
+    name: Predator 20+ Mutator
+    year: 2020
+    photo: UNVERIFIED
+    innovation: >-
+      This is the boot that introduced Demonskin: 406 small rubber spikes, arranged by a
+      computer algorithm and moulded onto the upper, to grip the ball for spin and swerve —
+      a modern, high-tech descendant of Craig Johnston's original 1994 rubber strips. The
+      spikes clustered around the instep and strike zones over a knit-and-mesh upper.
+    why: >-
+      After years of smoother uppers, adidas wanted the Predator's ball-grabbing identity
+      back — and made it the loudest feature on the boot.
+    players: UNVERIFIED
+    sources:
+      - https://news.adidas.com/football/predator-20-mutator---introducing-new-demonskin-technology/s/e2d10d26-f7ce-4fd7-8bf5-451ca2c935e6
+      - https://en.wikipedia.org/wiki/Adidas_Predator
+
+  - brand: adidas
+    silo: predator
+    sequence: 18
+    name: Predator Freak
+    year: 2021
+    photo: UNVERIFIED
+    innovation: >-
+      The Freak pushed Demonskin almost all the way around the boot — often called Demonskin
+      2.0 — wrapping roughly 360 degrees of rubber spikes over the upper so there was grip
+      almost anywhere the ball landed. It paired that with a split mid-cut Primeknit collar:
+      a taller, sock-like ankle wrap with a gap that made the laceless boot easier to pull
+      on.
+    players: UNVERIFIED
+    sources:
+      - https://news.adidas.com/football/revealing-predator-freak--for-extraordinary-ball-control-powered-by-360--of-demonskin/s/fafe5aef-92c6-46a7-a07f-c2b419c06c15
+      - https://en.wikipedia.org/wiki/Adidas_Predator
+
+  - brand: adidas
+    silo: predator
+    sequence: 19
+    name: Predator Edge
+    year: 2022
+    photo: UNVERIFIED
+    innovation: >-
+      The Edge dialled the spikes back. In place of Demonskin's aggressive points it used
+      Zone Skin — broader rubber ribs grouped into four control zones, a nod to the old
+      Lethal Zones. Underneath sat a new Facet Frame sole with a weighted Power Facet in the
+      forefoot to push mass toward the strike point, and a two-piece laceless Primeknit
+      collar.
+    players: UNVERIFIED
+    sources:
+      - https://www.soccerbible.com/performance/football-boots/2022/01/adidas-launch-the-new-predator-edge-as-part-of-the-sapphire-edge-pack/
+      - https://en.wikipedia.org/wiki/Adidas_Predator
+
+  - brand: adidas
+    silo: predator
+    sequence: 20
+    name: Predator Accuracy
+    year: 2023
+    photo: UNVERIFIED
+    innovation: >-
+      The Accuracy swapped broad ribs for Strikeskin — smaller, sharper rubber grips placed
+      only in the main kicking zones, adidas's "high-definition grip", so the boot could
+      grab the ball where it mattered without stiffening all over. The upper was a soft
+      microfibre HybridTouch that moulds to the foot, over the carried-over Facet Frame sole.
+    players: UNVERIFIED
+    sources:
+      - https://news.adidas.com/football/adidas-takes-on-pitch-accuracy-to-the-next-level--with-the-all-new-predator-accuracy---the-latest-me/s/1b1470bd-7f55-450c-9469-28dc84a88c8b
+      - https://www.soccerbible.com/performance/football-boots/2023/11/every-version-of-the-adidas-predator/
+
+  - brand: adidas
+    silo: predator
+    sequence: 21
+    name: Predator 24
+    year: 2024
+    photo: UNVERIFIED
+    innovation: >-
+      Released for the Predator's 30th birthday, the 24 brought back the fold-over tongue
+      for the first time on a current Predator since the Mania era, and offered three fits at
+      once — laced, laceless, and the tongue version. It used a cushioned HybridTouch 2.0
+      upper with Mania-style Strikeskin fins and a new ControlFrame 2.0 sole; the laceless
+      Elite was adidas's lightest Predator yet at around 195 grams.
+    why: >-
+      A 30-year anniversary boot that deliberately reached back to the line's most-loved era,
+      tongue and all.
+    players: UNVERIFIED
+    sources:
+      - https://news.adidas.com/football/adidas-recodes-a-30-year-icon-with-new-predator-pack-crafted-for-goals/s/d26bb432-a2c2-4f28-aa64-890574b1f26f
+      - https://www.soccerbible.com/interviews/2024/01/adidas-global-category-director-talks-predator-24/
+
+  - brand: adidas
+    silo: predator
+    sequence: 22
+    name: Predator 25
+    year: 2025
+    photo: UNVERIFIED
+    innovation: >-
+      The Predator 25 kept the 24's three fits but grew the Strikeskin: longer rubber fins
+      across the strike zone for more grip and spin. The HybridTouch 2.0 upper was simplified
+      into fewer layers so it broke in faster and lasted longer, an external heel counter was
+      added for lock-in, and the wave detailing nodded back to the 1998 Accelerator.
+    players: >-
+      Alessia Russo and Jurrien Timber were named as Predator 25 wearers at its launch.
+    sources:
+      - https://news.adidas.com/football/adidas-unveils-predator-25---inspired-by-its-legacy--upgraded-for-the-modern-goalscorer/s/7e29cbad-cc4e-4369-a44f-3aa255282357
+      - https://www.arsenal.com/news/adidas-launches-predator-25-aDwsq5q0yzCU
+
+  - brand: adidas
+    silo: predator
+    sequence: 23
+    name: Predator 26
+    year: 2026
+    photo: UNVERIFIED
+    innovation: >-
+      The Predator 26 replaced Strikeskin with a new rubber grip system called Nanostrike+
+      on a breathable mesh upper, and revived the PowerSpine — first seen on the 2009
+      Predator X — as a full-length plate through the sole for stability when you strike. It
+      kept the fold-over tongue of the 24 and 25, now with red detailing.
+    players: UNVERIFIED
+    sources:
+      - https://www.versus.uk.com/articles/adidas-officially-unveils-the-predator-26/
+      - https://news.adidas.com/football/adidas-re-defines-game-changing-control-with-launch-of-new-predator/s/35418e89-2747-47b7-8f6e-6e8df3ad0dd7
