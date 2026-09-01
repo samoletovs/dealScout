@@ -73,3 +73,22 @@ def test_the_copa_mundial_photo_reference_resolves(generations: list[dict]) -> N
         pdoc = yaml.safe_load(fh) or {}
     known = {p.get("id") for p in (pdoc.get("photos") or pdoc or [])}
     assert photo in known, f"copa photo '{photo}' not found in photos.yaml"
+
+
+def test_the_copa_mundial_names_the_wearers_its_source_states(generations: list[dict]) -> None:
+    # The anchor's only cited source (en.wikipedia.org/wiki/Adidas_Copa_Mundial) states, in
+    # plain text, that the Copa Mundial "has been used by the likes of Zinedine Zidane, Diego
+    # Maradona, Franz Beckenbauer, Jari Litmanen." Leaving `players: UNVERIFIED` while citing
+    # a source that answers the question is the exact unfilled-field failure this Archive
+    # exists to avoid — and the photo caption beside a named boot makes the gap visible to a
+    # reader. This test fails on the seeded UNVERIFIED value and passes once the wearers the
+    # cited source names are recorded. It does NOT require the modern generations to be
+    # filled: their own cited sources (the soccerpost deep-dive) name no one, so UNVERIFIED
+    # is honest there.
+    first = min(generations, key=lambda g: g.get("sequence") or 0)
+    players = str(first.get("players", ""))
+    assert players and players != "UNVERIFIED", (
+        "the Copa Mundial cites a source that names its wearers; players must not be UNVERIFIED"
+    )
+    for wearer in ("Zidane", "Maradona", "Beckenbauer", "Litmanen"):
+        assert wearer in players, f"Copa Mundial source names {wearer}; missing from players"
