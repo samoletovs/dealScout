@@ -592,7 +592,7 @@ Framer Motion 12 · Recharts 2.15 · Vitest · Azure Static Web Apps
 
 1. ~~**The name.**~~ ✅ **bRoom** / `broom.naurolabs.com`
 2. **Azure account** — 🔴 blocker for deploy only. `az` on this machine is logged into
-   the **Microsoft corporate tenant**, not `[redacted]`. A personal deployment
+   the **Microsoft corporate tenant**, not the personal account. A personal deployment
    needs `az login` against the personal tenant. Nothing else is blocked by this.
 3. **Scope of v1** — Nike + adidas only, or all six brands already in the catalogue?
 4. ~~**Does the Scout ship in v1?**~~ ✅ **Both from day one.** The Archive and the
