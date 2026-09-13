@@ -98,15 +98,22 @@ def _patch_sources(monkeypatch, listing: list[Product], results: list[dict]) -> 
         return await fake_listing(url, category, delay), await fake_links(url, delay)
 
     async def fake_collect(item, title_hint=""):
+        matching = [hit for hit in results if hit.get("product_link") == item.url]
+        if matching:
+            return shopping_products(matching[:1], HUNT)[0]
         return None
 
-    async def fake_search(query, api_key, gl):
+    def fake_cache(self, query):
         queried.append(query)
         return list(results)
 
+    async def no_delay(seconds):
+        return None
+
     monkeypatch.setattr("dealscout.scout.collect_page", fake_page)
     monkeypatch.setattr("dealscout.scout.collect", fake_collect)
-    monkeypatch.setattr("dealscout.scout._search", fake_search)
+    monkeypatch.setattr("dealscout.scout.Discovery.cached", fake_cache)
+    monkeypatch.setattr("dealscout.scout.asyncio.sleep", no_delay)
     return queried
 
 
@@ -170,7 +177,7 @@ def test_scout_should_merge_both_sources_and_drop_duplicate_urls(monkeypatch):
         listing=[_p("https://shop.eu/a"), _p("https://shop.eu/b")],
         results=[_hit("https://shop.eu/a"), _hit("https://shop.eu/c")],
     )
-    products = asyncio.run(scout(HUNT, {}, api_key="test-key"))
+    products = asyncio.run(scout(HUNT, {"serpapi": {"enabled": True}}, api_key="test-key"))
     assert [p.url for p in products] == [
         "https://shop.eu/a",
         "https://shop.eu/b",
@@ -185,14 +192,14 @@ def test_scout_should_drop_a_candidate_with_no_url(monkeypatch):
     assert [p.url for p in products] == ["https://shop.eu/a"]
 
 
-def test_scout_should_leave_the_paid_search_dormant_without_a_key(monkeypatch):
+def test_scout_should_keep_direct_sources_when_discovery_is_disabled(monkeypatch):
     monkeypatch.delenv("SERPAPI_KEY", raising=False)
     queried = _patch_sources(
         monkeypatch, listing=[_p("https://shop.eu/a")], results=[_hit("https://shop.eu/z")]
     )
-    products = asyncio.run(scout(HUNT, {}, api_key=None))
+    products = asyncio.run(scout(HUNT, {"serpapi": {"enabled": False}}, api_key=None))
     assert [p.url for p in products] == ["https://shop.eu/a"]
-    assert queried == []  # no key, no paid search
+    assert queried == []
 
 
 def test_scout_should_drop_a_blocked_seller(monkeypatch):
@@ -204,7 +211,7 @@ def test_scout_should_drop_a_blocked_seller(monkeypatch):
             _hit("https://ok.example/b", source="Unisport"),
         ],
     )
-    products = asyncio.run(scout(HUNT, {}, api_key="test-key"))
+    products = asyncio.run(scout(HUNT, {"serpapi": {"enabled": True}}, api_key="test-key"))
     assert [p.source for p in products] == ["Unisport"]
 
 
@@ -212,7 +219,7 @@ def test_scout_should_drop_a_marketplace_third_party_reseller(monkeypatch):
     _patch_sources(
         monkeypatch, listing=[], results=[_hit("https://e.example/a", source="eBay - joe_kicks")]
     )
-    assert asyncio.run(scout(HUNT, {}, api_key="test-key")) == []
+    assert asyncio.run(scout(HUNT, {"serpapi": {"enabled": True}}, api_key="test-key")) == []
 
 
 def test_scout_should_honour_a_preferred_store_allowlist(monkeypatch):
@@ -224,7 +231,7 @@ def test_scout_should_honour_a_preferred_store_allowlist(monkeypatch):
             _hit("https://b.eu/b", source="Random Shop"),
         ],
     )
-    config = {"serpapi": {"preferred_stores": ["Unisport"]}}
+    config = {"serpapi": {"enabled": True, "preferred_stores": ["Unisport"]}}
     products = asyncio.run(scout(HUNT, config, api_key="test-key"))
     assert [p.source for p in products] == ["Unisport"]
 
@@ -245,8 +252,88 @@ def test_scout_should_respect_the_configured_result_limit(monkeypatch):
         listing=[],
         results=[_hit(f"https://shop.eu/{n}") for n in range(10)],
     )
-    products = asyncio.run(scout(HUNT, {"serpapi": {"max_results": 3}}, api_key="test-key"))
+    products = asyncio.run(scout(HUNT, {"serpapi": {"enabled": True, "max_results": 3}}, api_key="test-key"))
     assert len(products) == 3
+
+
+def test_cached_discovery_works_without_a_key_and_rechecks_current_prices(monkeypatch):
+    from dataclasses import replace
+
+    monkeypatch.delenv("SERPAPI_KEY", raising=False)
+    _patch_sources(monkeypatch, listing=[], results=[_hit("https://shop.eu/a", price=20)])
+    fetched = []
+
+    async def live_product(item, title_hint=""):
+        fetched.append(item.url)
+        return replace(_p(item.url), price=93, sizes=frozenset({"37"}), sizes_known=True)
+
+    monkeypatch.setattr("dealscout.scout.collect", live_product)
+    products = asyncio.run(scout(HUNT, {"serpapi": {"enabled": True}}))
+
+    assert fetched == ["https://shop.eu/a"]
+    assert products[0].price == 93
+    assert products[0].sizes_known
+
+
+def test_unreadable_cached_link_never_becomes_a_stale_price_observation(monkeypatch):
+    _patch_sources(monkeypatch, listing=[], results=[_hit("https://shop.eu/a", price=20)])
+
+    async def unavailable(item, title_hint=""):
+        return None
+
+    monkeypatch.setattr("dealscout.scout.collect", unavailable)
+    products = asyncio.run(scout(HUNT, {"serpapi": {"enabled": True}}, api_key="present-but-unused"))
+
+    assert products == []
+
+
+def test_known_used_discovery_is_not_reclassified_as_new_by_live_parser(monkeypatch):
+    from dataclasses import replace
+
+    used = {**_hit("https://shop.eu/a"), "second_hand_condition": "used"}
+    _patch_sources(monkeypatch, listing=[], results=[used])
+    calls = []
+
+    async def parser_without_condition(item, title_hint=""):
+        calls.append(item.url)
+        return _p(item.url)  # live parsers default to new when condition is unstated
+
+    monkeypatch.setattr("dealscout.scout.collect", parser_without_condition)
+    config = {"serpapi": {"enabled": True}}
+    assert asyncio.run(scout(HUNT, config)) == []
+    assert calls == []
+
+    [product] = asyncio.run(scout(replace(HUNT, require_new=False), config))
+    assert product.condition == "used"
+
+
+def test_preferred_store_label_survives_live_hostname_normalization(monkeypatch):
+    from dataclasses import replace
+
+    _patch_sources(
+        monkeypatch, listing=[], results=[_hit("https://aboutyou.de/product", source="About You")]
+    )
+
+    async def live_product(item, title_hint=""):
+        return replace(_p(item.url), source="aboutyou.de")
+
+    monkeypatch.setattr("dealscout.scout.collect", live_product)
+    products = asyncio.run(scout(HUNT, {
+        "serpapi": {"enabled": True, "preferred_stores": ["About You"]},
+    }))
+    assert len(products) == 1
+    assert products[0].source == "aboutyou.de"
+
+
+def test_cached_link_refresh_is_bounded_across_queries(monkeypatch):
+    _patch_sources(
+        monkeypatch, listing=[], results=[_hit(f"https://shop.eu/{n}") for n in range(20)]
+    )
+    products = asyncio.run(scout(HUNT, {
+        "serpapi": {"enabled": True},
+        "scrape": {"link_budget": 2, "delay_seconds": 0},
+    }))
+    assert len(products) == 2
 
 
 def test_title_plausible_should_keep_a_title_that_says_nothing():
@@ -367,15 +454,11 @@ def test_scout_should_follow_listing_links_when_a_page_lists_no_products(monkeyp
         fetched.append(item.url)
         return _p(item.url)
 
-    async def fake_search(query, api_key, gl):
-        return []
-
     async def fake_page(url, category, delay=1.0):
         return await fake_listing(url, category, delay), await fake_links(url, delay)
 
     monkeypatch.setattr("dealscout.scout.collect_page", fake_page)
     monkeypatch.setattr("dealscout.scout.collect", fake_collect)
-    monkeypatch.setattr("dealscout.scout._search", fake_search)
 
     products = asyncio.run(scout(HUNT_REQ_WATCH, {"scrape": {"delay_seconds": 0}}, api_key=None))
     # The Academy link is discarded on its title alone — never worth a request.
@@ -396,15 +479,11 @@ def test_scout_should_cap_how_many_product_pages_one_listing_costs(monkeypatch):
         fetched.append(item.url)
         return _p(item.url)
 
-    async def fake_search(query, api_key, gl):
-        return []
-
     async def fake_page(url, category, delay=1.0):
         return await fake_listing(url, category, delay), await fake_links(url, delay)
 
     monkeypatch.setattr("dealscout.scout.collect_page", fake_page)
     monkeypatch.setattr("dealscout.scout.collect", fake_collect)
-    monkeypatch.setattr("dealscout.scout._search", fake_search)
 
     config = {"scrape": {"delay_seconds": 0, "link_budget": 4}}
     asyncio.run(scout(HUNT_REQ_WATCH, config, api_key=None))
@@ -438,15 +517,11 @@ def test_scout_should_spend_its_budget_on_the_titles_that_already_look_right(mon
         fetched.append(item.url)
         return _p(item.url)
 
-    async def fake_search(query, api_key, gl):
-        return []
-
     async def fake_page(url, category, delay=1.0):
         return await fake_listing(url, category, delay), await fake_links(url, delay)
 
     monkeypatch.setattr("dealscout.scout.collect_page", fake_page)
     monkeypatch.setattr("dealscout.scout.collect", fake_collect)
-    monkeypatch.setattr("dealscout.scout._search", fake_search)
 
     config = {"scrape": {"delay_seconds": 0, "link_budget": 1}}
     asyncio.run(scout(HUNT_SOLE_WATCH, config, api_key=None))

@@ -54,6 +54,55 @@ hunted, and publishes readable per-size stock. Check a candidate before adding i
 python -m dealscout.qualify www.example.com /collections/boots-sale
 ```
 
+### Google is weekly discovery, not the stock monitor
+
+Google Shopping has not produced useful deals for the owner so far. It is a
+low-priority experiment, not the primary source. Direct retailer checks still
+run twice daily; the shortlist remains weekly and available on demand.
+
+Only [`serpapi.yml`](.github/workflows/serpapi.yml) receives `SERPAPI_KEY`. Each
+Saturday it refreshes the general Shopping queries and enabled hunt queries,
+deduplicated across both sets. With the current two six-query sets this requests
+48-60 searches in a four/five-week month, rather than roughly 570.
+
+- `serpapi.enabled: false` disables discovery everywhere, including hunts and
+  shortlists; direct sources continue.
+- `cycle_budget: 60` caps attempted searches by the **provider's renewal date**,
+  including failures that may already have cost a credit.
+- `account_reserve: 50` stops this project before it spends the shared account's
+  last 50 credits. Other applications must enforce their own budgets; this is
+  not a distributed lock on their requests.
+- `max_searches_per_refresh: 12` bounds even a manually triggered refresh.
+- The free Account API is checked before spending and after each search. Quota
+  exhaustion produces an explicit **Paused** status; network/API failures
+  produce **Failed** and a nonzero job exit, not "nothing on sale."
+- Cached links expire after eight days. Hunts/shortlists fetch live retailer
+  evidence from at most `scrape.link_budget` cached links per hunt: yesterday's
+  Google price or stock is never treated as today's observation.
+- Google-only search/product links are discarded, not mistaken for merchant
+  pages or resolved with more paid requests. Only canonical direct merchant
+  links are retained; query text and tracking/token parameters are not stored.
+  A successful query with no usable merchant links is still billable.
+
+Discovery cache and attempt reservations live at
+`price-history/discovery/state.json` on the existing `price-history` data branch.
+All three workflows serialize data writers and save reservations even after a
+failed refresh. Missing checkout/corrupt state fails closed. Do not delete/reset
+that state to recover quota; wait for the account's renewal. A forced termination
+before the data-branch push can still lose that run's unpublished reservations;
+the account reserve is checked independently on the next run.
+
+Normal runs and `scan()` are cache-only even if a local key is present. To refresh
+intentionally without email:
+
+```bash
+python -m dealscout.run_serpapi --no-email
+```
+
+The job summary and `out/discovery-status.md` distinguish cached, disabled,
+paused and failed discovery. Cached-only reruns do not resend Shopping emails.
+See [the source priorities](SOURCES.md) for the non-Google direction.
+
 ## Roadmap
 
 - **v1 (now):** cron → page-watch/feeds → deal judge → email + report. Detect-and-notify only.

@@ -41,8 +41,8 @@ def test_match_brand_is_case_insensitive_and_defaults_empty():
     assert _match_brand("some noname tee", BRANDS) == ""
 
 
-def test_scan_is_dormant_without_key_or_when_disabled():
-    assert asyncio.run(scan({"serpapi": {"enabled": True}}, api_key=None)) == []
+def test_scan_is_dormant_without_cache_or_when_disabled(tmp_path):
+    assert asyncio.run(scan({"serpapi": {"enabled": True, "state_path": str(tmp_path / "empty.json")}}, api_key=None)) == []
     assert asyncio.run(scan({"serpapi": {"enabled": False}}, api_key="k")) == []
 
 

@@ -325,3 +325,83 @@ no documentation for — `{__type(name:"ProductAttributeFilterInput"){inputField
 revealed that sportland accepts only `category_id`, `category_uid` and `url_key`, and no
 free-text search, which is exactly why discovery has to come from the sitemap.
 
+---
+
+## 2026-09-13 — priorities after the Google review
+
+**Owner feedback: Google Shopping has produced no valuable deals.** Weekly SerpApi
+discovery is approved only as a low-priority, bounded experiment, not the primary source.
+This is a code/documentation review, not a fresh retailer survey: the historical prices
+above are not today's offers, and no paid searches or live stock checks were performed.
+
+**Merchant-link limitation:** independent review found that `google_shopping.product_link`
+normally points to `google.com/search` or `/shopping/product`, not a retailer.
+The approved contract keeps/caches only genuine merchant links; Google-only hits are
+discarded with diagnostic counts, not presented as actionable retailer leads.
+No additional paid URL-resolution calls are approved. A response containing only Google
+links therefore yields zero usable merchant leads, even if it contains many products.
+
+### What to improve first
+
+1. **Strengthen existing direct price/stock sources before buying more discovery.**
+   Start with Pro:Direct Ireland and komanda.lv's already-supported Shopify JSON, then
+   the existing size readers for 11teamsports, teamsport.lv, voetbalshop.nl and
+   futbola-apavi.lv. Preserve polite request budgets and monitor reader failures.
+   Validate the requested size's **own** price and availability together: the current
+   Shopify parser combines a minimum price across variants with an available-size set,
+   so those two facts alone do not prove that the requested size costs that minimum.
+   Use the catalogue's identity/tier and price history, not a retailer's claimed RRP,
+   to avoid fictional discounts. Prioritize confirmed delivered cost to Latvia; an
+   unknown shipping charge remains unknown. This builds on shipped readers, not a new
+   integration or a promise that those shops currently have qualifying bargains.
+2. **Keep useful price-only coverage, but label its limit.** SportsDirect is already
+   an owner-used source; Sportland and FutbolEmotion also supply price leads.
+   Without explicit requested-size availability these stay *verify on click*, never
+   size-confirmed successes. Do not retry blocked retailers or duplicate locale feeds
+   merely to raise candidate counts.
+3. **Evaluate one authorized affiliate feed, only after access is established.**
+   Pro:Direct is an existing lead in `VISION.md`; blocked Unisport is another lead,
+   not a verified Awin/Tradedoubler entitlement. Confirm the specific programme,
+   storefront/territory and permission for deal-comparison use before any integration.
+   Awin is a plausible channel, but not anonymous free stock access:
+   - Its [publisher FAQ](https://www.awin.com/gb/faqs) requires a one-off signup deposit,
+     reimbursed only on reaching the first payment threshold. The public FAQ gives no
+     fixed amount; confirm the amount at signup before spending. A low-volume personal
+     project may never reach that threshold. Publisher verification and each
+     advertiser's approval/terms are separate gates; acceptance is not assured.
+   - [Feed access](https://help.awin.com/developers/docs/product-feed-list-download.md)
+     covers joined advertisers and those explicitly allowing promotion before joining;
+     the feed download key is separate from the Partner API key. No account/feed
+     entitlement was verified here.
+   - [Stock, size and delivery fields are optional](https://help.awin.com/developers/docs/hosting-feeds.md),
+     and [feeds can omit products or become stale](https://help.awin.com/developers/docs/faqs-for-publishers.md).
+     First request a small authorized sample with SKU/identity, size system, per-variant
+     stock and price, currency, delivery coverage and update time. Reject it as a stock
+     upgrade if these cannot be joined reliably. Feed format support is not a data
+     completeness guarantee; image republication needs its own permission.
+
+**Newsletters remain secondary sale signals.** The shipped parser extracts a brand-level
+sale event, maximum advertised percentage and a link — not an exact product/size offer.
+Use relevant existing subscriptions to cue a targeted direct check; never turn “up to
+50% off” into a buy signal without current product evidence.
+
+### Small outcome scorecard and stop rule
+
+For the next four weekly discovery opportunities, review by **2026-10-11**, even if
+refreshes are skipped or fail:
+
+- Count **new, deduplicated, size-confirmed qualifying deals**, meeting the configured
+  hunt with a genuine merchant link, correct boot identity/tier and current same-variant
+  price/stock evidence. Separate discovery-exclusive merchant finds from deals already
+  found by direct sources; discarded Google links never count as qualifying deals.
+- Record owner-marked useful finds and wrong-size/stale-price false positives. Zero
+  qualifying deals is a valid result; raw candidates and yield counts are diagnostics,
+  not success. Keep errors distinct from genuinely empty results.
+- Compare incremental useful finds with SerpApi attempts/credits and manual checking
+  effort. Proposed minimum to continue: at least one discovery-exclusive, verified
+  merchant deal the owner considers useful, within the approved budget and without
+  additional paid link resolution.
+
+At that review, recommend retiring paid weekly discovery if it adds no such outcome;
+continuation needs an explicit value-based decision, not an automatically extended trial.
+No broad source integrations, subscriptions or schedule changes are part of this review.

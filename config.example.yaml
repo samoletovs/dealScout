@@ -91,12 +91,14 @@ watch:
     category: knitwear
     note: "example — replace with a real product URL"
 
-# Google Shopping scan via SerpApi (opt-in). enabled: true, but the scan stays dormant
-# until the SERPAPI_KEY secret is also set — no key means scan() returns nothing. Free
-# tier ~250 searches/month = one search per query per run; 6 queries ≈ 180/month. Shopping
-# has no fabric data, so results are candidates (fabric verified on click).
+# Low-priority weekly discovery. Only run_serpapi refreshes it; hunt/shortlist
+# reuse links and fetch current retailer evidence. No paid plan is required.
 serpapi:
   enabled: true
+  cycle_budget: 60           # conservative attempts, including client-side failures
+  account_reserve: 50        # leave shared-account credits for other consumers
+  max_searches_per_refresh: 12
+  cache_days: 8              # tolerate weekly runner jitter; never cache live stock
   country: de               # gl param — Google Shopping isn't available in the Baltics,
                             # so search a nearby supported EU market (DE: EUR, ships to LV)
   max_results: 20           # cap per query

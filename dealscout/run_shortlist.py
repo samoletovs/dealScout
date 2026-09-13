@@ -27,6 +27,7 @@ from pathlib import Path
 from . import rrpcache
 from .collector import enrich_all
 from .config import load_config
+from .discovery import Discovery, write_status
 from .confirm import newly_readable, plan_confirmations
 from .feedback import downvoted_urls
 from .hunt import judge_hunt, product_identity
@@ -288,6 +289,7 @@ async def main(argv: list[str]) -> int:
     opts = parse_args(argv)
     send = not opts.no_email
     config = load_config(config_path())
+    write_status(Discovery(config).status())
     hunts = load_hunts(config, opts.hunt)
     if not hunts:
         logger.error("no hunt to run")

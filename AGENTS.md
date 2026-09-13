@@ -28,8 +28,9 @@ Personal bargain-hunting wardrobe assistant. A **co-pilot, not an autopilot**: d
 - `dealscout/pricehistory.py` — price memory: an append-only log of one observation per product per run, read back as an honest `PriceMemory` ("cheapest seen in 45 days" / "not enough history yet"). The retailer's RRP is its own claim; this is the one that can be checked.
 - `dealscout/run.py` — watch-list entrypoint: load → collect → judge → notify.
 - `dealscout/run_digest.py` — digest entrypoint: read inbox → parse → judge → email digest.
-- `dealscout/serpsearch.py` — opt-in Google Shopping scan via SerpApi → candidate Products (dormant unless `SERPAPI_KEY` + `serpapi.enabled`).
-- `dealscout/run_serpapi.py` — scan entrypoint: SerpApi scan → judge (fibre off, fabric verified on click) → notify.
+- `dealscout/serpsearch.py` — cache-only Google Shopping result mapping and filters; `serpapi.enabled` is the shared off switch.
+- `dealscout/discovery.py` — the only paid-search client: weekly refresh, account reserve, renewal-bound attempt budget, locked atomic state and cache-only reads.
+- `dealscout/run_serpapi.py` — weekly discovery refresh → judge (fibre off, fabric verified on click) → notify; `--no-email` for explicit verification.
 - `dealscout/eval.py` — golden-set scorer (drift scorecard). Cases in `evals/golden.yaml` are scored by the wardrobe judge, or — when they name a `hunt:` — by `judge_hunt`. `expected.attrs` pins the attributes behind a verdict so a case cannot pass for the wrong reason. Run `python -m dealscout.eval`.
 
 ## Where the owner's real profile lives
@@ -41,3 +42,15 @@ The design brief and the filled personal profile (sizes, preferences, budget ban
 - Python 3.11+, type hints everywhere, `logging` not `print`, async for I/O, dataclasses for structured data.
 - Tests: `pytest` (AAA, one behaviour per test, mock external calls).
 - Golden path: GitHub Actions cron for v1; Azure Functions + Cosmos later. Managed identity, no API keys.
+
+## Paid discovery contract
+
+- Only the weekly discovery workflow receives `SERPAPI_KEY`; hunt and shortlist
+  must never issue search requests, even if a local caller supplies a key.
+- `serpapi.enabled` applies to all consumers. Keep direct stock checks independent.
+- Budget attempts before dispatch, never log keys/query text/response bodies, and
+  surface quota/network failures separately from successful empty results.
+- Reuse the `price-history` branch and common workflow concurrency group for
+  discovery state. Never silently recreate a missing checkout or corrupt ledger.
+- Cache is for discovery links; use current retailer evidence for prices/stock.
+  Do not append cached Shopping prices to the historical price log.
