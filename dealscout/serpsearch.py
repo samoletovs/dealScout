@@ -1,27 +1,23 @@
-"""Scan Google Shopping (via SerpApi) for on-sale items from favourite brands.
+"""Map the weekly Google Shopping discovery cache to candidate products.
 
-A dormant, opt-in deal source: active only when ``SERPAPI_KEY`` is set AND the config
-has ``serpapi.enabled: true``. Google Shopping gives price, an old_price and an on-sale
+A dormant, opt-in deal source: cache reads require ``serpapi.enabled: true``.
+Google Shopping gives price, an old_price and an on-sale
 flag, but NOT fabric composition — so these are *candidates*: the judge is run with the
 fibre gate off and the human verifies fabric/logo on click (co-pilot, not autopilot).
 
-The HTTP call is isolated in ``_search``; ``build_products`` and ``_match_brand`` are
-pure and unit-tested.
+Only ``discovery.Discovery.refresh`` can make paid requests. Mapping and filters
+here are pure; cache reads never trigger a refresh.
 """
 
 from __future__ import annotations
 
 import logging
-import os
 import re
 
-import aiohttp
-
+from .discovery import Discovery, enabled
 from .models import Product
 
 logger = logging.getLogger(__name__)
-
-SERPAPI_URL = "https://serpapi.com/search.json"
 
 # Titles that betray a used/refurbished listing even when Shopping omits the flag.
 _USED_RE = re.compile(
@@ -99,7 +95,7 @@ def build_products(
                 price=price,
                 reference_price=_old_price(item),
                 currency=currency,
-                url=item.get("product_link") or item.get("link") or "",
+                url=item.get("link") or item.get("product_link") or "",
                 materials={},  # unknown from Shopping — fabric verified on click
                 brand=_match_brand(title, brands),
                 source=str(item.get("source") or "").strip(),
@@ -109,48 +105,14 @@ def build_products(
     return products
 
 
-async def _search(query: str, api_key: str, gl: str) -> list[dict]:
-    """Call SerpApi's google_shopping engine for on-sale items. Never raises."""
-    params = {
-        "engine": "google_shopping",
-        "q": query,
-        "api_key": api_key,
-        "gl": gl,
-        "on_sale": "true",
-    }
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                SERPAPI_URL, params=params, timeout=aiohttp.ClientTimeout(total=30)
-            ) as resp:
-                if resp.status >= 400:
-                    detail = (await resp.text())[:300]
-                    logger.error(
-                        "SerpApi search failed for %r: HTTP %s — %s", query, resp.status, detail
-                    )
-                    return []
-                data = await resp.json()
-    except (aiohttp.ClientError, OSError, ValueError) as exc:
-        logger.error("SerpApi search failed for %r: %s", query, exc)
-        return []
-    return data.get("shopping_results", []) or []
-
-
 async def scan(config: dict, api_key: str | None = None) -> list[Product]:
-    """Run the configured Google Shopping queries and return candidate Products.
-
-    Returns [] (a no-op) unless ``SERPAPI_KEY`` is available and ``serpapi.enabled``
-    is true, so the whole feature stays dormant until deliberately switched on.
-    """
-    api_key = api_key or os.getenv("SERPAPI_KEY")
+    """Read weekly discovery. This function never makes paid search requests."""
     sconf = config.get("serpapi") or {}
-    if not api_key or not sconf.get("enabled"):
-        logger.info("SerpApi scan skipped (no SERPAPI_KEY or serpapi.enabled is false)")
+    if not enabled(config):
+        logger.info("SerpApi discovery disabled")
         return []
 
-    # Google Shopping isn't available in the Baltics — default to a nearby supported EU
-    # market (not deliver_to, which may be an unsupported country and would 400 the request).
-    gl = str(sconf.get("country") or "de").lower()
+    discovery = Discovery(config)
     limit = int(sconf.get("max_results") or 20)
     require_brand = bool(sconf.get("require_known_brand", True))
     exclude_used = bool(sconf.get("exclude_used", True))
@@ -165,7 +127,7 @@ async def scan(config: dict, api_key: str | None = None) -> list[Product]:
         query = entry.get("q")
         if not query:
             continue
-        results = (await _search(query, api_key, gl))[:limit]
+        results = discovery.cached(query)[:limit]
         products = build_products(results, entry.get("category", ""), currency, brands)
         if require_brand:
             products = [p for p in products if p.brand]

@@ -5,8 +5,8 @@ today and both are optional, so a hunt works with either or both:
 
 * ``watch:`` — listing or product pages parsed via schema.org ld+json. Best for a
   retailer you already buy from (their "sort by discount" page is a free deal feed).
-* ``queries:`` — Google Shopping via SerpApi, which finds retailers you'd never think
-  to check. Dormant unless ``SERPAPI_KEY`` is set.
+* ``queries:`` — links from the weekly Google Shopping discovery cache. Prices and
+  stock are read from retailers; this entrypoint never makes paid search requests.
 
 Adding a source (an affiliate feed, a retailer API, an LLM-driven agent) means adding
 a function here — the judge and the monitor do not change.
@@ -15,12 +15,13 @@ a function here — the judge and the monitor do not change.
 from __future__ import annotations
 
 import asyncio
+from dataclasses import replace
 import logging
-import os
 import re
 from urllib.parse import urlsplit
 
 from .collector import collect, collect_page, fetch, robots_allows, title_from_slug
+from .discovery import Discovery, DiscoveryError, enabled
 from .magento import (
     DEFAULT_BATCH,
     batched,
@@ -30,7 +31,7 @@ from .magento import (
 )
 from .hunt import attrs_from_title, brand_is_known
 from .models import Hunt, Product, WatchItem
-from .serpsearch import _allowed_source, _condition, _old_price, _search
+from .serpsearch import _allowed_source, _condition, _old_price
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +117,7 @@ def shopping_products(
                 price=price,
                 reference_price=_old_price(item),
                 currency=hunt.currency,
-                url=item.get("product_link") or item.get("link") or "",
+                url=item.get("link") or item.get("product_link") or "",
                 brand=_match_brand(title, hunt.brands),
                 source=str(item.get("source") or "").strip(),
                 condition=_condition(item, title),
@@ -129,21 +130,43 @@ async def _from_queries(hunt: Hunt, config: dict, api_key: str | None) -> list[P
     sconf = config.get("serpapi") or {}
     if not hunt.queries:
         return []
-    if not api_key:
-        logger.info("hunt %s: %d query(ies) skipped — no SERPAPI_KEY", hunt.id, len(hunt.queries))
+    if not enabled(config):
+        logger.info("hunt %s: SerpApi discovery disabled; direct sources remain active", hunt.id)
         return []
 
-    gl = str(sconf.get("country") or "de").lower()
     limit = int(sconf.get("max_results") or 20)
     block = list(sconf.get("exclude_sources") or []) + list(hunt.exclude_sources)
     allow = list(sconf.get("preferred_stores") or [])
 
+    discovery = Discovery(config)
+    leads: dict[str, Product] = {}
+    try:
+        for query in hunt.queries:
+            for product in shopping_products(discovery.cached(query)[:limit], hunt):
+                if (
+                    product.url and _allowed_source(product.source, allow, block)
+                    and (not hunt.require_new or product.condition == "new")
+                ):
+                    leads.setdefault(product.url, product)
+    except DiscoveryError as exc:
+        logger.error("hunt %s: discovery unavailable: %s; direct sources continue", hunt.id, exc)
+        return []
+
+    # Cached Shopping prices are discovery hints, never today's price or stock evidence.
+    scrape = config.get("scrape") or {}
+    budget = int(scrape.get("link_budget", DEFAULT_LINK_BUDGET))
+    delay = float(scrape.get("delay_seconds", 1.0))
     found: list[Product] = []
-    for query in hunt.queries:
-        results = (await _search(query, api_key, gl))[:limit]
-        products = shopping_products(results[:limit], hunt)
-        found.extend(p for p in products if _allowed_source(p.source, allow, block))
-    logger.info("hunt %s: %d candidate(s) from %d query(ies)", hunt.id, len(found), len(hunt.queries))
+    for lead in list(leads.values())[:budget]:
+        product = await collect(WatchItem(url=lead.url, category=hunt.category), title_hint=lead.title)
+        # The allowlist admitted the Shopping store label above; live parsers use
+        # hostnames (e.g. "About You" -> "aboutyou.de"). Still recheck the blocklist.
+        if product is not None and _allowed_source(product.source, [], block):
+            if lead.condition != "new":
+                product = replace(product, condition=lead.condition)
+            found.append(product)
+        await asyncio.sleep(delay)
+    logger.info("hunt %s: %d live product(s) from %d cached discovery link(s)", hunt.id, len(found), len(leads))
     return found
 
 
@@ -238,7 +261,6 @@ async def scout(
     hunt: Hunt, config: dict, api_key: str | None = None, vocab: dict | None = None
 ) -> list[Product]:
     """Gather every candidate product for a hunt, de-duplicated by URL."""
-    api_key = api_key or os.getenv("SERPAPI_KEY")
     scrape = config.get("scrape") or {}
     delay = float(scrape.get("delay_seconds", 1.0))
     budget = int(scrape.get("link_budget", DEFAULT_LINK_BUDGET))

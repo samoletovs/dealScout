@@ -1,27 +1,56 @@
 name: dealScout scan (SerpApi)
 
-# Dormant until BOTH the SERPAPI_KEY secret is set AND config `serpapi.enabled: true`.
-# Scans Google Shopping for on-sale items from favourite brands, judges them (fabric
-# verified on click), and emails buy-signals via courier. Free SerpApi tier is ~250
-# searches/month, so keep the query list small (each run = one search per query).
+# The only workflow allowed to refresh paid discovery. Hunts and shortlists reuse
+# these links but fetch current prices/stock directly from retailers.
 
 on:
   schedule:
-    - cron: "0 8 * * *" # daily 08:00 UTC
+    - cron: "0 5 * * 6" # Saturdays, before the hunt and shortlist
   workflow_dispatch:
+    inputs:
+      email:
+        description: "Email any new Shopping findings"
+        type: boolean
+        default: false
+
+concurrency:
+  group: dealscout-data
+  cancel-in-progress: false
 
 jobs:
   scan:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
       - run: pip install -r requirements.txt
-      - run: python -m dealscout.run_serpapi
+      - name: Restore discovery state
+        uses: actions/checkout@v5
+        with:
+          ref: price-history
+          path: price-history
+      - name: Refresh weekly discovery
+        run: python -m dealscout.run_serpapi ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.email != 'true' && '--no-email' || '' }}
         env:
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
           COURIER_URL: ${{ secrets.COURIER_URL }}
           COURIER_KEY: ${{ secrets.COURIER_KEY }}
           DEALSCOUT_EMAIL_TO: ${{ secrets.DEALSCOUT_EMAIL_TO }}
+          DEALSCOUT_DISCOVERY_PATH: price-history/discovery/state.json
+      - name: Save discovery reservations and cache
+        if: always()
+        run: bash .github/scripts/commit-price-history.sh
+        env:
+          PRICE_HISTORY_DIR: price-history
+      - name: Upload discovery status
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: discovery-status
+          path: out/discovery-status.md
+          if-no-files-found: ignore
+          retention-days: 30

@@ -7,11 +7,14 @@ off — these are candidates whose fabric/logo the human confirms on click.
 
 from __future__ import annotations
 
+import argparse
 import asyncio
 import logging
+import sys
 from pathlib import Path
 
 from .config import load_config
+from .discovery import Discovery, DiscoveryError, write_status
 from .feedback import downvoted_urls, summarize_feedback
 from .judge import judge
 from .models import Product, Verdict
@@ -25,12 +28,16 @@ logging.basicConfig(
 logger = logging.getLogger("dealscout.serpapi")
 
 
-async def run(config_path: Path) -> list[tuple[Product, Verdict]]:
-    """Scan Google Shopping for on-profile bargains and email the buy-signals."""
+async def run(config_path: Path, *, send: bool = True) -> list[tuple[Product, Verdict]]:
+    """Refresh weekly discovery, then optionally email new Shopping candidates."""
     config = load_config(config_path)
+    status = await Discovery(config).refresh()
+    write_status(status)
+    if not status.startswith("Updated:"):
+        return []
     candidates = await scan(config)
     if not candidates:
-        logger.info("no SerpApi candidates (disabled, or nothing on sale)")
+        logger.info("weekly discovery completed; no qualifying Shopping candidates")
         return []
 
     # Shopping has no fabric data, so judge with the fibre gate off; brand tier, price
@@ -62,21 +69,30 @@ async def run(config_path: Path) -> list[tuple[Product, Verdict]]:
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(body, encoding="utf-8")
     logger.info("wrote buy-signals report -> %s", out)
-    if signals:
-        await send_email(f"dealScout scan: {len(signals)} deal(s)", body)
-    else:
+    if signals and send:
+        if not await send_email(f"dealScout scan: {len(signals)} deal(s)", body):
+            raise DiscoveryError("Weekly discovery completed but its findings could not be emailed")
+    elif not signals:
         logger.info("scan found no on-profile deals this run")
     return signals
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> int:
     """CLI entrypoint. Uses config.local.yaml if present, else config.example.yaml."""
+    parser = argparse.ArgumentParser(description="Refresh bounded weekly SerpApi discovery.")
+    parser.add_argument("--no-email", action="store_true", help="refresh without sending an email")
+    opts = parser.parse_args(argv)
     config_path = Path("config.local.yaml")
     if not config_path.exists():
         config_path = Path("config.example.yaml")
         logger.info("config.local.yaml not found — using %s", config_path)
-    asyncio.run(run(config_path))
+    try:
+        asyncio.run(run(config_path, send=not opts.no_email))
+    except DiscoveryError as exc:
+        write_status(f"Failed: {exc}. Direct retailer sources remain active.")
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

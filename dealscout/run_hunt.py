@@ -20,6 +20,7 @@ from pathlib import Path
 
 from .collector import enrich_all
 from .config import load_config
+from .discovery import Discovery, write_status
 from .feedback import downvoted_urls
 from .hunt import judge_hunt, product_identity, validate_hunt
 from .models import Change, Hunt, Product, Verdict
@@ -137,6 +138,7 @@ async def run(
 ) -> dict[str, list[Result]]:
     """Run every configured hunt and email a single digest of what changed."""
     config = load_config(config_path)
+    write_status(Discovery(config).status())
     hunts = load_hunts(config, only)
     if not hunts:
         logger.info("no hunts configured — nothing to do")

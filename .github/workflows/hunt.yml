@@ -15,6 +15,10 @@ on:
         required: false
         default: ""
 
+concurrency:
+  group: dealscout-data
+  cancel-in-progress: false
+
 jobs:
   hunt:
     runs-on: ubuntu-latest
@@ -53,14 +57,13 @@ jobs:
         with:
           ref: price-history
           path: price-history
-        continue-on-error: true # the branch may not exist yet on the very first run
 
       - run: python -m dealscout.run_hunt ${{ github.event.inputs.hunt }}
         env:
           COURIER_URL: ${{ secrets.COURIER_URL }}
           COURIER_KEY: ${{ secrets.COURIER_KEY }}
           DEALSCOUT_EMAIL_TO: ${{ secrets.DEALSCOUT_EMAIL_TO }}
-          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          DEALSCOUT_DISCOVERY_PATH: price-history/discovery/state.json
           # Point the durable store at the checked-out branch. The legacy flat file under
           # state/ is still read once, so whatever the old cache holds is migrated in.
           DEALSCOUT_PRICE_HISTORY_DIR: price-history/prices

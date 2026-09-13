@@ -19,6 +19,10 @@ on:
   schedule:
     - cron: "0 8 * * 6" # Saturdays 08:00 UTC
 
+concurrency:
+  group: dealscout-data
+  cancel-in-progress: false
+
 jobs:
   shortlist:
     runs-on: ubuntu-latest
@@ -42,7 +46,6 @@ jobs:
         with:
           ref: price-history
           path: price-history
-        continue-on-error: true # the branch may not exist yet on the very first run
 
       - name: Build the shortlist
         run: |
@@ -52,7 +55,7 @@ jobs:
           COURIER_URL: ${{ secrets.COURIER_URL }}
           COURIER_KEY: ${{ secrets.COURIER_KEY }}
           DEALSCOUT_EMAIL_TO: ${{ secrets.DEALSCOUT_EMAIL_TO }}
-          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          DEALSCOUT_DISCOVERY_PATH: price-history/discovery/state.json
           DEALSCOUT_PRICE_HISTORY_DIR: price-history/prices
 
       - name: Save price history
