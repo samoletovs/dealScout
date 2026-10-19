@@ -32,6 +32,8 @@ flowchart LR
 
 ## Quick start
 
+Ensure all dependencies are installed by running `pip install -r requirements.txt` before executing tests.
+
 ```bash
 python -m venv .venv && . .venv/Scripts/activate   # Windows: .venv\Scripts\Activate.ps1
 pip install -r requirements.txt -r requirements-dev.txt
