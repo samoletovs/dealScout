@@ -757,6 +757,9 @@ async def send_email(subject: str, body: str) -> bool:
     except aiohttp.ClientError as exc:
         logger.error("courier send failed: %s", exc)
         return False
+    except Exception as exc:
+        logger.error("courier send failed: %s", exc)
+        return False
 
     logger.info("sent buy-signal email via courier to %s", to_addr)
     return True

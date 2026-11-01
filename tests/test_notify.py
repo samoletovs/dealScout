@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import asyncio
+import logging
 from dataclasses import replace
 
+import dealscout.notify as notify
 from dealscout.models import Hunt, Product, Verdict
 from dealscout.notify import (
     feedback_base_url,
@@ -14,6 +17,21 @@ from dealscout.notify import (
     year_legend,
 )
 from dealscout.shortlist import Delivery, SourceCoverage
+
+
+def test_send_email_logs_unexpected_send_errors_and_returns_false(monkeypatch, caplog):
+    monkeypatch.setenv("COURIER_URL", "https://courier.example.com/api/send")
+    monkeypatch.setenv("COURIER_KEY", "test-key")
+    monkeypatch.setenv("DEALSCOUT_EMAIL_TO", "buyer@example.com")
+
+    def fail_session():
+        raise RuntimeError("courier unavailable")
+
+    monkeypatch.setattr(notify.aiohttp, "ClientSession", fail_session)
+    caplog.set_level(logging.ERROR, logger=notify.__name__)
+
+    assert asyncio.run(notify.send_email("subject", "body")) is False
+    assert "courier send failed: courier unavailable" in caplog.text
 
 
 def _signal(url: str = "https://shop.example.com/p", source: str = "Test Store") -> tuple[Product, Verdict]:
