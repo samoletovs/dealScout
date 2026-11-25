@@ -40,6 +40,11 @@ def test_root_must_be_a_mapping(tmp_path, value):
         ({"serpapi": {"queries": ["bad"]}}, "serpapi.queries.0"),
         ({"filters": {"min_brand_tier": []}}, "filters.min_brand_tier"),
         ({"filters": {"reject_big_wordmarks": "false"}}, "filters.reject_big_wordmarks"),
+        ({"filters": {"min_brand_teir": "basket"}}, "filters.min_brand_teir"),
+        ({"deal": {"never_abv": {"tee": 10}}}, "deal.never_abv"),
+        ({"hunts": [{"exclude": {"models": {"model": "Legend"}}}]}, "hunts.0.exclude.models"),
+        ({"hunts": [{"price": {"never_abv": 10}}]}, "hunts.0.price.never_abv"),
+        ({"hunts": [{"require": {"tier": [["elite"]]}}]}, "hunts.0.require.tier.0"),
     ],
 )
 def test_invalid_shapes_report_the_field(tmp_path, value, path):
@@ -72,3 +77,13 @@ def test_optional_sections_and_zero_thresholds_are_valid(tmp_path):
 
 def test_example_config_is_valid():
     assert load_config(Path("config.example.yaml"))["watch"]
+
+
+def test_numeric_strings_and_scalar_hunt_query_remain_valid(tmp_path):
+    from dealscout.discovery import query_terms
+
+    config = _load(tmp_path, {
+        "filters": {"natural_fibre_min": "0.7"},
+        "hunts": [{"price": {"good_offer": "100"}, "queries": "boots sale"}],
+    })
+    assert query_terms(config) == ["boots sale"]

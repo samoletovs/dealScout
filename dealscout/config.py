@@ -30,15 +30,34 @@ def _strings(value: Any, path: str) -> None:
             raise ValueError(f"{path}.{index}: expected a nonempty string")
 
 
-def _number(value: Any, path: str) -> None:
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
+def _scalar_or_list(value: Any, path: str, *, sizes: bool = False) -> None:
+    values = value if isinstance(value, list) else [value]
+    for index, item in enumerate(values):
+        item_path = f"{path}.{index}" if isinstance(value, list) else path
+        if isinstance(item, str) and item.strip():
+            continue
+        if sizes and type(item) in (int, float):
+            _number(item, item_path)
+            continue
+        raise ValueError(f"{item_path}: expected a nonempty string")
+
+
+def _number(value: Any, path: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
         raise ValueError(f"{path}: expected a finite nonnegative number")
     try:
-        valid = math.isfinite(value) and value >= 0
-    except OverflowError:
-        valid = False
-    if not valid:
+        number = float(value)
+    except (ValueError, OverflowError):
+        raise ValueError(f"{path}: expected a finite nonnegative number") from None
+    if not math.isfinite(number) or number < 0:
         raise ValueError(f"{path}: expected a finite nonnegative number")
+    return number
+
+
+def _known_fields(section: dict, path: str, fields: set[str]) -> None:
+    for field in section:
+        if field not in fields:
+            raise ValueError(f"{path}.{field}: unexpected field")
 
 
 def _booleans(section: dict, path: str, names: tuple[str, ...]) -> None:
@@ -63,6 +82,11 @@ def validate_config(config: Any) -> None:
             raise ValueError(f"{path}.note: expected a string")
 
     filters = _mapping(root.get("filters", {}), "filters")
+    _known_fields(filters, "filters", {
+        "logos", "reject_big_wordmarks", "min_brand_tier", "natural_fibre_min",
+        "reject_materials", "sportswear_synthetic_ok", "care_no_dry_clean_only",
+        "quality_signals",
+    })
     _booleans(filters, "filters", (
         "reject_big_wordmarks", "sportswear_synthetic_ok", "care_no_dry_clean_only",
     ))
@@ -78,11 +102,11 @@ def validate_config(config: Any) -> None:
         ):
             raise ValueError(f"filters.{field}: unexpected value")
     if "natural_fibre_min" in filters:
-        _number(filters["natural_fibre_min"], "filters.natural_fibre_min")
-        if filters["natural_fibre_min"] > 1:
+        if _number(filters["natural_fibre_min"], "filters.natural_fibre_min") > 1:
             raise ValueError("filters.natural_fibre_min: expected a ratio between 0 and 1")
 
     deal = _mapping(root.get("deal", {}), "deal")
+    _known_fields(deal, "deal", {"min_discount_pct", "must_buy", "good_offer", "never_above"})
     if "min_discount_pct" in deal:
         _number(deal["min_discount_pct"], "deal.min_discount_pct")
     for field in ("must_buy", "good_offer", "never_above"):
@@ -103,12 +127,20 @@ def validate_config(config: Any) -> None:
         for field in ("require", "prefer", "sizes_by_brand", "exclude", "price"):
             if field in hunt:
                 _mapping(hunt[field], f"{path}.{field}")
+        _known_fields(hunt.get("exclude", {}), f"{path}.exclude", {"models", "urls", "sources"})
+        _known_fields(hunt.get("price", {}), f"{path}.price", {
+            "must_buy", "good_offer", "never_above", "min_reference_price", "min_discount_pct",
+        })
+        for field in ("require", "prefer", "sizes_by_brand", "exclude"):
+            for key, value in hunt.get(field, {}).items():
+                _scalar_or_list(value, f"{path}.{field}.{key}", sizes=field == "sizes_by_brand")
+        for field in ("sizes", "brands", "require_stated", "watch", "queries"):
+            if field in hunt:
+                _scalar_or_list(hunt[field], f"{path}.{field}", sizes=field == "sizes")
         for field in ("must_buy", "good_offer", "never_above", "min_reference_price",
                       "min_discount_pct"):
             if field in hunt.get("price", {}):
                 _number(hunt["price"][field], f"{path}.price.{field}")
-        if "queries" in hunt:
-            _strings(hunt["queries"], f"{path}.queries")
         if "catalogs" in hunt:
             for i, catalog in enumerate(_list(hunt["catalogs"], f"{path}.catalogs")):
                 _mapping(catalog, f"{path}.catalogs.{i}")
