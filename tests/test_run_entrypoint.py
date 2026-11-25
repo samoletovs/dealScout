@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import asyncio
+
+import pytest
+
 
 # --- a run that reads nothing has not succeeded ---------------------------------------
 
@@ -59,3 +63,21 @@ def test_an_empty_watch_list_should_not_be_called_broken(monkeypatch, tmp_path):
     monkeypatch.setattr(run_module, "load_config", lambda _p: {"watch": []})
 
     assert run_module.main() == 0
+
+
+def test_invalid_config_stops_before_collection_or_report(monkeypatch, tmp_path):
+    import dealscout.run as run_module
+
+    calls = []
+
+    async def collect(item):
+        calls.append(item)
+
+    monkeypatch.setattr(run_module, "collect", collect)
+    monkeypatch.setattr(run_module, "write_report", lambda *args: calls.append("report"))
+    path = tmp_path / "config.yaml"
+    path.write_text("watch:\n  - url: https://example.com\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match=r"watch\.0\.category"):
+        asyncio.run(run_module.run(path))
+    assert calls == []
