@@ -47,7 +47,8 @@ def query_terms(config: dict) -> list[str]:
     queries = [entry["q"] for entry in block.get("queries", []) if entry.get("q")]
     for hunt in config.get("hunts", []):
         if hunt.get("enabled", True):
-            queries.extend(hunt.get("queries", []))
+            terms = hunt.get("queries", [])
+            queries.extend([terms] if isinstance(terms, str) else terms)
     if any(not isinstance(query, str) or not query.strip() for query in queries):
         raise DiscoveryError("SerpApi discovery queries must be nonempty strings")
     return list(dict.fromkeys(query.strip() for query in queries))
